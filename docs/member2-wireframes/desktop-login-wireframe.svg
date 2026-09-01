@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820">
+  <rect width="1280" height="820" fill="#f4f7fb"/>
+  <rect x="0" y="0" width="1280" height="72" fill="#17324d"/>
+  <text x="54" y="45" fill="#ffffff" font-family="Arial" font-size="24" font-weight="700">Entertainment Guild</text>
+  <text x="990" y="45" fill="#dbeafe" font-family="Arial" font-size="16">Browse</text>
+  <text x="1072" y="45" fill="#dbeafe" font-family="Arial" font-size="16">Orders</text>
+  <text x="1154" y="45" fill="#ffffff" font-family="Arial" font-size="16" font-weight="700">Login</text>
+
+  <rect x="80" y="132" width="500" height="560" rx="8" fill="#ffffff" stroke="#d7e2ee"/>
+  <text x="126" y="190" fill="#111827" font-family="Arial" font-size="34" font-weight="700">Customer Login</text>
+  <text x="126" y="226" fill="#5f6f82" font-family="Arial" font-size="17">Sign in to manage your profile and orders.</text>
+
+  <text x="126" y="300" fill="#111827" font-family="Arial" font-size="16" font-weight="700">Email *</text>
+  <rect x="126" y="318" width="408" height="54" rx="6" fill="#f8fafc" stroke="#9fb0c3"/>
+  <text x="146" y="352" fill="#8393a7" font-family="Arial" font-size="15">jane.l.j.citizen@somemail.com</text>
+
+  <text x="126" y="420" fill="#111827" font-family="Arial" font-size="16" font-weight="700">Password *</text>
+  <rect x="126" y="438" width="408" height="54" rx="6" fill="#f8fafc" stroke="#9fb0c3"/>
+  <text x="146" y="472" fill="#8393a7" font-family="Arial" font-size="15">Password123</text>
+
+  <rect x="126" y="535" width="408" height="56" rx="7" fill="#155f98"/>
+  <text x="303" y="570" fill="#ffffff" font-family="Arial" font-size="17" font-weight="700">Log In</text>
+  <text x="238" y="632" fill="#155f98" font-family="Arial" font-size="16" font-weight="700">Create a new customer account</text>
+
+  <rect x="660" y="132" width="540" height="560" rx="8" fill="#ffffff" stroke="#d7e2ee"/>
+  <rect x="700" y="180" width="460" height="170" rx="8" fill="#eaf4fc"/>
+  <text x="735" y="230" fill="#17324d" font-family="Arial" font-size="27" font-weight="700">Account access</text>
+  <text x="735" y="266" fill="#446276" font-family="Arial" font-size="16">Authentication maps to the Patrons table.</text>
+  <text x="735" y="294" fill="#446276" font-family="Arial" font-size="16">Invalid email/password shows validation feedback.</text>
+
+  <rect x="700" y="402" width="460" height="118" rx="8" fill="#f8fafc" stroke="#d7e2ee"/>
+  <text x="735" y="446" fill="#111827" font-family="Arial" font-size="19" font-weight="700">Validation feedback</text>
+  <text x="735" y="478" fill="#64748b" font-family="Arial" font-size="15">Required email, required password, email format,</text>
+  <text x="735" y="502" fill="#64748b" font-family="Arial" font-size="15">and stored customer credential check.</text>
+
+  <rect x="700" y="562" width="460" height="72" rx="8" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="735" y="606" fill="#9a3412" font-family="Arial" font-size="16" font-weight="700">Toast / inline error area</text>
+</svg>

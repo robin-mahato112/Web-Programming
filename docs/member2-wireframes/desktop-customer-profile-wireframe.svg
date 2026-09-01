@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="900" viewBox="0 0 1280 900">
+  <rect width="1280" height="900" fill="#f4f7fb"/>
+  <rect x="0" y="0" width="1280" height="72" fill="#17324d"/>
+  <text x="54" y="45" fill="#ffffff" font-family="Arial" font-size="24" font-weight="700">Entertainment Guild</text>
+  <text x="942" y="45" fill="#dbeafe" font-family="Arial" font-size="16">Browse</text>
+  <text x="1022" y="45" fill="#dbeafe" font-family="Arial" font-size="16">Orders</text>
+  <text x="1102" y="45" fill="#ffffff" font-family="Arial" font-size="16" font-weight="700">My Profile</text>
+
+  <rect x="70" y="118" width="270" height="660" rx="8" fill="#ffffff" stroke="#d7e2ee"/>
+  <circle cx="205" cy="198" r="45" fill="#eaf4fc" stroke="#b8d7ee"/>
+  <text x="185" y="210" fill="#17324d" font-family="Arial" font-size="28" font-weight="700">JC</text>
+  <text x="132" y="278" fill="#111827" font-family="Arial" font-size="21" font-weight="700">Jane Citizen</text>
+  <text x="104" y="308" fill="#64748b" font-family="Arial" font-size="14">jane.l.j.citizen@somemail.com</text>
+  <rect x="102" y="368" width="206" height="48" rx="6" fill="#155f98"/>
+  <text x="157" y="399" fill="#ffffff" font-family="Arial" font-size="15" font-weight="700">Save Profile</text>
+  <rect x="102" y="438" width="206" height="48" rx="6" fill="#eef6fd" stroke="#c9dff1"/>
+  <text x="151" y="469" fill="#155f98" font-family="Arial" font-size="15" font-weight="700">View Orders</text>
+
+  <rect x="380" y="118" width="830" height="660" rx="8" fill="#ffffff" stroke="#d7e2ee"/>
+  <text x="428" y="178" fill="#111827" font-family="Arial" font-size="32" font-weight="700">Customer Profile</text>
+  <text x="428" y="214" fill="#5f6f82" font-family="Arial" font-size="17">View and update account, contact, and delivery details.</text>
+
+  <text x="428" y="286" fill="#111827" font-family="Arial" font-size="18" font-weight="700">Patrons table fields</text>
+  <text x="428" y="340" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Full name *</text>
+  <rect x="428" y="356" width="330" height="48" rx="6" fill="#f8fafc" stroke="#9fb0c3"/>
+  <text x="790" y="340" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Email *</text>
+  <rect x="790" y="356" width="330" height="48" rx="6" fill="#f8fafc" stroke="#9fb0c3"/>
+
+  <text x="428" y="472" fill="#111827" font-family="Arial" font-size="18" font-weight="700">TO table profile fields</text>
+  <text x="428" y="526" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Phone number *</text>
+  <rect x="428" y="542" width="330" height="48" rx="6" fill="#f8fafc" stroke="#9fb0c3"/>
+  <text x="790" y="526" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Street address *</text>
+  <rect x="790" y="542" width="330" height="48" rx="6" fill="#f8fafc" stroke="#9fb0c3"/>
+  <text x="428" y="648" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Suburb / State / Postcode *</text>
+  <rect x="428" y="664" width="190" height="48" rx="6" fill="#f8fafc" stroke="#9fb0c3"/>
+  <rect x="638" y="664" width="190" height="48" rx="6" fill="#f8fafc" stroke="#9fb0c3"/>
+  <rect x="848" y="664" width="190" height="48" rx="6" fill="#f8fafc" stroke="#9fb0c3"/>
+</svg>

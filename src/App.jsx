@@ -5,7 +5,8 @@ import Products from './pages/Products.jsx'
 import ProductDetails from './pages/ProductDetails.jsx'
 import Cart from './pages/Cart.jsx'
 import { Login, Registration } from './pages/AuthPages.jsx'
-import { AdminDashboard, EmployeeDashboard, ProductManagement, Profile, UserManagement } from './pages/Dashboards.jsx'
+import CustomerProfile from './pages/CustomerProfile.jsx'
+import { AdminDashboard, EmployeeDashboard, ProductManagement, UserManagement } from './pages/Dashboards.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
@@ -16,7 +17,7 @@ export default function App() {
     <Route path="/cart" element={<Cart />} />
     <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Registration />} />
-    <Route path="/profile" element={<Profile />} />
+    <Route path="/profile" element={<CustomerProfile />} />
     <Route path="/admin" element={<AdminDashboard />} />
     <Route path="/admin/products" element={<ProductManagement />} />
     <Route path="/admin/users" element={<UserManagement />} />
