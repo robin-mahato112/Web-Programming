@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="900" viewBox="0 0 1280 900">
+  <rect width="1280" height="900" fill="#f4f7fb"/>
+  <rect x="0" y="0" width="1280" height="72" fill="#17324d"/>
+  <text x="54" y="45" fill="#ffffff" font-family="Arial" font-size="24" font-weight="700">Entertainment Guild</text>
+  <text x="986" y="45" fill="#dbeafe" font-family="Arial" font-size="16">Browse</text>
+  <text x="1066" y="45" fill="#dbeafe" font-family="Arial" font-size="16">Orders</text>
+  <text x="1146" y="45" fill="#ffffff" font-family="Arial" font-size="16" font-weight="700">Register</text>
+
+  <rect x="70" y="122" width="1140" height="680" rx="8" fill="#ffffff" stroke="#d7e2ee"/>
+  <text x="116" y="184" fill="#111827" font-family="Arial" font-size="34" font-weight="700">Create Customer Account</text>
+  <text x="116" y="220" fill="#5f6f82" font-family="Arial" font-size="17">Register a patron account and delivery profile for future orders.</text>
+
+  <rect x="116" y="270" width="500" height="410" rx="8" fill="#f8fafc" stroke="#d7e2ee"/>
+  <text x="150" y="315" fill="#111827" font-family="Arial" font-size="20" font-weight="700">Account details</text>
+  <text x="150" y="368" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Full name *</text>
+  <rect x="150" y="384" width="405" height="48" rx="6" fill="#ffffff" stroke="#9fb0c3"/>
+  <text x="150" y="468" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Email *</text>
+  <rect x="150" y="484" width="405" height="48" rx="6" fill="#ffffff" stroke="#9fb0c3"/>
+  <text x="150" y="568" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Password *</text>
+  <rect x="150" y="584" width="405" height="48" rx="6" fill="#ffffff" stroke="#9fb0c3"/>
+
+  <rect x="664" y="270" width="500" height="410" rx="8" fill="#f8fafc" stroke="#d7e2ee"/>
+  <text x="698" y="315" fill="#111827" font-family="Arial" font-size="20" font-weight="700">Contact and delivery profile</text>
+  <text x="698" y="368" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Phone number *</text>
+  <rect x="698" y="384" width="405" height="48" rx="6" fill="#ffffff" stroke="#9fb0c3"/>
+  <text x="698" y="468" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Street address *</text>
+  <rect x="698" y="484" width="405" height="48" rx="6" fill="#ffffff" stroke="#9fb0c3"/>
+  <text x="698" y="568" fill="#111827" font-family="Arial" font-size="15" font-weight="700">Suburb / State / Postcode *</text>
+  <rect x="698" y="584" width="125" height="48" rx="6" fill="#ffffff" stroke="#9fb0c3"/>
+  <rect x="838" y="584" width="125" height="48" rx="6" fill="#ffffff" stroke="#9fb0c3"/>
+  <rect x="978" y="584" width="125" height="48" rx="6" fill="#ffffff" stroke="#9fb0c3"/>
+
+  <rect x="116" y="714" width="1048" height="56" rx="8" fill="#155f98"/>
+  <text x="563" y="749" fill="#ffffff" font-family="Arial" font-size="17" font-weight="700">Create Account</text>
+  <text x="525" y="830" fill="#155f98" font-family="Arial" font-size="16" font-weight="700">Already have an account? Log in</text>
+</svg>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 
 const links = [
-  ['/', 'Home'], ['/products', 'Products'], ['/cart', 'Cart'], ['/login', 'Sign in'],
+  ['/', 'Home'], ['/products', 'Products'], ['/cart', 'Cart'], ['/profile', 'Profile'], ['/login', 'Sign in'],
 ]
 
 export default function Header() {
