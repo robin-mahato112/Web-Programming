@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 import Home from './pages/Home.jsx'
 import Products from './pages/Products.jsx'
 import ProductDetails from './pages/ProductDetails.jsx'
@@ -17,7 +18,7 @@ export default function App() {
     <Route path="/cart" element={<Cart />} />
     <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Registration />} />
-    <Route path="/profile" element={<CustomerProfile />} />
+    <Route path="/profile" element={<ProtectedRoute><CustomerProfile /></ProtectedRoute>} />
     <Route path="/admin" element={<AdminDashboard />} />
     <Route path="/admin/products" element={<ProductManagement />} />
     <Route path="/admin/users" element={<UserManagement />} />
