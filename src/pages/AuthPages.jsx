@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 import { existingCustomers } from '../data/mockCustomers.js'
@@ -47,6 +47,7 @@ function validate(values, register) {
 }
 
 function AuthForm({ register = false }) {
+  const navigate = useNavigate()
   const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
@@ -59,30 +60,154 @@ function AuthForm({ register = false }) {
   }
 
   return (
-    <form className={register ? 'auth-card auth-card--wide' : 'auth-card'} noValidate onSubmit={submit}>
+    <form
+      className={register ? "auth-card auth-card--wide" : "auth-card"}
+      noValidate
+      onSubmit={submit}
+    >
       <p className="eyebrow">Member 2 customer accounts</p>
-      <h1>{register ? 'Create account' : 'Welcome back'}</h1>
-      <p>{register ? 'Collect the account and delivery profile details needed for a customer record.' : 'Validate a customer login before future session handling is connected.'}</p>
+      <h1>{register ? "Create account" : "Welcome back"}</h1>
+      <p className="notice notice--info" role="status">
+        Enter your email, password, and employee code to validate your user account..
+      </p>
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={() => navigate("/admin/login")}
+      >
+        Admin Account
+      </Button>
 
-      {errors.credentials && <div className="notice notice--error" role="alert">{errors.credentials}</div>}
+      {errors.credentials && (
+        <div className="notice notice--error" role="alert">
+          {errors.credentials}
+        </div>
+      )}
 
-      <div className={register ? 'form-grid' : undefined}>
-        {register && <Input id="name" name="name" label="Full name" autoComplete="name" value={values.name} onChange={update} error={errors.name} />}
-        <Input id="email" name="email" label="Email address" type="email" autoComplete="email" value={values.email} onChange={update} error={errors.email} />
-        <Input id="password" name="password" label="Password" type="password" autoComplete={register ? 'new-password' : 'current-password'} value={values.password} onChange={update} error={errors.password} hint={register ? 'Use 8+ characters with letters and numbers.' : undefined} />
-        {register && <Input id="confirm" name="confirm" label="Confirm password" type="password" autoComplete="new-password" value={values.confirm} onChange={update} error={errors.confirm} />}
-        {register && <Input id="phoneNumber" name="phoneNumber" label="Phone number" type="tel" autoComplete="tel" value={values.phoneNumber} onChange={update} error={errors.phoneNumber} />}
-        {register && <Input id="streetAddress" name="streetAddress" label="Street address" autoComplete="street-address" value={values.streetAddress} onChange={update} error={errors.streetAddress} />}
-        {register && <Input id="suburb" name="suburb" label="Suburb" autoComplete="address-level2" value={values.suburb} onChange={update} error={errors.suburb} />}
-        {register && <Input id="state" name="state" label="State" autoComplete="address-level1" value={values.state} onChange={update} error={errors.state} />}
-        {register && <Input id="postcode" name="postcode" label="Postcode" inputMode="numeric" autoComplete="postal-code" value={values.postcode} onChange={update} error={errors.postcode} />}
+      <div className={register ? "form-grid" : undefined}>
+        {register && (
+          <Input
+            id="name"
+            name="name"
+            label="Full name"
+            autoComplete="name"
+            value={values.name}
+            onChange={update}
+            error={errors.name}
+          />
+        )}
+        <Input
+          id="email"
+          name="email"
+          label="Email address"
+          type="email"
+          autoComplete="email"
+          value={values.email}
+          onChange={update}
+          error={errors.email}
+        />
+        <Input
+          id="password"
+          name="password"
+          label="Password"
+          type="password"
+          autoComplete={register ? "new-password" : "current-password"}
+          value={values.password}
+          onChange={update}
+          error={errors.password}
+          hint={
+            register ? "Use 8+ characters with letters and numbers." : undefined
+          }
+        />
+        {register && (
+          <Input
+            id="confirm"
+            name="confirm"
+            label="Confirm password"
+            type="password"
+            autoComplete="new-password"
+            value={values.confirm}
+            onChange={update}
+            error={errors.confirm}
+          />
+        )}
+        {register && (
+          <Input
+            id="phoneNumber"
+            name="phoneNumber"
+            label="Phone number"
+            type="tel"
+            autoComplete="tel"
+            value={values.phoneNumber}
+            onChange={update}
+            error={errors.phoneNumber}
+          />
+        )}
+        {register && (
+          <Input
+            id="streetAddress"
+            name="streetAddress"
+            label="Street address"
+            autoComplete="street-address"
+            value={values.streetAddress}
+            onChange={update}
+            error={errors.streetAddress}
+          />
+        )}
+        {register && (
+          <Input
+            id="suburb"
+            name="suburb"
+            label="Suburb"
+            autoComplete="address-level2"
+            value={values.suburb}
+            onChange={update}
+            error={errors.suburb}
+          />
+        )}
+        {register && (
+          <Input
+            id="state"
+            name="state"
+            label="State"
+            autoComplete="address-level1"
+            value={values.state}
+            onChange={update}
+            error={errors.state}
+          />
+        )}
+        {register && (
+          <Input
+            id="postcode"
+            name="postcode"
+            label="Postcode"
+            inputMode="numeric"
+            autoComplete="postal-code"
+            value={values.postcode}
+            onChange={update}
+            error={errors.postcode}
+          />
+        )}
       </div>
 
-      {submitted && <div className="notice" role="status">{register ? 'Registration validation passed. Backend account creation is planned for a later sprint.' : 'Login validation passed using the Sprint 1 mock customer record.'}</div>}
-      <Button type="submit">{register ? 'Validate registration' : 'Validate sign in'}</Button>
-      <p>{register ? 'Already a member?' : 'New to the guild?'} <Link to={register ? '/login' : '/register'}>{register ? 'Sign in' : 'Create an account'}</Link></p>
+      {submitted && (
+        <div className="notice" role="status">
+          {register
+            ? "Registration validation passed. Backend account creation is planned for a later sprint."
+            : "Login validation passed using the Sprint 1 mock customer record."}
+        </div>
+      )}
+      <Button type="submit">
+        {register ? "Validate registration" : "Validate sign in"}
+      </Button>
+      <p>
+        {register ? "Already a member?" : "New to the guild?"}{" "}
+        <Link to={register ? "/login" : "/register"}>
+          {register ? "Sign in" : "Create an account"}
+        </Link>
+      </p>
     </form>
-  )
+  );
 }
 
 export function Login() { return <section className="auth-page"><AuthForm /></section> }
