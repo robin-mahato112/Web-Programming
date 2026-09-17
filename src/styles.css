@@ -40,12 +40,9 @@ main { flex: 1; }
 .brand span { display: grid; place-items: center; width: 2.35rem; aspect-ratio: 1; border-radius: .6rem; color: white; background: var(--blue); font-size: .72rem; transition: background .2s, transform .2s; }
 .brand:hover span { background: var(--blue-dark); transform: translateY(-2px); }
 .site-nav { margin-left: auto; display: flex; align-items: center; gap: .2rem; }
-/* Zehai's Assignment 1.2 styles start here: authenticated navigation action. */
-.site-nav a, .nav-action { padding: .62rem .82rem; border-radius: .55rem; color: var(--muted); text-decoration: none; font-size: .92rem; font-weight: 700; transition: color .2s, background .2s; }
-.site-nav a:hover, .nav-action:hover { color: var(--ink); background: #f0f2f5; }
+.site-nav a { padding: .62rem .82rem; border-radius: .55rem; color: var(--muted); text-decoration: none; font-size: .92rem; font-weight: 700; transition: color .2s, background .2s; }
+.site-nav a:hover { color: var(--ink); background: #f0f2f5; }
 .site-nav a.active { color: var(--blue-dark); background: var(--blue-soft); }
-.nav-action { border: 0; background: transparent; }
-/* Zehai's Assignment 1.2 styles stop here. */
 .menu-button { display: none; margin-left: auto; padding: .56rem .8rem; border: 1px solid #aeb5c2; border-radius: .55rem; color: var(--ink); background: white; font-weight: 700; }
 
 h1, h2, h3 { margin: 0 0 .75rem; color: var(--ink); font-family: 'Space Grotesk', sans-serif; line-height: 1.08; }
@@ -63,7 +60,6 @@ p { line-height: 1.65; color: var(--muted); }
 .button--primary:hover { color: white; background: var(--blue-dark); box-shadow: 0 8px 20px rgba(40,103,232,.2); }
 .button--secondary { color: var(--ink); border-color: #aeb5c2; background: white; }
 .button--secondary:hover { color: var(--ink); border-color: #7d8798; background: #f8f9fb; }
-.button:disabled { cursor: not-allowed; opacity: .58; transform: none; box-shadow: none; }
 
 .hero { position: relative; overflow: hidden; padding-block: clamp(4.5rem, 8vw, 7rem); border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #fff, #f2f6fd); }
 .hero-orb { position: absolute; border-radius: 50%; pointer-events: none; }
@@ -132,9 +128,6 @@ p { line-height: 1.65; color: var(--muted); }
 .auth-card { width: min(100%, 31rem); padding: clamp(1.5rem, 5vw, 2.5rem); border: 1px solid var(--line); border-radius: .9rem; background: white; box-shadow: var(--shadow); }
 .auth-card--wide { width: min(100%, 57rem); }
 .auth-card h1 { font-size: 2.7rem; }.auth-card .button { width: 100%; margin-top: .75rem; color: white; background: var(--blue); box-shadow: none; }.auth-card .button:hover { background: var(--blue-dark); }
-/* Zehai's Assignment 1.2 styles start here: visible in-progress prototype status. */
-.prototype-banner { margin: 1.2rem 0; padding: .75rem .85rem; border: 1px solid #cdd9ef; border-radius: .5rem; color: var(--blue-dark); background: #f4f7fd; font-size: .82rem; font-weight: 700; }
-/* Zehai's Assignment 1.2 styles stop here. */
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1rem; }
 .notice, .status-note { padding: .95rem 1rem; border-left: 4px solid var(--blue); color: var(--muted); background: var(--blue-soft); }.notice { margin: 1rem 0; border-left-color: var(--success); }
 .notice--error { border-left-color: var(--danger); color: var(--danger); background: #fff1f3; }
@@ -144,6 +137,7 @@ p { line-height: 1.65; color: var(--muted); }
 .profile-summary dl { display: grid; gap: .45rem; margin-top: 1.5rem; }
 .profile-summary dt { color: var(--muted); font-size: .86rem; font-weight: 700; }
 .profile-summary dd { margin: 0 0 .45rem; }
+.profile-form .button:disabled { cursor: not-allowed; opacity: .58; transform: none; box-shadow: none; }
 .detail-grid { display: grid; grid-template-columns: minmax(18rem, .8fr) 1.2fr; align-items: center; gap: clamp(2rem, 7vw, 6rem); }
 .product-art--large { min-height: 30rem; border-radius: 1rem; box-shadow: var(--shadow); }.detail-price { color: var(--ink); font: 700 2.1rem 'Space Grotesk'; }
 .empty-state { padding: clamp(2.5rem, 7vw, 5rem); border: 1px dashed #aeb6c3; border-radius: var(--radius); text-align: center; background: white; }.empty-state > span { display: block; margin-bottom: 1rem; color: var(--blue); font: 700 3rem 'Space Grotesk'; }.empty-state h1, .empty-state h2, .empty-state p { margin-inline: auto; }
