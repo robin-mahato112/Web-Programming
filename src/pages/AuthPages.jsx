@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
+import PasswordInput from '../components/PasswordInput.jsx'
 import { existingCustomers } from '../data/mockCustomers.js'
 
 const initialValues = {
@@ -69,8 +70,8 @@ function AuthForm({ register = false }) {
       <div className={register ? 'form-grid' : undefined}>
         {register && <Input id="name" name="name" label="Full name" autoComplete="name" value={values.name} onChange={update} error={errors.name} />}
         <Input id="email" name="email" label="Email address" type="email" autoComplete="email" value={values.email} onChange={update} error={errors.email} />
-        <Input id="password" name="password" label="Password" type="password" autoComplete={register ? 'new-password' : 'current-password'} value={values.password} onChange={update} error={errors.password} hint={register ? 'Use 8+ characters with letters and numbers.' : undefined} />
-        {register && <Input id="confirm" name="confirm" label="Confirm password" type="password" autoComplete="new-password" value={values.confirm} onChange={update} error={errors.confirm} />}
+        <PasswordInput id="password" name="password" label="Password" autoComplete={register ? 'new-password' : 'current-password'} value={values.password} onChange={update} error={errors.password} showStrength={register} />
+        {register && <PasswordInput id="confirm" name="confirm" label="Confirm password" autoComplete="new-password" value={values.confirm} onChange={update} error={errors.confirm} />}
         {register && <Input id="phoneNumber" name="phoneNumber" label="Phone number" type="tel" autoComplete="tel" value={values.phoneNumber} onChange={update} error={errors.phoneNumber} />}
         {register && <Input id="streetAddress" name="streetAddress" label="Street address" autoComplete="street-address" value={values.streetAddress} onChange={update} error={errors.streetAddress} />}
         {register && <Input id="suburb" name="suburb" label="Suburb" autoComplete="address-level2" value={values.suburb} onChange={update} error={errors.suburb} />}
