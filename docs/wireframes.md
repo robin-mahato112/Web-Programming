@@ -34,23 +34,21 @@ PRODUCTS                 PRODUCT DETAILS
 ## Login and registration
 
 ```text
-+ LOGIN                                      + REGISTRATION
-+ Customer login card                       + Account details column
-| [Email]                                    | [Full name] [Email]
-| [Password]                                 | [Password] [Confirm]
-| Credential validation feedback             | Contact/delivery profile column
-| [Validate sign in]                         | [Phone] [Street]
-| Link to create account                     | [Suburb] [State] [Postcode]
-                                             | [Validate registration]
++ Centred form card                           +
+| Heading + prototype note                    |
+| [Name — registration only]                  |
+| [Email]                                     |
+| [Password] [Confirm — registration only]    |
+| Inline validation message                   |
+| [Validate form] + alternate account link    |
 ```
 
 ## Customer profile
 
 ```text
-+ Customer identity summary | Editable profile form        +
-| Name, email, UserID       | Name, email, phone           |
-| Mock-data status          | Street, suburb, state, post  |
-| Future order link         | Disabled save until API work |
++ Account details panel | Order history panel +
+| Example identity       | Useful empty state  |
++ Data-not-stored notice + Future-work note    +
 ```
 
 ## Administrator pages
