@@ -1,7 +1,7 @@
 # Assignment 1.2 - Progress SCRUM 1, GitCommit, & Update
 
-**Student role:** Member 2 - Customer Accounts  
-**Progress date:** 11 September 2026  
+**Student role:** Member 2 - Customer Accounts
+**Progress date:** 11 September 2026
 **Development status:** In progress
 
 ## New Progress Since the Previous SCRUM

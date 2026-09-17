@@ -42,6 +42,7 @@ function validate(values, register, emailExists) {
 }
 
 function AuthForm({ register = false }) {
+  // Zehai's Assignment 1.2 code starts here: connect validated forms to account and session actions.
   const { customer, emailExists, signIn, signUp } = useCustomerAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -76,6 +77,7 @@ function AuthForm({ register = false }) {
   }
 
   if (authenticatedAtEntry) return <Navigate to="/profile" replace />
+  // Zehai's Assignment 1.2 code stops here.
 
   return (
     <form className={register ? 'auth-card auth-card--wide' : 'auth-card'} noValidate onSubmit={submit}>

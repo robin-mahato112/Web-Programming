@@ -4,6 +4,7 @@ import useCustomerAuth from '../auth/useCustomerAuth.js'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 
+// Zehai's Assignment 1.2 code starts here: editable customer profile and validation.
 const postcodePattern = /^\d{4}$/
 const emailPattern = /^\S+@\S+\.\S+$/
 
@@ -106,3 +107,4 @@ export default function CustomerProfile() {
     </section>
   )
 }
+// Zehai's Assignment 1.2 code stops here.

@@ -1,5 +1,6 @@
 import { existingCustomers } from '../data/mockCustomers.js'
 
+// Zehai's Assignment 1.2 code starts here: temporary browser persistence until the API is connected.
 const CUSTOMERS_KEY = 'entertainment-guild-customers-v1'
 const SESSION_KEY = 'entertainment-guild-session-v1'
 
@@ -89,3 +90,4 @@ export function getSessionCustomer() {
   if (!customer) clearCustomerSession()
   return publicCustomer(customer)
 }
+// Zehai's Assignment 1.2 code stops here.

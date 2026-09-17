@@ -10,6 +10,7 @@ import {
   updateCustomer,
 } from './customerStorage.js'
 
+// Zehai's Assignment 1.2 code starts here: customer session and account actions.
 export default function CustomerAuthProvider({ children }) {
   const [customer, setCustomer] = useState(getSessionCustomer)
 
@@ -43,3 +44,4 @@ export default function CustomerAuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
+// Zehai's Assignment 1.2 code stops here.

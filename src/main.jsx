@@ -8,7 +8,9 @@ import './styles.css'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
+      {/* Zehai's code starts here: provide customer session state to the application. */}
       <CustomerAuthProvider><App /></CustomerAuthProvider>
+      {/* Zehai's code stops here. */}
     </BrowserRouter>
   </StrictMode>,
 )
