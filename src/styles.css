@@ -120,6 +120,18 @@ p { line-height: 1.65; color: var(--muted); }
 .stat { display: flex; flex-direction: column; gap: .3rem; padding: 1.35rem; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
 .stat strong { color: var(--blue); font: 700 2rem 'Space Grotesk'; }.stat span { color: var(--muted); }
 
+/* Dashboard page overrides for headings and panels. */
+.dashboard-page h1 
+{ 
+  max-width: none; 
+  font-size: clamp(2.2rem, 5vw, 3.5rem); 
+  overflow-wrap: anywhere; 
+}
+.dashboard-page .panel h2 
+{ 
+  font-size: clamp(1.5rem, 3vw, 2rem); 
+}
+
 .field { display: grid; gap: .45rem; margin: 1.15rem 0; }.field label { color: var(--ink); font-weight: 700; }
 .field input { width: 100%; min-height: 3.1rem; padding: .72rem .9rem; border: 1px solid #aeb6c3; border-radius: .55rem; color: var(--ink); background: white; transition: border-color .2s, box-shadow .2s; }
 .field input:hover { border-color: #7d8ca5; }.field input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-soft); }

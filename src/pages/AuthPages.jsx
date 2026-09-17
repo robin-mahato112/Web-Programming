@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 import { existingCustomers } from '../data/mockCustomers.js'
+import { existingEmployees } from '../data/mockEmployees.js'
+import { signInStaff } from '../data/staffSession.js'
 
 const initialValues = {
   name: '',
@@ -23,23 +25,35 @@ const strongPasswordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
 function validate(values, register) {
   const errors = {}
 
-  if (register && !values.name.trim()) errors.name = 'Enter your full name.'
-  if (!values.email.trim()) errors.email = 'Enter your email address.'
-  else if (!emailPattern.test(values.email)) errors.email = 'Enter a valid email address.'
-  else if (register && existingCustomers.some(customer => customer.email.toLowerCase() === values.email.trim().toLowerCase())) errors.email = 'This email is already registered.'
+  if (register && !values.name.trim()) 
+    errors.name = 'Enter your full name.'
+  if (!values.email.trim()) 
+    errors.email = 'Enter your email address.'
+  else if (!emailPattern.test(values.email)) 
+    errors.email = 'Enter a valid email address.'
+  else if (register && existingCustomers.some(customer => customer.email.toLowerCase() === values.email.trim().toLowerCase())) 
+    errors.email = 'This email is already registered.'
 
-  if (!values.password) errors.password = 'Enter your password.'
-  else if (register && !strongPasswordPattern.test(values.password)) errors.password = 'Use 8+ characters with letters and numbers.'
-  if (register && values.confirm !== values.password) errors.confirm = 'Passwords must match.'
+  if (!values.password) 
+    errors.password = 'Enter your password.'
+  else if (register && !strongPasswordPattern.test(values.password)) 
+    errors.password = 'Use 8+ characters with letters and numbers.'
+  if (register && values.confirm !== values.password) 
+    errors.confirm = 'Passwords must match.'
 
-  if (register && !values.phoneNumber.trim()) errors.phoneNumber = 'Enter your phone number.'
-  if (register && !values.streetAddress.trim()) errors.streetAddress = 'Enter your street address.'
-  if (register && !values.suburb.trim()) errors.suburb = 'Enter your suburb.'
-  if (register && !values.state.trim()) errors.state = 'Enter your state.'
-  if (register && !postcodePattern.test(values.postcode.trim())) errors.postcode = 'Postcode must be 4 digits.'
+  if (register && !values.phoneNumber.trim()) 
+    errors.phoneNumber = 'Enter your phone number.'
+  if (register && !values.streetAddress.trim()) 
+    errors.streetAddress = 'Enter your street address.'
+  if (register && !values.suburb.trim()) 
+    errors.suburb = 'Enter your suburb.'
+  if (register && !values.state.trim()) 
+    errors.state = 'Enter your state.'
+  if (register && !postcodePattern.test(values.postcode.trim())) 
+    errors.postcode = 'Postcode must be 4 digits.'
 
   if (!register && Object.keys(errors).length === 0) {
-    const customer = existingCustomers.find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
+    const customer = [...existingCustomers, ...existingEmployees].find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
     if (!customer || customer.password !== values.password) errors.credentials = 'Email or password is incorrect.'
   }
 
@@ -57,6 +71,13 @@ function AuthForm({ register = false }) {
     const next = validate(values, register)
     setErrors(next)
     setSubmitted(Object.keys(next).length === 0)
+    if (!register && Object.keys(next).length === 0) {
+      const employee = existingEmployees.find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
+      if (employee) {
+        signInStaff(employee)
+        navigate('/employee', { replace: true })
+      }
+    }
   }
 
   return (
@@ -68,7 +89,7 @@ function AuthForm({ register = false }) {
       <p className="eyebrow">Member 2 customer accounts</p>
       <h1>{register ? "Create account" : "Welcome back"}</h1>
       <p className="notice notice--info" role="status">
-        Enter your email, password, and employee code to validate your user account..
+        {register ? 'Enter your details to validate a new customer account.' : 'Enter your email and password to sign in as a customer or employee.'}
       </p>
       <Button
         type="button"

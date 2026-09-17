@@ -1,12 +1,76 @@
 import { Link } from 'react-router-dom'
+import { mockProducts } from '../data/mockProducts.js'
+import { existingCustomers } from '../data/mockCustomers.js'
+import { existingEmployees } from '../data/mockEmployees.js'
+import { useStaffSession } from '../data/staffSession.js'
 
 const Stat = ({ value, label }) => <article className="stat"><strong>{value}</strong><span>{label}</span></article>
-const PlaceholderTable = ({ kind }) => <div className="table-wrap"><table><caption>Example {kind} records</caption><thead><tr><th scope="col">Name</th><th scope="col">Status</th><th scope="col">Access</th></tr></thead><tbody><tr><td>Example record</td><td><span className="pill">Demo</span></td><td>Read only</td></tr><tr><td>Future database record</td><td><span className="pill pill--muted">Pending</span></td><td>Not connected</td></tr></tbody></table></div>
+const dateFormat = new Intl.DateTimeFormat('en-AU', { dateStyle: 'medium', timeZone: 'UTC' })
 
-export function Profile() { return <section className="section shell"><p className="eyebrow">Customer area</p><h1>Customer profile</h1><div className="panel-grid"><article className="panel"><h2>Account details</h2><dl><dt>Name</dt><dd>Demo Customer</dd><dt>Email</dt><dd>customer@example.test</dd></dl><p className="status-note">Example values only. No customer information is stored.</p></article><article className="panel"><h2>Order history</h2><div className="mini-empty"><strong>No orders yet</strong><p>Orders will appear after database and checkout work is approved.</p></div></article></div></section> }
+/* Table of products with last updated date and updated by user. */
+function ProductTable({ products, caption }) {
+  return (
+    <div className="table-wrap">
+      <table>
+        <caption>{caption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Product name</th>
+            <th scope="col">Last updated date</th>
+            <th scope="col">Updated by</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.length ? products.map(product => (
+            <tr key={product.id}>
+              <td><Link to={`/products/${product.id}`}>{product.title}</Link></td>
+              <td>
+                {product.updatedAt ? (
+                  <time dateTime={product.updatedAt}>
+                    {dateFormat.format(new Date(product.updatedAt))}
+                  </time>
+                ) : 'Not recorded'}
+              </td>
+              <td>{product.updatedBy || 'Not recorded'}</td>
+            </tr>
+          )) : (
+            <tr><td colSpan={3}>No updated products yet.</td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
-export function AdminDashboard() { return <section className="section shell"><p className="eyebrow">Administrator prototype</p><h1>Management overview</h1><p className="lead compact">Static demonstration values; no database is connected.</p><div className="stats"><Stat value="6" label="Mock products" /><Stat value="3" label="Planned roles" /><Stat value="0" label="Live transactions" /></div><div className="panel-grid"><Link className="panel panel--link" to="/admin/products"><h2>Product management</h2><p>Review the catalogue prototype.</p><span>Open page →</span></Link><Link className="panel panel--link" to="/admin/users"><h2>User management</h2><p>Review planned role controls.</p><span>Open page →</span></Link></div></section> }
+/* Staff dashboard for both admin and employee roles. */
+function StaffDashboard() {
+  const user = useStaffSession()
+  if (!user) return null
 
-export function ProductManagement() { return <section className="section shell"><p className="eyebrow">Administrator prototype</p><h1>Product management</h1><p className="status-note">Read-only placeholder. Create, edit and delete actions require lecturer-approved database design.</p><PlaceholderTable kind="product" /></section> }
-export function UserManagement() { return <section className="section shell"><p className="eyebrow">Administrator prototype</p><h1>User management</h1><p className="status-note">Read-only placeholder. Real users and role assignment require authentication and a confirmed schema.</p><PlaceholderTable kind="user" /></section> }
-export function EmployeeDashboard() { return <section className="section shell"><p className="eyebrow">Employee workspace</p><h1>Catalogue reference</h1><p className="lead compact">Employees have read-only access in this prototype.</p><div className="stats"><Stat value="6" label="Products visible" /><Stat value="View" label="Permission level" /><Stat value="0" label="Edit actions" /></div><PlaceholderTable kind="catalogue" /></section> }
+  const role = user.role === 'admin' ? 'Admin' : 'Employee'
+  const recentProducts = mockProducts.filter(product => product.updatedAt)
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 5)
+
+  return (
+    <section className="section shell dashboard-page">
+      <p className="eyebrow">{role} dashboard</p>
+      <h1>Welcome, {user.name}!</h1>
+      <p className="lead">Signed in as <span className="pill">{role}</span></p>
+      <p>Overview based on sample products and accounts.</p>
+      <div className="stats">
+        <Stat value={mockProducts.length} label="Total products" />
+        <Stat value={existingCustomers.length} label="Customer accounts" />
+        <Stat value={existingEmployees.length} label="Employee accounts" />
+      </div>
+      <ProductTable products={recentProducts} caption="Recently updated products" />
+    </section>
+  )
+}
+
+export function AdminDashboard() {
+  return <StaffDashboard />
+}
+
+export function EmployeeDashboard() {
+  return <StaffDashboard />
+}

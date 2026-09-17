@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 import { existingAdmins } from '../data/mockAdmins.js'
+import { signInStaff } from '../data/staffSession.js'
 
 const initialValues = {
   email: '',
@@ -15,11 +16,15 @@ const emailPattern = /^\S+@\S+\.\S+$/
 function validate(values) {
   const errors = {}
 
-  if (!values.email.trim()) errors.email = 'Enter your email address.'
-  else if (!emailPattern.test(values.email)) errors.email = 'Enter a valid email address.'
+  if (!values.email.trim()) 
+    errors.email = 'Enter your email address.'
+  else if (!emailPattern.test(values.email)) 
+    errors.email = 'Enter a valid email address.'
 
-  if (!values.password) errors.password = 'Enter your password.'
-  if (!values.adminCode.trim()) errors.adminCode = 'Enter your admin code.'
+  if (!values.password) 
+    errors.password = 'Enter your password.'
+  if (!values.adminCode.trim()) 
+    errors.adminCode = 'Enter your admin code.'
 
   if (Object.keys(errors).length === 0) {
     const admin = existingAdmins.find(record => record.role === 'admin' && record.email.toLowerCase() === values.email.trim().toLowerCase())
@@ -45,6 +50,11 @@ function AuthForm() {
     const next = validate(values)
     setErrors(next)
     setSubmitted(Object.keys(next).length === 0)
+    if (Object.keys(next).length === 0) {
+      const admin = existingAdmins.find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
+      signInStaff(admin)
+      navigate('/admin', { replace: true })
+    }
   }
 
   return (
@@ -108,7 +118,7 @@ function AuthForm() {
           record.
         </div>
       )}
-      <Button type="submit">Validate admin sign in</Button>
+      <Button type="submit">Sign In</Button>
     </form>
   );
 }

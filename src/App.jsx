@@ -5,9 +5,9 @@ import Products from './pages/Products.jsx'
 import ProductDetails from './pages/ProductDetails.jsx'
 import Cart from './pages/Cart.jsx'
 import { Login, Registration } from './pages/AuthPages.jsx'
-import { AdminLogin } from './pages/AuthPages copy.jsx'
+import { AdminLogin } from './pages/AdminLogin.jsx'
 import CustomerProfile from './pages/CustomerProfile.jsx'
-import { AdminDashboard, EmployeeDashboard, ProductManagement, UserManagement } from './pages/Dashboards.jsx'
+import { AdminDashboard, EmployeeDashboard } from './pages/Dashboards.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
@@ -21,8 +21,6 @@ export default function App() {
     <Route path="/register" element={<Registration />} />
     <Route path="/profile" element={<CustomerProfile />} />
     <Route path="/admin" element={<AdminDashboard />} />
-    <Route path="/admin/products" element={<ProductManagement />} />
-    <Route path="/admin/users" element={<UserManagement />} />
     <Route path="/employee" element={<EmployeeDashboard />} />
     <Route path="*" element={<NotFound />} />
   </Route></Routes>
