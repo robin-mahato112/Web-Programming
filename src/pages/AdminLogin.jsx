@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
-import { existingAdmins } from '../data/mockAdmins.js'
+import { getUsers } from '../data/userStore.js'
 import { signInStaff } from '../data/staffSession.js'
 
 const initialValues = {
@@ -27,7 +27,7 @@ function validate(values) {
     errors.adminCode = 'Enter your admin code.'
 
   if (Object.keys(errors).length === 0) {
-    const admin = existingAdmins.find(record => record.role === 'admin' && record.email.toLowerCase() === values.email.trim().toLowerCase())
+    const admin = getUsers().find(record => record.role === 'admin' && record.email.toLowerCase() === values.email.trim().toLowerCase())
     if (!admin || admin.password !== values.password || admin.adminCode !== values.adminCode.trim()) {
       errors.credentials = 'Email, password, or admin code is incorrect.'
     }
@@ -51,7 +51,7 @@ function AuthForm() {
     setErrors(next)
     setSubmitted(Object.keys(next).length === 0)
     if (Object.keys(next).length === 0) {
-      const admin = existingAdmins.find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
+      const admin = getUsers().find(record => record.role === 'admin' && record.email.toLowerCase() === values.email.trim().toLowerCase())
       signInStaff(admin)
       navigate('/admin', { replace: true })
     }
@@ -63,7 +63,7 @@ function AuthForm() {
       <h1>Admin sign in</h1>
       <p className="notice notice--info" role="status">
         Enter your email, password, and admin code to validate your admin
-        account..
+        account.
       </p>
       <Button
         type="button"

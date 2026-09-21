@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
-import { existingCustomers } from '../data/mockCustomers.js'
-import { existingEmployees } from '../data/mockEmployees.js'
+import { getUsers } from '../data/userStore.js'
 import { signInStaff } from '../data/staffSession.js'
 
 const initialValues = {
+  role: '',
   name: '',
   email: '',
   password: '',
@@ -21,9 +21,13 @@ const initialValues = {
 const emailPattern = /^\S+@\S+\.\S+$/
 const postcodePattern = /^\d{4}$/
 const strongPasswordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
+const registrationRoles = ['admin', 'employee', 'staff']
 
 function validate(values, register) {
   const errors = {}
+
+  if (register && !registrationRoles.includes(values.role))
+    errors.role = 'Choose an account role.'
 
   if (register && !values.name.trim()) 
     errors.name = 'Enter your full name.'
@@ -31,7 +35,7 @@ function validate(values, register) {
     errors.email = 'Enter your email address.'
   else if (!emailPattern.test(values.email)) 
     errors.email = 'Enter a valid email address.'
-  else if (register && existingCustomers.some(customer => customer.email.toLowerCase() === values.email.trim().toLowerCase())) 
+  else if (register && getUsers().some(customer => customer.email.toLowerCase() === values.email.trim().toLowerCase()))
     errors.email = 'This email is already registered.'
 
   if (!values.password) 
@@ -53,7 +57,7 @@ function validate(values, register) {
     errors.postcode = 'Postcode must be 4 digits.'
 
   if (!register && Object.keys(errors).length === 0) {
-    const customer = [...existingCustomers, ...existingEmployees].find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
+    const customer = getUsers().find(record => record.role !== 'admin' && record.email.toLowerCase() === values.email.trim().toLowerCase())
     if (!customer || customer.password !== values.password) errors.credentials = 'Email or password is incorrect.'
   }
 
@@ -65,14 +69,17 @@ function AuthForm({ register = false }) {
   const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
-  const update = event => setValues({ ...values, [event.target.name]: event.target.value })
+  const update = event => {
+    setValues({ ...values, [event.target.name]: event.target.value })
+    setSubmitted(false)
+  }
   const submit = event => {
     event.preventDefault()
     const next = validate(values, register)
     setErrors(next)
     setSubmitted(Object.keys(next).length === 0)
     if (!register && Object.keys(next).length === 0) {
-      const employee = existingEmployees.find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
+      const employee = getUsers().find(record => record.role === 'employee' && record.email.toLowerCase() === values.email.trim().toLowerCase())
       if (employee) {
         signInStaff(employee)
         navigate('/employee', { replace: true })
@@ -86,18 +93,41 @@ function AuthForm({ register = false }) {
       noValidate
       onSubmit={submit}
     >
-      <p className="eyebrow">Member 2 customer accounts</p>
+      <p className="eyebrow">{register ? 'Account registration' : 'Member 2 customer accounts'}</p>
       <h1>{register ? "Create account" : "Welcome back"}</h1>
       <p className="notice notice--info" role="status">
-        {register ? 'Enter your details to validate a new customer account.' : 'Enter your email and password to sign in as a customer or employee.'}
+        {register ? 'Choose your role and enter your details to validate a new account.' : 'Enter your email and password to sign in as a customer or employee.'}
       </p>
-      <Button
+      {!register && <Button
         type="button"
         variant="secondary"
         onClick={() => navigate("/admin/login")}
       >
         Admin Account
-      </Button>
+      </Button>}
+
+      {register && (
+        <fieldset className="registration-roles" aria-describedby={errors.role ? 'role-error' : undefined}>
+          <legend>Choose role</legend>
+          <div className="registration-roles__options">
+            {registrationRoles.map(role => (
+              <label key={role} className={values.role === role ? 'registration-role registration-role--selected' : 'registration-role'}>
+                <input
+                  type="radio"
+                  name="role"
+                  value={role}
+                  checked={values.role === role}
+                  onChange={update}
+                  required
+                  aria-invalid={Boolean(errors.role)}
+                />
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </label>
+            ))}
+          </div>
+          {errors.role && <p id="role-error" className="field__error" role="alert">{errors.role}</p>}
+        </fieldset>
+      )}
 
       {errors.credentials && (
         <div className="notice notice--error" role="alert">
@@ -214,7 +244,7 @@ function AuthForm({ register = false }) {
       {submitted && (
         <div className="notice" role="status">
           {register
-            ? "Registration validation passed. Backend account creation is planned for a later sprint."
+            ? `${values.role.charAt(0).toUpperCase() + values.role.slice(1)} registration validation passed. Backend account creation is planned for a later sprint.`
             : "Login validation passed using the Sprint 1 mock customer record."}
         </div>
       )}
@@ -223,7 +253,7 @@ function AuthForm({ register = false }) {
       </Button>
       <p>
         {register ? "Already a member?" : "New to the guild?"}{" "}
-        <Link to={register ? "/login" : "/register"}>
+        <Link to={register ? (values.role === 'admin' ? '/admin/login' : '/login') : '/register'}>
           {register ? "Sign in" : "Create an account"}
         </Link>
       </p>

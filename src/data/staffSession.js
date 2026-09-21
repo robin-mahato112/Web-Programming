@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { useUsers } from './userStore.js'
 
 const sessionKey = 'entertainment-guild-staff'
 const listeners = new Set()
@@ -17,7 +18,10 @@ function subscribe(listener) {
 }
 
 export function useStaffSession() {
-  return useSyncExternalStore(subscribe, () => currentUser)
+  const session = useSyncExternalStore(subscribe, () => currentUser)
+  const users = useUsers()
+  const account = users.find(user => user.userId === session?.userId)
+  return account && ['admin', 'employee'].includes(account.role) ? account : null
 }
 
 export function signInStaff({ userId, name, role }) {

@@ -14,4 +14,11 @@ export const mockProducts = [
   { id: 'guild-anthems', title: 'Guild Anthems', category: 'Music', price: 24.5, rating: '4.7', accent: 'gold', description: 'An energetic double-vinyl soundtrack for legendary campaigns.' },
   { id: 'dragonfall', title: 'Dragonfall Chronicles', category: 'Book', price: 16.99, rating: '4.9', accent: 'orange', description: 'The first illustrated volume in an epic fantasy trilogy.' },
   { id: 'neon-arena', title: 'Neon Arena', category: 'Card Game', price: 29.0, rating: '4.5', accent: 'blue', description: 'Fast tactical matches in a vivid cyberpunk competition.' },
-].map(product => ({ ...product, updatedAt: sampleUpdates[product.id], updatedBy: 'Taylor Smith' }))
+].map((product, index) => ({
+  ...product,
+  quantity: [24, 18, 0, 12, 35, 8][index],
+  discount: [10, 15, 0, 20, 0, 5][index],
+  previousPrice: null,
+  updatedAt: sampleUpdates[product.id],
+  updatedBy: 'Taylor Smith',
+}))
