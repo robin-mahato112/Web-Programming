@@ -1,23 +1,25 @@
 # Entertainment Guild
 
-Entertainment Guild is a three-member INFT3050 React team project for browsing and eventually managing entertainment products. This repository currently contains the Sprint 1 foundation and interface prototypes for Customer, Employee, and Administrator roles.
+A Vite/React prototype containing a home page, account authentication forms, and staff dashboards.
 
-## Sprint 1 scope
+## Products and inventory
 
-Sprint 1 includes a Vite/React application, routing, a responsive shared layout, reusable interface components, isolated mock products, example form validation, role-page prototypes, planning documents, and low-fidelity wireframes. It is intended for the Start-Up SCRUM demonstration—not as a complete application.
+Home displays all six sample products with descriptions, AUD prices, discounts, stock quantities, and availability. Staff dashboards show the full inventory, account and stock totals, the previous price and latest price change, and update timestamps and names.
+
+Admins can edit a product's price, quantity, and discount using Edit → Save changes. Employees have a read-only view. Selling prices are calculated from the base price and percentage discount; zero stock is shown as Out of stock. Quantities must be non-negative whole numbers, prices must have at most two decimal places, and discounts must be between 0 and 100%.
+
+Product edits are saved in this browser's local storage and shared between Home and the dashboard. If storage is unavailable, the dashboard reports that changes only last for the current session. This is prototype browser persistence, not a shared database.
 
 ## Install and run
 
-Prerequisites: a current Node.js LTS release and npm.
+Requires a current Node.js LTS release and npm.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Vite prints the local development URL, normally `http://localhost:5173`.
-
-Quality checks:
+## Checks
 
 ```bash
 npm run lint
@@ -27,45 +29,27 @@ npm run preview
 
 ## Available routes
 
-| Route | Prototype |
+| Route | Page |
 | --- | --- |
 | `/` | Home |
-| `/products` | Product catalogue and search |
-| `/products/:productId` | Product details |
-| `/cart` | Empty cart |
-| `/login` | Login validation example |
-| `/register` | Registration validation example |
-| `/profile` | Customer profile |
-| `/admin` | Administrator dashboard |
-| `/admin/products` | Product management placeholder |
-| `/admin/users` | User management placeholder |
-| `/employee` | Read-only employee dashboard |
+| `/login` | Customer and employee sign-in validation |
+| `/register` | Customer registration validation |
+| `/admin/login` | Admin sign in |
+| `/admin` | Admin dashboard |
+| `/employee` | Employee dashboard |
 
-## Team responsibilities
+Register and Admin login are hidden from the top navigation. The employee/customer sign-in form includes a Create an account link to `/register` and an Admin Account button. Registration requires choosing Admin, Employee, or Staff before validating the form; it does not create or sign in an account.
 
-- Robin: product catalogue, search, product details, and cart
-- Member 2: registration, login, customer profile, and validation
-- Member 3: admin dashboard, product/user management, and employee permissions
-- Whole team: shared decisions, integration review, accessibility checks, and Sprint demonstration
-
-These are planned responsibility areas, not fabricated contribution records. Git history and individual reports should reflect the work each member actually completes.
+Unknown routes redirect to Home. Successful admin and employee sign-ins open their respective dashboards. Signed-in staff can access their dashboard or log out using the header. Dashboard routes redirect signed-out visitors to sign in and staff with a different role to their own dashboard.
 
 ## Project structure
 
-- `src/components/` — reusable Button, Input, ProductCard, Header, and Layout components
-- `src/data/mockProducts.js` — interface-only mock data isolated from future persistence
-- `src/pages/` — route-level prototypes
-- `docs/` — Sprint plan, conduct, permissions, SCRUM questions, contribution template, and wireframes
+- `src/components/` — shared Button, Input, Header, Layout, and ProductCard components
+- `src/data/` — mock product and account records and client-side staff sessions
+- `src/pages/` — Home, AuthPages, AdminLogin, and Dashboards
+- `src/styles.css` — shared responsive styles
+- `docs/` — original project planning documents
 
-## Known limitations
+## Prototype limitations
 
-- There is no database integration; the supplied database was not present in this repository.
-- Authentication, authorization, sessions, and real users are not implemented.
-- Cart persistence, checkout, payment, orders, and stock management are not implemented.
-- Administrator write actions and Employee data are placeholders.
-- Mock products and dashboard counts are demonstration values only.
-- Automated component/end-to-end tests have not yet been added.
-
-## Future work
-
-After lecturer confirmation, inspect the supplied database schema and define a backend/API boundary. Later sprints can add secure authentication and server-side role checks, live product and user data, cart persistence, checkout requirements, automated tests, and deployment. Do not infer the database schema or payment design from the Sprint 1 mock data.
+Authentication uses mock records rather than a backend. Customer sign in validates credentials and displays confirmation; registration validates the form without creating an account. Staff sessions use browser session storage. No database or server-side authentication is implemented.
