@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useSession } from '../auth/SessionContext.js'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 import PasswordInput from '../components/PasswordInput.jsx'
-import { existingCustomers } from '../data/mockCustomers.js'
+import { login, registerAccount } from '../services/customerApi.js'
 
+// Zehai's customer accounts section starts here: registration and sign-in forms.
 const initialValues = {
   name: '',
   email: '',
@@ -26,8 +28,7 @@ function validate(values, register) {
 
   if (register && !values.name.trim()) errors.name = 'Enter your full name.'
   if (!values.email.trim()) errors.email = 'Enter your email address.'
-  else if (!emailPattern.test(values.email)) errors.email = 'Enter a valid email address.'
-  else if (register && existingCustomers.some(customer => customer.email.toLowerCase() === values.email.trim().toLowerCase())) errors.email = 'This email is already registered.'
+  else if (!emailPattern.test(values.email.trim())) errors.email = 'Enter a valid email address.'
 
   if (!values.password) errors.password = 'Enter your password.'
   else if (register && !strongPasswordPattern.test(values.password)) errors.password = 'Use 8+ characters with letters and numbers.'
@@ -39,10 +40,6 @@ function validate(values, register) {
   if (register && !values.state.trim()) errors.state = 'Enter your state.'
   if (register && !postcodePattern.test(values.postcode.trim())) errors.postcode = 'Postcode must be 4 digits.'
 
-  if (!register && Object.keys(errors).length === 0) {
-    const customer = existingCustomers.find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
-    if (!customer || customer.password !== values.password) errors.credentials = 'Email or password is incorrect.'
-  }
 
   return errors
 }
@@ -50,23 +47,45 @@ function validate(values, register) {
 function AuthForm({ register = false }) {
   const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})
-  const [submitted, setSubmitted] = useState(false)
-  const update = event => setValues({ ...values, [event.target.name]: event.target.value })
-  const submit = event => {
+  const [busy, setBusy] = useState(false)
+  const navigate = useNavigate()
+  const { state } = useLocation()
+  const { acceptSession } = useSession()
+  const update = event => {
+    const { name, value } = event.target
+    setValues({ ...values, [name]: value })
+    setErrors(current => ({ ...current, [name]: undefined, credentials: undefined, ...(name === 'password' ? { confirm: undefined } : {}) }))
+  }
+  const submit = async event => {
     event.preventDefault()
+    if (busy) return
     const next = validate(values, register)
     setErrors(next)
-    setSubmitted(Object.keys(next).length === 0)
+    if (Object.keys(next).length) {
+      document.getElementById(Object.keys(next)[0])?.focus()
+      return
+    }
+    setBusy(true)
+    try {
+      const result = register ? await registerAccount(values) : { user: await login(values.email, values.password) }
+      acceptSession(result.user)
+      navigate('/profile', { replace: true, state: { message: result.warning || '' } })
+    } catch (error) {
+      setErrors({ credentials: error.status === 401 ? 'Email or password is incorrect.' : error.message })
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
     <form className={register ? 'auth-card auth-card--wide' : 'auth-card'} noValidate onSubmit={submit}>
-      <p className="eyebrow">Member 2 customer accounts</p>
+      <p className="eyebrow">Customer accounts</p>
       <h1>{register ? 'Create account' : 'Welcome back'}</h1>
-      <p>{register ? 'Collect the account and delivery profile details needed for a customer record.' : 'Validate a customer login before future session handling is connected.'}</p>
+      {!register && state?.message && <p className="notice" role="status">{state.message}</p>}
 
       {errors.credentials && <div className="notice notice--error" role="alert">{errors.credentials}</div>}
 
+      <fieldset disabled={busy} className="account-fields">
       <div className={register ? 'form-grid' : undefined}>
         {register && <Input id="name" name="name" label="Full name" autoComplete="name" value={values.name} onChange={update} error={errors.name} />}
         <Input id="email" name="email" label="Email address" type="email" autoComplete="email" value={values.email} onChange={update} error={errors.email} />
@@ -78,9 +97,9 @@ function AuthForm({ register = false }) {
         {register && <Input id="state" name="state" label="State" autoComplete="address-level1" value={values.state} onChange={update} error={errors.state} />}
         {register && <Input id="postcode" name="postcode" label="Postcode" inputMode="numeric" autoComplete="postal-code" value={values.postcode} onChange={update} error={errors.postcode} />}
       </div>
+      </fieldset>
 
-      {submitted && <div className="notice" role="status">{register ? 'Registration validation passed. Backend account creation is planned for a later sprint.' : 'Login validation passed using the Sprint 1 mock customer record.'}</div>}
-      <Button type="submit">{register ? 'Validate registration' : 'Validate sign in'}</Button>
+      <Button type="submit" disabled={busy}>{busy ? 'Please wait...' : register ? 'Create account' : 'Sign in'}</Button>
       <p>{register ? 'Already a member?' : 'New to the guild?'} <Link to={register ? '/login' : '/register'}>{register ? 'Sign in' : 'Create an account'}</Link></p>
     </form>
   )
@@ -88,3 +107,4 @@ function AuthForm({ register = false }) {
 
 export function Login() { return <section className="auth-page"><AuthForm /></section> }
 export function Registration() { return <section className="auth-page"><AuthForm register /></section> }
+// Zehai's customer accounts section stops here.

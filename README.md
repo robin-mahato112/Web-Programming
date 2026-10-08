@@ -1,71 +1,57 @@
-# Entertainment Guild
+# Assignment 1.3 - Progress SCRUM 2 & GitCommit
 
-Entertainment Guild is a three-member INFT3050 React team project for browsing and eventually managing entertainment products. This repository currently contains the Sprint 1 foundation and interface prototypes for Customer, Employee, and Administrator roles.
+Student: ZeHai Feng
 
-## Sprint 1 scope
+Student number: c3490965
 
-Sprint 1 includes a Vite/React application, routing, a responsive shared layout, reusable interface components, isolated mock products, example form validation, role-page prototypes, planning documents, and low-fidelity wireframes. It is intended for the Start-Up SCRUM demonstration—not as a complete application.
+Date: 8 October 2026
 
-## Install and run
+Status: Customer account integration implemented; overall team prototype in progress.
 
-Prerequisites: a current Node.js LTS release and npm.
+## Individual contribution
+
+Since Assignment 1.2, the customer account pages connect to the lecturer-provided API and SQL Server instead of mock customer records.
+
+- `src/services/customerApi.js`: registration, login, cookie session, profile retrieval, delivery details updates and logout.
+- `src/auth/`: shared session state, session restoration, account route protection and retry handling.
+- `src/pages/AuthPages.jsx`: asynchronous login and registration, validation, disabled pending forms, server errors and navigation.
+- `src/pages/CustomerProfile.jsx`: read current customer details, save/reset delivery information and recover from load errors.
+- `src/components/Header.jsx`, `src/App.jsx`, `src/main.jsx`: integrate customer session state into navigation and routes.
+- `src/components/PasswordInput.jsx`: retains the Assignment 1.2 visibility/strength component and corrects the zero-rule strength label.
+- `vite.config.js`: local proxy to the course API.
+- `src/styles.css`: account layout and navigation styles, alongside the previously adopted team UI styling.
+
+English section comments identify the customer account contribution. Existing team pages, shared UI components and product mock data are included to keep the project runnable; they are not claimed as new individual feature work. Existing Git authorship is preserved. Button/Layout and broader styling changes adapt the shared team UI already used in the local demo.
+
+## Run locally
+
+1. Start Docker Desktop and the lecturer-provided backend using `docker compose up -d` in its own directory. The API must be reachable at `http://localhost:3001`.
+2. In the backend's `.env`, include the frontend origins in the allowlist:
+
+```dotenv
+CORS_ORIGINS=http://localhost:3000,http://localhost:5183,http://127.0.0.1:5183,http://localhost:5184,http://127.0.0.1:5184
+```
+
+3. Run `docker compose up -d auth` there to apply the configuration.
+4. In this frontend directory:
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Vite prints the local development URL, normally `http://localhost:5173`.
+Open `http://127.0.0.1:5183`. If already running, use that page or stop the previous Vite terminal with Ctrl+C. An alternative is `npm run dev -- --port 5184`.
 
-Quality checks:
+The development proxy forwards `/backend` requests to the course API. Cookies carry authentication; passwords and tokens are not saved in localStorage. A production deployment needs an equivalent reverse proxy and HTTPS. `npm run preview` alone does not provide the development API proxy.
 
-```bash
-npm run lint
-npm run build
-npm run preview
-```
+## Verification
 
-## Available routes
+`npm run lint` and `npm run build` pass. Local browser checks covered registration, duplicate/wrong credential API checks, navigation visibility, direct guest profile access, refresh, delivery save/reset, logout, expired sessions, failed-profile-load retry, password visibility and mobile menu/layout. Use fictional details and a test-only password when creating an account.
 
-| Route | Prototype |
-| --- | --- |
-| `/` | Home |
-| `/products` | Product catalogue and search |
-| `/products/:productId` | Product details |
-| `/cart` | Empty cart |
-| `/login` | Login validation example |
-| `/register` | Registration validation example |
-| `/profile` | Customer profile |
-| `/admin` | Administrator dashboard |
-| `/admin/products` | Product management placeholder |
-| `/admin/users` | User management placeholder |
-| `/employee` | Read-only employee dashboard |
+## Current limits
 
-## Team responsibilities
-
-- Robin: product catalogue, search, product details, and cart
-- Member 2: registration, login, customer profile, and validation
-- Member 3: admin dashboard, product/user management, and employee permissions
-- Whole team: shared decisions, integration review, accessibility checks, and Sprint demonstration
-
-These are planned responsibility areas, not fabricated contribution records. Git history and individual reports should reflect the work each member actually completes.
-
-## Project structure
-
-- `src/components/` — reusable Button, Input, ProductCard, Header, and Layout components
-- `src/data/mockProducts.js` — interface-only mock data isolated from future persistence
-- `src/pages/` — route-level prototypes
-- `docs/` — Sprint plan, conduct, permissions, SCRUM questions, contribution template, and wireframes
-
-## Known limitations
-
-- There is no database integration; the supplied database was not present in this repository.
-- Authentication, authorization, sessions, and real users are not implemented.
-- Cart persistence, checkout, payment, orders, and stock management are not implemented.
-- Administrator write actions and Employee data are placeholders.
-- Mock products and dashboard counts are demonstration values only.
-- Automated component/end-to-end tests have not yet been added.
-
-## Future work
-
-After lecturer confirmation, inspect the supplied database schema and define a backend/API boundary. Later sprints can add secure authentication and server-side role checks, live product and user data, cart persistence, checkout requirements, automated tests, and deployment. Do not infer the database schema or payment design from the Sprint 1 mock data.
+- Name and login email are read-only because the supplied API does not permit patrons to update the account table.
+- Registration and delivery creation are separate API operations. If account creation succeeds but delivery setup fails, the user is directed to complete their profile.
+- Products, cart and admin/employee screens retain their existing prototype behavior.
+- The lecturer's backend, database files, local environment settings and installed dependencies are not included.
+- This Git repository is the code submission. The individual report is submitted separately to Canvas and SCRUM attendance is in person.

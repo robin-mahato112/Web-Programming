@@ -1,27 +1,33 @@
 import { useState } from 'react'
 
+// Zehai's customer accounts section starts here: reusable password input from Assignment 1.2.
+// Keep the rules in one place so the meter and checklist use the same tests.
 const passwordRequirements = [
   { label: 'At least 8 characters', test: value => value.length >= 8 },
   { label: 'Contains a letter', test: value => /[A-Za-z]/.test(value) },
   { label: 'Contains a number', test: value => /\d/.test(value) },
 ]
 
+// Convert the number of completed requirements into user-friendly feedback.
 function strengthLabel(score, hasValue) {
   if (!hasValue) return 'Not rated'
-  if (score === 1) return 'Weak'
+  if (score <= 1) return 'Weak'
   if (score === 2) return 'Almost there'
   return 'Strong'
 }
 
 export default function PasswordInput({ id, label, error, hint, showStrength = false, value = '', ...props }) {
+  // This local state controls only whether the current password is visible.
   const [visible, setVisible] = useState(false)
   const helpId = `${id}-help`
   const strengthId = `${id}-strength`
+  // Re-evaluate every requirement whenever the controlled value changes.
   const requirements = passwordRequirements.map(requirement => ({
     ...requirement,
     met: requirement.test(value),
   }))
   const score = requirements.filter(requirement => requirement.met).length
+  // Connect the input to its error, hint, and strength text for assistive technology.
   const describedBy = [
     (error || hint) ? helpId : null,
     showStrength ? strengthId : null,
@@ -56,6 +62,7 @@ export default function PasswordInput({ id, label, error, hint, showStrength = f
         </small>
       )}
 
+      {/* Registration enables this section; login and confirmation reuse the input without it. */}
       {showStrength && (
         <div id={strengthId} className="password-strength" aria-live="polite">
           <div className="password-strength__heading">
@@ -80,3 +87,4 @@ export default function PasswordInput({ id, label, error, hint, showStrength = f
     </div>
   )
 }
+// Zehai's customer accounts section stops here.

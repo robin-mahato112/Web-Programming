@@ -1,3 +1,4 @@
 export default function Button({ children, variant = 'primary', type = 'button', ...props }) {
-  return <button className={`button button--${variant}`} type={type} {...props}>{children}</button>
+  const className = variant === 'secondary' ? 'button button--outline' : 'button button--dark'
+  return <button className={className} type={type} {...props}>{children}</button>
 }
