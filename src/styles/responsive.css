@@ -32,6 +32,13 @@
   .shell {
     width: calc(100% - 2rem);
   }
+  .hero {
+    min-height: 0;
+  }
+  .hero__grid.catalogue-hero {
+    width: calc(100% - 2rem);
+    margin: 0 auto;
+  }
   .section {
     padding: 2rem 0 3rem;
   }
@@ -88,7 +95,7 @@
   }
   .feature-cover {
     width: 42%;
-    margin: 0.8rem 0 1rem;
+    margin-block: 0.8rem 1rem;
   }
   .hero-feature::before {
     width: 280px;

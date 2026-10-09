@@ -17,11 +17,6 @@ export default function Home() {
           <h1>Your story <span>starts here.</span></h1>
           <p className="lead">Welcome to Entertainment Guild. Sign in to your account or join the guild to get started.</p>
           {user && <p className="notice" role="status">Signed in as {user.name} ({user.role}).</p>}
-          <div className="actions">
-            <Link className="button button--primary" to="/login">Sign in</Link>
-            <Link className="button button--secondary" to="/register">Create an account</Link>
-          </div>
-          <p><Link to="/admin/login">Admin sign in →</Link></p>
         </div>
         <div className="hero-card hero-feature" aria-hidden="true">
           <div className="feature-label">WELCOME<span>✦</span></div>

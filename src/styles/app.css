@@ -36,12 +36,22 @@ body {
 }
 
 .hero {
+  display: flex;
+  align-items: center;
+  min-height: calc(100vh - 6rem);
   padding-block: clamp(3rem, 7vw, 5.5rem);
   border-bottom: 1px solid var(--line);
 }
 
-.hero__grid {
-  margin-bottom: 0;
+.hero__grid.catalogue-hero {
+  width: min(1300px, calc(100% - 4rem));
+  max-width: none;
+  margin: 0 auto;
+  gap: clamp(2rem, 4vw, 4rem);
+}
+
+.hero .hero-feature {
+  min-height: 440px;
 }
 
 .hero__copy {
