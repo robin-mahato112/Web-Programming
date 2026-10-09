@@ -19,7 +19,7 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="shell header-inner">
-        <NavLink className="brand" to="/" onClick={() => setOpen(false)}><span aria-hidden="true">EG</span> Entertainment Guild</NavLink>
+        <NavLink className="brand" to="/" onClick={() => setOpen(false)}><span className="brand-mark" aria-hidden="true">EG</span><span className="brand-full">Entertainment<br />Guild</span></NavLink>
         <button className="menu-button" type="button" aria-expanded={open} aria-controls="site-nav" onClick={() => setOpen(!open)}>Menu</button>
         <nav id="site-nav" className={open ? 'site-nav site-nav--open' : 'site-nav'} aria-label="Main navigation">
           {visibleLinks.map(([path, label]) => <NavLink key={path} to={path} end onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'active' : ''}>{label}</NavLink>)}

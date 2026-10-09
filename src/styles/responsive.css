@@ -1,0 +1,221 @@
+/*
+ * Override the desktop layouts as the viewport narrows: first reduce columns,
+ * then switch navigation and filters to their mobile controls and stack product details.
+ * These rules load last. The final media query also honours reduced-motion settings
+ * by removing transitions and smooth scrolling, regardless of viewport width.
+ */
+@media (max-width: 1050px) {
+  .shell {
+    width: calc(100% - 3rem);
+  }
+  .catalogue-hero {
+    gap: 2rem;
+  }
+  .catalogue-layout {
+    grid-template-columns: 10.5rem minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cart-layout {
+    grid-template-columns: 1fr;
+  }
+  .hero-feature {
+    min-height: 360px;
+  }
+  .cover-art {
+    min-height: 140px;
+  }
+}
+@media (max-width: 700px) {
+  .shell {
+    width: calc(100% - 2rem);
+  }
+  .section {
+    padding: 2rem 0 3rem;
+  }
+  .header-inner {
+    min-height: 5rem;
+    gap: 0.75rem;
+  }
+  .brand-full {
+    font-size: 0.8rem;
+  }
+  .brand-mark {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+  .menu-button {
+    display: block;
+  }
+  .site-nav {
+    position: absolute;
+    top: 5rem;
+    left: 1rem;
+    right: 1rem;
+    z-index: 10;
+    display: none;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: #fffefa;
+    box-shadow: 0 10px 30px #25272015;
+  }
+  .site-nav--open {
+    display: flex;
+  }
+  .site-nav a {
+    padding: 0.8rem;
+  }
+  .catalogue-hero {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  .hero-copy h1 {
+    font-size: 4.3rem;
+  }
+  .hero-copy .eyebrow {
+    font-size: 0.6rem;
+  }
+  .hero-feature {
+    min-height: 0;
+    padding: 1.2rem;
+  }
+  .feature-cover {
+    width: 42%;
+    margin: 0.8rem 0 1rem;
+  }
+  .hero-feature::before {
+    width: 280px;
+    height: 280px;
+    left: 20%;
+    top: -10%;
+  }
+  .feature-cover .cover-art {
+    min-height: 130px;
+  }
+  .collection-heading h2 {
+    font-size: 1.8rem;
+  }
+  .collection-count {
+    display: none;
+  }
+  .search-panel {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .catalogue-search {
+    flex-basis: 100%;
+  }
+  .filter-toggle {
+    display: inline-flex;
+    min-height: 2.5rem;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  .sort-field {
+    margin-left: auto;
+    gap: 0.2rem;
+  }
+  .sort-field select {
+    width: 10rem;
+  }
+  .catalogue-layout {
+    display: block;
+  }
+  .filter-panel {
+    display: none;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+  }
+  .filter-panel--open {
+    display: block;
+  }
+  .category-list {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .filter-note {
+    display: none;
+  }
+  .product-grid {
+    gap: 1.7rem 0.8rem;
+  }
+  .product-visual {
+    padding: 1.1rem;
+  }
+  .cover-art {
+    width: 100%;
+    min-height: 110px;
+  }
+  .product-card h3 {
+    font-size: 0.95rem;
+  }
+  .product-card__body {
+    padding-top: 0.8rem;
+  }
+  .product-card .eyebrow {
+    font-size: 0.55rem;
+  }
+  .card-link {
+    font-size: 0.7rem;
+  }
+  .product-meta {
+    font-size: 0.95rem;
+  }
+  .detail-grid,
+  .two-actions {
+    grid-template-columns: 1fr;
+  }
+  .product-visual--large {
+    min-height: 0;
+    padding: 3rem;
+  }
+  .cart-head {
+    display: none;
+  }
+  .cart-item {
+    grid-template-columns: 5rem 1fr;
+  }
+  .cart-item .quantity-control {
+    grid-column: 2;
+    margin: 0;
+  }
+  .cart-item > strong {
+    grid-column: 2;
+  }
+  .footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding-block: 1.5rem;
+    gap: 0.3rem;
+  }
+}
+@media (max-width: 380px) {
+  .hero-copy h1 {
+    font-size: 3.7rem;
+  }
+  .product-visual {
+    padding: 0.65rem;
+  }
+  .sort-field > span {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}

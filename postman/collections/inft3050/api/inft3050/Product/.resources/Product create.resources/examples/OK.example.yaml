@@ -1,0 +1,60 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/Product"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "ID": "<integer>",
+        "Name": "<string>",
+        "Author": "<string>",
+        "Description": "<string>",
+        "Genre": "<integer>",
+        "SubGenre": "<integer>",
+        "Published": "<string>",
+        "LastUpdatedBy": "<string>",
+        "LastUpdated": "<string>"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "ID": "<integer>",
+        "Name": "<string>",
+        "Author": "<string>",
+        "Description": "<string>",
+        "Genre": {
+          "GenreID": "<integer>",
+          "Name": "<string>"
+        },
+        "SubGenre": "<integer>",
+        "Published": "<string>",
+        "LastUpdatedBy": "<string>",
+        "LastUpdated": "<string>",
+        "Stocktake List": {
+          "ItemId": "<integer>",
+          "SourceId": "<integer>",
+          "ProductId": "<integer>",
+          "Quantity": "<integer>",
+          "Price": "<float>"
+        },
+        "User": {
+          "UserID": "<integer>",
+          "UserName": "<string>",
+          "Email": "<string>",
+          "Name": "<string>",
+          "IsAdmin": "<integer>",
+          "Salt": "<string>",
+          "HashPW": "<string>"
+        }
+      }
+order: 1000

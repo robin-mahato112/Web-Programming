@@ -1,15 +1,16 @@
 import { formatPrice, salePrice } from '../data/productStore.js'
+import ProductVisual from './ProductVisual.jsx'
 
 export default function ProductCard({ product }) {
   return (
     <article className="product-card">
-      <div className={`product-art product-art--${product.accent}`} aria-hidden="true">
-        <span>{product.title.charAt(0)}</span>
+      <div className="product-card__visual">
+        <ProductVisual product={product} />
       </div>
       <div className="product-card__body">
         <p className="eyebrow">{product.category}</p>
         <h3>{product.title}</h3>
-        <p>{product.description}</p>
+        <p className="product-description">{product.description}</p>
         <div className="product-price">
           <strong>{formatPrice(salePrice(product))}</strong>
           {product.discount > 0 && <><del aria-label="Original price">{formatPrice(product.price)}</del><span className="pill">{product.discount}% off</span></>}

@@ -1,0 +1,10 @@
+$kind: http-request
+description: Delete a row by using the **primary key** column value.
+url: "{{baseUrl}}/api/inft3050/GameGenre/:rowId"
+method: DELETE
+pathVariables:
+  - key: rowId
+    value: <string>
+    description: (Required) Primary key of the record you want to read. If the table have composite primary key then combine them by using `___` and pass it as primary key.
+examples: ./.resources/GameGenre delete.resources/examples
+order: 3000

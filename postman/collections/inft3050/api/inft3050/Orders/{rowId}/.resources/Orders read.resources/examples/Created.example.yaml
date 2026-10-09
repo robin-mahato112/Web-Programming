@@ -1,0 +1,55 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/Orders/:rowId"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    - key: fields
+      value: <string>
+      disabled: true
+      description: Comma separated list of column names to include in the response, e.g. `fields=ID,Name,Price`. Unknown column names are ignored; if none are valid all columns are returned.
+  pathVariables:
+    rowId: ""
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "OrderID": "<integer>",
+        "Customer": "<integer>",
+        "StreetAddress": "<string>",
+        "PostCode": "<integer>",
+        "Suburb": "<string>",
+        "State": "<string>",
+        "ProductsInOrders List": {
+          "OrderId": "<integer>",
+          "ProduktId": "<integer>",
+          "Quantity": "<integer>"
+        },
+        "TO": {
+          "CustomerID": "<integer>",
+          "PatronId": "<integer>",
+          "Email": "<string>",
+          "PhoneNumber": "<string>",
+          "StreetAddress": "<string>",
+          "PostCode": "<integer>",
+          "Suburb": "<string>",
+          "State": "<string>",
+          "CardNumber": "<string>",
+          "CardOwner": "<string>",
+          "Expiry": "<string>"
+        },
+        "Stocktake List": {
+          "ItemId": "<integer>",
+          "SourceId": "<integer>",
+          "ProductId": "<integer>",
+          "Quantity": "<integer>",
+          "Price": "<float>"
+        }
+      }
+order: 1000

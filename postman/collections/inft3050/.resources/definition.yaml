@@ -1,0 +1,4 @@
+$kind: collection
+description: To use this API you must first use the POST Login endpoint to obtain a cookie. The other data endpoints will then function automatically thanks to the Postman Cookie Manager. If you want to clear your login you can use the POST Logout endpoint.
+variables:
+  baseUrl: http://localhost:3001

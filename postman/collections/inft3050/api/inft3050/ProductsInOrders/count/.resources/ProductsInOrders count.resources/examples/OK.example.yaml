@@ -1,0 +1,20 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/ProductsInOrders/count"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    - key: where
+      value: <string>
+      disabled: true
+      description: "Filter rows using one or more conditions in the form `(field,operator,value)`. Supported operators: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `like`, `nlike`, `is`, `isnot`. Use `is` / `isnot` with the value `null` to test for NULL. Combine conditions with `~and` or `~or`. Example: `where=(Name,like,Harry)~and(Price,lt,50)`. Field names must be real columns of the table; unknown columns and operators are ignored."
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: "{}"
+order: 1000

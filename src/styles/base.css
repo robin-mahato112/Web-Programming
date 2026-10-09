@@ -1,0 +1,286 @@
+/*
+ * Shared theme values, element defaults, controls and the customer page shell.
+ * Custom properties keep colours and content width consistent across feature files.
+ * Focus and skip-link rules support keyboard navigation throughout the application.
+ */
+:root {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #252720;
+  background: #f8f6f0;
+  font-synthesis: none;
+  --ink: #252720;
+  --muted: #6c6d64;
+  --line: #dedfd5;
+  --soft: #f0f1e9;
+  --orange: #b94422;
+  --max: 1240px;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+body,
+button,
+input,
+select {
+  font: inherit;
+}
+a {
+  color: inherit;
+  text-underline-offset: 0.25em;
+}
+button,
+a,
+select {
+  cursor: pointer;
+}
+button,
+input,
+select {
+  accent-color: var(--orange);
+}
+:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 4px;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 99;
+  transform: translateY(-150%);
+  padding: 0.7rem 1rem;
+  background: var(--ink);
+  color: #fff;
+}
+.skip-link:focus {
+  transform: none;
+}
+.site-frame {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main {
+  flex: 1;
+}
+.shell {
+  width: min(var(--max), calc(100% - 5rem));
+  margin-inline: auto;
+}
+.site-header {
+  border-bottom: 1px solid var(--line);
+}
+.header-inner {
+  min-height: 6rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-right: auto;
+  text-decoration: none;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--orange);
+  color: #fff;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.1em;
+  padding-right: 0.12em;
+}
+.brand-full {
+  font-weight: 750;
+  font-size: 0.95rem;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 2.2rem;
+}
+.site-nav a {
+  padding: 0.7rem 0;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+.site-nav a.active:not(:last-child) {
+  box-shadow: 0 2px var(--orange);
+}
+.site-nav a:hover {
+  color: var(--orange);
+}
+.site-nav a:last-child {
+  border: 1px solid var(--line);
+  border-radius: 2rem;
+  padding: 0.7rem 1.3rem;
+}
+.menu-button {
+  display: none;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 2rem;
+  background: transparent;
+}
+.section {
+  padding: 3rem 0 5rem;
+}
+h1,
+h2,
+h3 {
+  margin: 0 0 1rem;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+h1 {
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  font-weight: 750;
+}
+h2 {
+  font-size: 1.5rem;
+}
+h3 {
+  font-size: 1.05rem;
+  margin-top: 1.5rem;
+}
+p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+.lead {
+  margin-top: 0;
+  font-size: 1.05rem;
+}
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.breadcrumbs {
+  margin-top: 0;
+  font-size: 0.85rem;
+}
+.button {
+  display: inline-flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.button--dark {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+.button--dark:hover {
+  border-color: var(--orange);
+  background: var(--orange);
+}
+.button--outline:hover {
+  background: var(--soft);
+  border-color: var(--ink);
+}
+.button--wide {
+  width: 100%;
+  margin-top: 1rem;
+}
+.button:disabled {
+  opacity: 0.5;
+}
+.text-button {
+  padding: 0.35rem 0;
+  border: 0;
+  background: none;
+  color: var(--orange);
+  text-decoration: underline;
+}
+.field {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+select {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #bfc2b5;
+  border-radius: 0.45rem;
+  background: #fffefa;
+  color: var(--ink);
+  font-weight: 400;
+}
+.field-error {
+  color: #a52f20;
+  font-size: 0.88rem;
+}
+.info-panel h2 {
+  overflow-wrap: anywhere;
+}
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.check-row input {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+footer {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+}
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  min-height: 8rem;
+  font-size: 0.8rem;
+}
+.footer-inner p {
+  margin: 0.5rem 0;
+}

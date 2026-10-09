@@ -1,0 +1,17 @@
+$kind: http-request
+description: Read a row data by using the **primary key** column value.
+url: "{{baseUrl}}/api/inft3050/BookGenre/:rowId"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: <string>
+    disabled: true
+    description: Comma separated list of column names to include in the response, e.g. `fields=ID,Name,Price`. Unknown column names are ignored; if none are valid all columns are returned.
+pathVariables:
+  - key: rowId
+    value: <string>
+    description: (Required) Primary key of the record you want to read. If the table have composite primary key then combine them by using `___` and pass it as primary key.
+examples: ./.resources/BookGenre read.resources/examples
+order: 1000

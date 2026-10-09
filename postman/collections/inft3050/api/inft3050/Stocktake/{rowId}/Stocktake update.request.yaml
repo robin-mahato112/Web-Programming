@@ -1,0 +1,16 @@
+$kind: http-request
+description: Partial update row in table by providing a key value pair object where key refers to the column alias. You need to only include columns which you want to update.
+url: "{{baseUrl}}/api/inft3050/Stocktake/:rowId"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: rowId
+    value: <string>
+    description: (Required) Primary key of the record you want to read. If the table have composite primary key then combine them by using `___` and pass it as primary key.
+body:
+  type: json
+  content: "{}"
+examples: ./.resources/Stocktake update.resources/examples
+order: 2000

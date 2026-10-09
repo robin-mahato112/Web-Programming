@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/logout"
+method: POST
+body:
+  type: text
+  content: '{"username":"adminAccount","password":"adminPW"}'
+order: 18000

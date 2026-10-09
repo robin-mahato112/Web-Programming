@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/patronLogin"
+method: POST
+body:
+  type: json
+  content: '{"username":"user","password":"password"}'
+order: 14000

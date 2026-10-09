@@ -1,0 +1,17 @@
+$kind: http-request
+description: "Insert a new row in table by providing a key value pair object where key refers to the column alias. All the required fields should be included with payload excluding `autoincrement` and column with default value. NOTE: ProductsInOrders has no primary key, so :rowId matches on OrderId: read returns the first line only, while update/delete affect EVERY line of that order. Prefer the list endpoint with `where=(OrderId,eq,<id>)`. The product column is spelled `produktId` and references Stocktake.ItemId (not Product.ID)."
+url: "{{baseUrl}}/api/inft3050/ProductsInOrders"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "OrderId": "<integer>",
+      "produktId": "<integer>",
+      "Quantity": "<integer>"
+    }
+examples: ./.resources/ProductsInOrders create.resources/examples
+order: 4000

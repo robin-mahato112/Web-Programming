@@ -44,10 +44,11 @@ Unknown routes redirect to Home. Successful admin and employee sign-ins open the
 
 ## Project structure
 
-- `src/components/` — shared Button, Input, Header, Layout, and ProductCard components
+- `src/components/` — shared Button, Input, Header, Layout, ProductCard, and ProductVisual components
 - `src/data/` — mock product and account records and client-side staff sessions
 - `src/pages/` — Home, AuthPages, AdminLogin, and Dashboards
-- `src/styles.css` — shared responsive styles
+- `src/styles.css` — stylesheet entry point; import this file from `src/main.jsx`
+- `src/styles/` — supplied cream/orange theme, catalogue, cover art, commerce, and responsive styles; `app.css` adapts the existing forms and dashboards to the same theme
 - `docs/` — original project planning documents
 
 ## Prototype limitations

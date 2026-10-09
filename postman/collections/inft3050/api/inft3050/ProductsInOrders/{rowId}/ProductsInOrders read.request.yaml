@@ -1,0 +1,17 @@
+$kind: http-request
+description: "Read a row data by using the **primary key** column value. NOTE: ProductsInOrders has no primary key, so :rowId matches on OrderId: read returns the first line only, while update/delete affect EVERY line of that order. Prefer the list endpoint with `where=(OrderId,eq,<id>)`. The product column is spelled `produktId` and references Stocktake.ItemId (not Product.ID)."
+url: "{{baseUrl}}/api/inft3050/ProductsInOrders/:rowId"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: <string>
+    disabled: true
+    description: Comma separated list of column names to include in the response, e.g. `fields=ID,Name,Price`. Unknown column names are ignored; if none are valid all columns are returned.
+pathVariables:
+  - key: rowId
+    value: <string>
+    description: (Required) Primary key of the record you want to read. If the table have composite primary key then combine them by using `___` and pass it as primary key.
+examples: ./.resources/ProductsInOrders read.resources/examples
+order: 1000

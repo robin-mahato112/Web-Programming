@@ -1,0 +1,51 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/TO/:rowId"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    - key: fields
+      value: <string>
+      disabled: true
+      description: Comma separated list of column names to include in the response, e.g. `fields=ID,Name,Price`. Unknown column names are ignored; if none are valid all columns are returned.
+  pathVariables:
+    rowId: ""
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "CustomerID": "<integer>",
+        "PatronId": "<integer>",
+        "Email": "<string>",
+        "PhoneNumber": "<string>",
+        "StreetAddress": "<string>",
+        "PostCode": "<integer>",
+        "Suburb": "<string>",
+        "State": "<string>",
+        "CardNumber": "<string>",
+        "CardOwner": "<string>",
+        "Expiry": "<string>",
+        "CVV": "<integer>",
+        "Orders List": {
+          "OrderID": "<integer>",
+          "Customer": "<integer>",
+          "StreetAddress": "<string>",
+          "PostCode": "<integer>",
+          "Suburb": "<string>",
+          "State": "<string>"
+        },
+        "Patrons": {
+          "UserID": "<integer>",
+          "Email": "<string>",
+          "Name": "<string>",
+          "Salt": "<string>",
+          "HashPW": "<string>"
+        }
+      }
+order: 1000

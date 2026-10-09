@@ -1,0 +1,41 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/Source"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "Sourceid": "<integer>",
+        "SourceName": "<string>",
+        "ExternalLink": "<string>",
+        "Genre": "<integer>"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "Sourceid": "<integer>",
+        "SourceName": "<string>",
+        "ExternalLink": "<string>",
+        "Genre": {
+          "GenreID": "<integer>",
+          "Name": "<string>"
+        },
+        "Stocktake List": {
+          "ItemId": "<integer>",
+          "SourceId": "<integer>",
+          "ProductId": "<integer>",
+          "Quantity": "<integer>",
+          "Price": "<float>"
+        }
+      }
+order: 1000

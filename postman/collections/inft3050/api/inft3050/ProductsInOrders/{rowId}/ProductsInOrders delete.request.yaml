@@ -1,0 +1,10 @@
+$kind: http-request
+description: "Delete a row by using the **primary key** column value. NOTE: ProductsInOrders has no primary key, so :rowId matches on OrderId: read returns the first line only, while update/delete affect EVERY line of that order. Prefer the list endpoint with `where=(OrderId,eq,<id>)`. The product column is spelled `produktId` and references Stocktake.ItemId (not Product.ID)."
+url: "{{baseUrl}}/api/inft3050/ProductsInOrders/:rowId"
+method: DELETE
+pathVariables:
+  - key: rowId
+    value: <string>
+    description: (Required) Primary key of the record you want to read. If the table have composite primary key then combine them by using `___` and pass it as primary key.
+examples: ./.resources/ProductsInOrders delete.resources/examples
+order: 3000

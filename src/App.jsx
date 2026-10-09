@@ -4,6 +4,7 @@ import Home from './pages/Home.jsx'
 import { Login, Registration } from './pages/AuthPages.jsx'
 import { AdminLogin } from './pages/AdminLogin.jsx'
 import { AdminDashboard, EmployeeDashboard } from './pages/Dashboards.jsx'
+import TestConnection from "./TestConnection";
 
 export default function App() {
   return <Routes><Route element={<Layout />}>
@@ -13,6 +14,7 @@ export default function App() {
     <Route path="/register" element={<Registration />} />
     <Route path="/admin" element={<AdminDashboard />} />
     <Route path="/employee" element={<EmployeeDashboard />} />
+    <Route path="/test-connection" element={<TestConnection />} />
     <Route path="*" element={<Navigate to="/" replace />} />
-  </Route></Routes>
+  </Route></Routes> 
 }

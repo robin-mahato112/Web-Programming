@@ -1,0 +1,13 @@
+$kind: http-request
+description: "Get rows count of a table by applying optional filters. NOTE: ProductsInOrders has no primary key, so :rowId matches on OrderId: read returns the first line only, while update/delete affect EVERY line of that order. Prefer the list endpoint with `where=(OrderId,eq,<id>)`. The product column is spelled `produktId` and references Stocktake.ItemId (not Product.ID)."
+url: "{{baseUrl}}/api/inft3050/ProductsInOrders/count"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: where
+    value: <string>
+    disabled: true
+    description: "Filter rows using one or more conditions in the form `(field,operator,value)`. Supported operators: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `like`, `nlike`, `is`, `isnot`. Use `is` / `isnot` with the value `null` to test for NULL. Combine conditions with `~and` or `~or`. Example: `where=(Name,like,Harry)~and(Price,lt,50)`. Field names must be real columns of the table; unknown columns and operators are ignored."
+examples: ./.resources/ProductsInOrders count.resources/examples
+order: 1000

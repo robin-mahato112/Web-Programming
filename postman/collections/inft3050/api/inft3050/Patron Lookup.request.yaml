@@ -1,0 +1,9 @@
+$kind: http-request
+description: Look up a patron by email address. Returns only non-sensitive fields (UserID, Email, Name). Used to check if an email is already registered.
+url: "{{baseUrl}}/patronLookup?email=user@example.com"
+method: GET
+queryParams:
+  - key: email
+    value: user@example.com
+    description: (Required) Email address to look up
+order: 15000
