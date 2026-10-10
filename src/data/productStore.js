@@ -22,14 +22,23 @@ export function salePrice(product) {
 
 export const formatPrice = value => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(value)
 
+export function validateNewProduct(values) {
+  const errors = validateProduct(values)
+  for (const [field, limit] of [['title', 120], ['category', 60], ['description', 1000]]) {
+    if (typeof values[field] !== 'string' || !values[field].trim() || values[field].trim().length > limit)
+      errors[field] = `Enter a ${field} between 1 and ${limit} characters.`
+  }
+  return errors
+}
+
 try {
   const saved = JSON.parse(localStorage.getItem(storageKey))
-  if (Array.isArray(saved)) {
-    products = mockProducts.map(product => {
-      const record = saved.find(item => item?.id === product.id)
-      if (!record || Object.keys(validateProduct(record)).length || typeof record.updatedBy !== 'string' || !Number.isFinite(Date.parse(record.updatedAt))) return product
+  if (Array.isArray(saved) && saved.every(record => record && typeof record.id === 'string' && record.id && !Object.keys(validateNewProduct(record)).length && typeof record.updatedBy === 'string' && Number.isFinite(Date.parse(record.updatedAt))) && new Set(saved.map(record => record.id)).size === saved.length) {
+    products = saved.map(record => {
       return {
-        ...product,
+        ...record,
+        rating: typeof record.rating === 'string' ? record.rating : '0.0',
+        accent: ['violet', 'cyan', 'rose', 'gold', 'orange', 'blue'].includes(record.accent) ? record.accent : 'violet',
         price: Number(record.price),
         quantity: Number(record.quantity),
         discount: Number(record.discount),
@@ -52,6 +61,35 @@ export function useProducts() {
   return useSyncExternalStore(subscribe, () => products)
 }
 
+export function addProduct(values, user) {
+  if (user?.role !== 'admin') return { error: 'Only admins can add products.' }
+  const errors = validateNewProduct(values)
+  if (Object.keys(errors).length) return { errors }
+  const product = {
+    id: crypto.randomUUID(),
+    title: values.title.trim(),
+    category: values.category.trim(),
+    description: values.description.trim(),
+    price: Number(values.price),
+    quantity: Number(values.quantity),
+    discount: Number(values.discount),
+    rating: '0.0',
+    accent: 'violet',
+    previousPrice: null,
+    updatedAt: new Date().toISOString(),
+    updatedBy: user.name,
+  }
+  products = [...products, product]
+  return persistProducts()
+}
+
+export function deleteProduct(id, user) {
+  if (user?.role !== 'admin') return { error: 'Only admins can delete products.' }
+  if (!products.some(product => product.id === id)) return { error: 'Product not found.' }
+  products = products.filter(product => product.id !== id)
+  return persistProducts()
+}
+
 export function updateProduct(id, values, user) {
   if (user?.role !== 'admin') return { error: 'Only admins can update products.' }
   const errors = validateProduct(values)
@@ -70,6 +108,10 @@ export function updateProduct(id, values, user) {
     updatedBy: user.name,
   } : item)
 
+  return persistProducts()
+}
+
+function persistProducts() {
   let persisted = true
   try {
     localStorage.setItem(storageKey, JSON.stringify(products))
