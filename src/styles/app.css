@@ -96,6 +96,11 @@ body {
   background: var(--soft);
 }
 
+/* Keep label and box at the top so boxes in a row line up when a neighbour has a hint. */
+.field {
+  align-content: start;
+}
+
 .field label {
   color: var(--ink);
   font-weight: 650;
