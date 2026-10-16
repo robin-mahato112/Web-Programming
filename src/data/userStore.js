@@ -5,6 +5,7 @@ import { existingCustomers } from './mockCustomers.js'
 
 const storageKey = 'entertainment-guild-users'
 export const userRoles = ['customer', 'employee', 'admin']
+export const roleLabel = role => role.charAt(0).toUpperCase() + role.slice(1)
 const listeners = new Set()
 let users = [...existingAdmins, ...existingEmployees, ...existingCustomers.map(user => ({ ...user, role: 'customer' }))]
 

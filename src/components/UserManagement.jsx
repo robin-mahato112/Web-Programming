@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import Button from './Button.jsx'
 import Input from './Input.jsx'
-import { updateUser, userRoles } from '../data/userStore.js'
-
-const roleLabel = role => role.charAt(0).toUpperCase() + role.slice(1)
+import { roleLabel, updateUser, userRoles } from '../data/userStore.js'
 
 function UserEditor({ account, actor, onCancel, onSave }) {
   const [values, setValues] = useState({ name: account.name, role: account.role, adminCode: '' })
@@ -41,9 +39,7 @@ export default function UserManagement({ users, actor }) {
   const [editingId, setEditingId] = useState(null)
   const [message, setMessage] = useState('')
   const editing = users.find(user => user.userId === editingId)
-  return <section aria-labelledby="user-management-heading" className="user-management">
-    <h2 id="user-management-heading">User management</h2>
-    <p>View account names, emails, and roles. Edit a name or change access between customer, employee, and admin.</p>
+  return <div className="user-management">
     {message && <p className="notice" role="status">{message}</p>}
     <div className="table-wrap" role="region" aria-label="User accounts" tabIndex={0}>
       <table className="user-table">
@@ -62,5 +58,5 @@ export default function UserManagement({ users, actor }) {
         setMessage(persisted ? 'User updated and saved in this browser.' : 'User updated for this session. Browser storage is unavailable; changes will not survive a reload.')
       }} />}
     </div>
-  </section>
+  </div>
 }
