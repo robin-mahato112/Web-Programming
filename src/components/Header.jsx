@@ -14,7 +14,7 @@ export default function Header() {
   const logout = () => {
     signOutStaff()
     setOpen(false)
-    navigate(user.role === 'admin' ? '/admin/login' : '/login', { replace: true })
+    navigate('/admin/login', { replace: true })
   }
   return (
     <header className="site-header">

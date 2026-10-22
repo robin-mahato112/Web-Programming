@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 import { getUsers } from '../data/userStore.js'
-import { signInStaff } from '../data/staffSession.js'
 
 const initialValues = {
   role: '',
@@ -57,7 +56,7 @@ function validate(values, register) {
     errors.postcode = 'Postcode must be 4 digits.'
 
   if (!register && Object.keys(errors).length === 0) {
-    const customer = getUsers().find(record => record.role !== 'admin' && record.email.toLowerCase() === values.email.trim().toLowerCase())
+    const customer = getUsers().find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
     if (!customer || customer.password !== values.password) errors.credentials = 'Email or password is incorrect.'
   }
 
@@ -78,13 +77,6 @@ function AuthForm({ register = false }) {
     const next = validate(values, register)
     setErrors(next)
     setSubmitted(Object.keys(next).length === 0)
-    if (!register && Object.keys(next).length === 0) {
-      const employee = getUsers().find(record => record.role === 'employee' && record.email.toLowerCase() === values.email.trim().toLowerCase())
-      if (employee) {
-        signInStaff(employee)
-        navigate('/employee', { replace: true })
-      }
-    }
   }
 
   return (
@@ -96,14 +88,14 @@ function AuthForm({ register = false }) {
       <p className="eyebrow">{register ? 'Account registration' : 'Member 2 customer accounts'}</p>
       <h1>{register ? "Create account" : "Welcome back"}</h1>
       <p className="notice notice--info" role="status">
-        {register ? 'Choose your role and enter your details to validate a new account.' : 'Enter your email and password to sign in as a customer or employee.'}
+        {register ? 'Choose your role and enter your details to validate a new account.' : 'Enter your email and password to sign in as a customer. Staff use Staff sign in.'}
       </p>
       {!register && <Button
         type="button"
         variant="secondary"
         onClick={() => navigate("/admin/login")}
       >
-        Admin Account
+        Staff sign in
       </Button>}
 
       {register && (

@@ -94,6 +94,8 @@ export function LineChart({ data, name, format, formatTick = format, color = ser
   const x = index => margin.left + (last > 0 ? index * step : innerWidth / 2)
   const y = value => margin.top + innerHeight * (1 - value / ticks.at(-1))
   const line = data.map((point, index) => `${index ? 'L' : 'M'}${x(index)},${y(point.value)}`).join('')
+  // Thin the x labels to roughly one per 48px, always keeping the latest point.
+  const labelEvery = Math.max(1, Math.ceil(data.length / Math.max(2, Math.floor(innerWidth / 48))))
 
   const select = index => {
     setActive(index)
@@ -123,7 +125,7 @@ export function LineChart({ data, name, format, formatTick = format, color = ser
           <line className={tick === 0 ? 'line-chart__baseline' : 'line-chart__grid'} x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} />
           <text x={margin.left - 10} y={y(tick)} dy="0.32em" textAnchor="end">{formatTick(tick)}</text>
         </g>)}
-        {data.map((point, index) => <text key={point.label} x={x(index)} y={height - 8} textAnchor="middle">{point.short}</text>)}
+        {data.map((point, index) => (last - index) % labelEvery === 0 && <text key={point.label} x={x(index)} y={height - 8} textAnchor="middle">{point.short}</text>)}
         <path d={`${line}L${x(last)},${y(0)}L${x(0)},${y(0)}Z`} fill={color} opacity="0.1" />
         <path d={line} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {active !== null && <line className="line-chart__crosshair" x1={x(active)} x2={x(active)} y1={margin.top} y2={y(0)} />}

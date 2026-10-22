@@ -1,23 +1,39 @@
 # Entertainment Guild
 
-A Vite/React prototype containing a home page, account authentication forms, and staff dashboards.
+A Vite/React prototype containing a home page, account authentication forms, and staff dashboards. The staff area reads and writes the INFT3050 backend API; Home and the customer pages still use sample data.
 
-## Products and inventory
+## Staff area (live backend)
 
-Home displays all six sample products with descriptions, AUD prices, discounts, stock quantities, and availability. Staff dashboards show the full inventory, account and stock totals, the previous price and latest price change, and update timestamps and names.
+Staff sign in at `/admin/login` with a backend User account (for example `adminAccount` / `adminPW` from the course Postman collection). Admin accounts also enter the admin code (`ADMIN001` by default, set with `VITE_ADMIN_CODE`) and open `/admin`; other staff leave the code blank and open `/employee`. The admin code is checked in the browser only, so it is a prototype gate rather than real security.
 
-Admins can edit a product's price, quantity, and discount using Edit → Save changes. Employees have a read-only view. Selling prices are calculated from the base price and percentage discount; zero stock is shown as Out of stock. Quantities must be non-negative whole numbers, prices must have at most two decimal places, and discounts must be between 0 and 100%.
+- **Dashboard** — live product, stock, price, order, and account figures with charts. Every chart has a data table.
+- **Product management** — all products with search, genre and stock filters. Price and quantity are stored per format (Stocktake row). Admins add products (with one or more formats), edit prices and stock, and delete products; deleting also removes the product's formats and order lines. Employees have a read-only view.
+- **User management** (admin only) — add, edit, and delete staff accounts in the User table, and view customer accounts from Patrons. The backend hashes new passwords. You cannot delete or change the role of your own account, and at least one admin must remain. Products list their last updater by username, so deleting a user reassigns those products to the admin doing the delete.
 
-Product edits are saved in this browser's local storage and shared between Home and the dashboard. If storage is unavailable, the dashboard reports that changes only last for the current session. This is prototype browser persistence, not a shared database.
+The database has no discount column, so discounts are saved per product in this browser's local storage only. The backend does not validate values, so all validation happens in the forms.
 
 ## Install and run
 
-Requires a current Node.js LTS release and npm.
+Requires a current Node.js LTS release, npm, and Docker Desktop.
 
-```bash
-npm install
-npm run dev
-```
+1. Start the backend from the course's `inft3050_2026_v1.0` folder (SQL Server on port 1433, API on port 3001):
+
+   ```bash
+   docker compose up -d
+   ```
+
+   If the `auth` container shows as exited (it can start before the database is ready), run `docker compose up -d` again.
+
+2. Start the frontend. It must run on port 3000, the only origin the backend's CORS settings allow:
+
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+3. Optional: copy `.env.example` to `.env` to point `VITE_API_URL` at a different backend.
+
+Visit `/test-connection` to check the frontend can reach the API. Postman (collection in `postman/`) is useful for trying endpoints by hand: call **Login** first so later requests carry the cookie.
 
 ## Checks
 
@@ -34,23 +50,31 @@ npm run preview
 | `/` | Home |
 | `/login` | Customer and employee sign-in validation |
 | `/register` | Customer registration validation |
-| `/admin/login` | Admin sign in |
+| `/admin/login` | Staff sign in (admins and employees) |
 | `/admin` | Admin dashboard |
+| `/admin/products` | Product management |
+| `/admin/users` | User management |
 | `/employee` | Employee dashboard |
+| `/employee/products` | Read-only product inventory |
+| `/test-connection` | Backend connection check |
 
-Register and Admin login are hidden from the top navigation. The employee/customer sign-in form includes a Create an account link to `/register` and an Admin Account button. Registration requires choosing Admin, Employee, or Staff before validating the form; it does not create or sign in an account.
+Register and Staff sign in are hidden from the top navigation. The customer sign-in form links to `/register` and to Staff sign in.
 
-Unknown routes redirect to Home. Successful admin and employee sign-ins open their respective dashboards. Signed-in staff can access their dashboard or log out using the header. Dashboard routes redirect signed-out visitors to sign in and staff with a different role to their own dashboard.
+Unknown routes redirect to Home. Staff pages redirect signed-out visitors to Staff sign in and staff with a different role to their own dashboard. The sign-in cookie lasts one hour; when it expires the next staff request signs you out.
 
 ## Project structure
 
 - `src/components/` — shared Button, Input, Header, Layout, ProductCard, and ProductVisual components
-- `src/data/` — mock product and account records and client-side staff sessions
-- `src/pages/` — Home, AuthPages, AdminLogin, and Dashboards
+- `src/api.js` — axios client for the backend (base URL from `VITE_API_URL`, sends the login cookie)
+- `src/data/backend.js` — API helpers (paginated list, read, count, patch) and the shared loading store used by staff pages
+- `src/data/staffSession.js`, `catalogue.js`, `staffAccounts.js`, `discountStore.js` — staff sign in, live products and stock, accounts, and browser-only discounts
+- `src/data/mock*.js`, `productStore.js`, `userStore.js` — sample data still used by Home and the customer pages
+- `src/pages/` — Home, AuthPages, AdminLogin (staff sign in), and `staff/` (layout, dashboard, product and user management)
+- `src/components/charts.jsx` — dashboard charts
 - `src/styles.css` — stylesheet entry point; import this file from `src/main.jsx`
 - `src/styles/` — supplied cream/orange theme, catalogue, cover art, commerce, and responsive styles; `app.css` adapts the existing forms and dashboards to the same theme
 - `docs/` — original project planning documents
 
 ## Prototype limitations
 
-Authentication uses mock records rather than a backend. Customer sign in validates credentials and displays confirmation; registration validates the form without creating an account. Staff sessions use browser session storage. No database or server-side authentication is implemented.
+Customer sign in and registration still validate against sample records and do not call the backend's `/patronLogin` or Patrons endpoints. Home shows the six sample products. Discounts exist only in the browser that set them. The backend's `GET /Source` list and `ProductsInOrders` endpoints currently fail, so format names are read one source at a time and there is no per-product sales history.

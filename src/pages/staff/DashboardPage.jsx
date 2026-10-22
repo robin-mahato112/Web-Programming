@@ -1,11 +1,16 @@
 import { useOutletContext } from 'react-router-dom'
 import { BarList, ChartCard, LineChart, StackedBar } from '../../components/charts.jsx'
 import { seriesColors } from '../../components/chartColors.js'
-import { formatPrice, salePrice, useProducts } from '../../data/productStore.js'
-import { productSalesTotals, salesByMonth } from '../../data/mockSales.js'
-import { roleLabel, userRoles, useUsers } from '../../data/userStore.js'
+import ResourceStatus from '../../components/ResourceStatus.jsx'
+import { countRows, createResource, useResource } from '../../data/backend.js'
+import { catalogue, lowStockLimit } from '../../data/catalogue.js'
+import { useDiscounts } from '../../data/discountStore.js'
+import { formatPrice, salePrice } from '../../data/productStore.js'
+import { accounts } from '../../data/staffAccounts.js'
+import { roleLabel } from '../../data/userStore.js'
 
-const lowStockLimit = 10
+const orderCount = createResource(() => countRows('Orders'))
+
 // Reserved status colours; each always ships with an icon and a label so colour never carries meaning alone.
 const stockStatus = {
   ok: { label: 'In stock', icon: '✓', color: '#0ca30c', ink: '#fff' },
@@ -15,91 +20,118 @@ const stockStatus = {
 const statusOf = quantity => quantity === 0 ? stockStatus.out : quantity < lowStockLimit ? stockStatus.low : stockStatus.ok
 
 const number = new Intl.NumberFormat('en-AU')
-const compactPrice = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', notation: 'compact', maximumFractionDigits: 1 })
-const percent = new Intl.NumberFormat('en-AU', { style: 'percent', maximumFractionDigits: 1, signDisplay: 'exceptZero' })
-const monthName = (month, style) => new Intl.DateTimeFormat('en-AU', style === 'long' ? { month: 'long', year: 'numeric' } : { month: 'short' }).format(new Date(`${month}-01T00:00:00`))
-const change = (now, before) => before ? (now - before) / before : 0
 const count = (value, noun) => `${number.format(value)} ${noun}${value === 1 ? '' : 's'}`
+const sum = (items, value) => items.reduce((total, item) => total + value(item), 0)
+const priceBands = [[0, 10], [10, 20], [20, 30], [30, 40], [40, 50], [50, Infinity]]
+const bandLabel = ([low, high]) => high === Infinity ? `${formatPrice(low)} and over` : `${formatPrice(low)} – ${formatPrice(high - 0.01)}`
 
-function Stat({ label, value, delta, detail }) {
+function Stat({ label, value, detail }) {
   return (
     <article className="stat">
       <span className="stat__label">{label}</span>
       <strong>{value}</strong>
-      {delta && <span className={`stat__delta stat__delta--${delta.value < 0 ? 'down' : 'up'}`}>
-        <span aria-hidden="true">{delta.value < 0 ? '▼' : '▲'}</span> {percent.format(delta.value)} {delta.label}
-      </span>}
       {detail && <small>{detail}</small>}
     </article>
   )
 }
 
+function AccountsCard({ state }) {
+  const roles = state.data && [
+    { key: 'customer', label: 'Customers', value: state.data.customers.length, color: seriesColors[0] },
+    { key: 'employee', label: 'Employees', value: state.data.staff.filter(user => user.role === 'employee').length, color: seriesColors[1] },
+    { key: 'admin', label: 'Admins', value: state.data.staff.filter(user => user.role === 'admin').length, color: seriesColors[2] },
+  ]
+  return (
+    <ChartCard title="Accounts by role" subtitle="Customers (Patrons) and staff (User) accounts"
+      table={roles && { columns: ['Role', 'Accounts'], rows: roles.map(role => [role.label, number.format(role.value)]) }}>
+      <ResourceStatus state={state} resource={accounts} label="accounts">
+        {roles && <StackedBar segments={roles} format={value => number.format(value)} />}
+      </ResourceStatus>
+    </ChartCard>
+  )
+}
+
+function Dashboard({ products, accountsState, orders }) {
+  const discounts = useDiscounts()
+  const stockLines = products.flatMap(product => product.stock.map(item => ({ ...item, sellingPrice: salePrice({ price: item.price, discount: discounts[product.id] ?? 0 }) })))
+  const unitsInStock = sum(products, product => product.quantity)
+  const inventoryValue = sum(stockLines, item => item.quantity * item.sellingPrice)
+  const lowStock = products.filter(product => product.quantity > 0 && product.quantity < lowStockLimit).length
+  const outOfStock = products.filter(product => product.quantity === 0).length
+  const genreCounts = Object.entries(Object.groupBy(products, product => product.genre)).map(([genre, items]) => `${number.format(items.length)} ${genre.toLowerCase()}`)
+
+  const updatedYears = products.map(product => new Date(product.updatedAt).getFullYear()).filter(Number.isFinite)
+  const firstYear = Math.min(...updatedYears)
+  const lastYear = Math.max(...updatedYears)
+  const updates = Array.from({ length: lastYear - firstYear + 1 }, (_, index) => {
+    const year = firstYear + index
+    return { label: String(year), short: String(year), value: updatedYears.filter(value => value === year).length }
+  })
+
+  const formats = Object.entries(Object.groupBy(stockLines, item => item.source))
+    .map(([source, items]) => ({ id: source, label: source, lines: items.length, units: sum(items, item => item.quantity) }))
+    .sort((a, b) => b.units - a.units)
+  const lowest = [...products].sort((a, b) => a.quantity - b.quantity || a.title.localeCompare(b.title)).slice(0, 10)
+  const bands = priceBands.map(band => ({ id: bandLabel(band), label: bandLabel(band), lines: stockLines.filter(item => item.sellingPrice >= band[0] && item.sellingPrice < band[1]).length }))
+
+  const staff = accountsState.data?.staff ?? []
+  const customers = accountsState.data?.customers ?? []
+
+  return (
+    <>
+      <div className="stats">
+        <Stat label="Products" value={number.format(products.length)} detail={genreCounts.join(' · ')} />
+        <Stat label="Units in stock" value={number.format(unitsInStock)} detail={`${count(lowStock, 'product')} low · ${number.format(outOfStock)} out of stock`} />
+        <Stat label="Inventory value" value={formatPrice(inventoryValue)} detail="Units in stock × selling price" />
+        <Stat label="Average selling price" value={formatPrice(stockLines.length ? sum(stockLines, item => item.sellingPrice) / stockLines.length : 0)} detail={`Across ${count(stockLines.length, 'product format')}`} />
+        <Stat label="Orders" value={orders.status === 'ready' ? number.format(orders.data) : '—'} detail={orders.status === 'error' ? orders.error : 'Placed through the shop'} />
+        <Stat label="Accounts" value={accountsState.status === 'ready' ? number.format(staff.length + customers.length) : '—'} detail={accountsState.status === 'ready' ? `${count(customers.length, 'customer')} · ${number.format(staff.length)} staff` : 'Loading…'} />
+      </div>
+
+      <div className="chart-grid">
+        <ChartCard wide title="Catalogue updates by year" subtitle={`Products grouped by the year their record was last updated, ${firstYear} to ${lastYear}`}
+          table={{ columns: ['Year', 'Products updated'], rows: updates.map(point => [point.label, number.format(point.value)]) }}>
+          <LineChart data={updates} name="Products updated" format={value => count(value, 'product')} formatTick={value => number.format(value)} />
+        </ChartCard>
+
+        <ChartCard title="Stock by format" subtitle="Units in stock across all products, largest first"
+          table={{ columns: ['Format', 'Products', 'Units in stock'], rows: formats.map(item => [item.label, number.format(item.lines), number.format(item.units)]) }}>
+          <BarList format={value => number.format(value)} series={[{ key: 'units', name: 'Units in stock', color: seriesColors[0] }]}
+            items={formats.map(item => ({ id: item.id, label: item.label, values: { units: item.units } }))} />
+        </ChartCard>
+
+        <ChartCard title="Lowest stock" subtitle={`The 10 products with the fewest units. Under ${lowStockLimit} units counts as low stock.`}
+          table={{ columns: ['Product', 'Units in stock', 'Status'], rows: lowest.map(product => [product.title, number.format(product.quantity), statusOf(product.quantity).label]) }}>
+          <BarList format={value => number.format(value)} series={[{ key: 'quantity', name: 'Units in stock' }]}
+            items={lowest.map(product => ({ id: product.id, label: product.title, values: { quantity: product.quantity }, status: statusOf(product.quantity) }))} />
+        </ChartCard>
+
+        <ChartCard title="Selling price bands" subtitle="Product formats by current selling price, after discounts"
+          table={{ columns: ['Selling price', 'Product formats'], rows: bands.map(band => [band.label, number.format(band.lines)]) }}>
+          <BarList format={value => number.format(value)} series={[{ key: 'lines', name: 'Product formats', color: seriesColors[0] }]}
+            items={bands.map(band => ({ id: band.id, label: band.label, values: { lines: band.lines } }))} />
+        </ChartCard>
+
+        <AccountsCard state={accountsState} />
+      </div>
+    </>
+  )
+}
+
 export default function DashboardPage() {
   const user = useOutletContext()
-  const products = useProducts()
-  const users = useUsers()
-
-  const [previous, latest] = salesByMonth.slice(-2)
-  const firstMonth = monthName(salesByMonth[0].month, 'long')
-  const latestMonth = monthName(latest.month, 'long')
-  const versusPrevious = `vs ${monthName(previous.month, 'short')}`
-  const sixMonthRevenue = salesByMonth.reduce((total, month) => total + month.revenue, 0)
-  const inventoryValue = products.reduce((total, product) => total + product.quantity * salePrice(product), 0)
-  const unitsInStock = products.reduce((total, product) => total + product.quantity, 0)
-  const needsAttention = products.filter(product => product.quantity < lowStockLimit).length
-
-  const revenue = salesByMonth.map(month => ({ label: monthName(month.month, 'long'), short: monthName(month.month, 'short'), value: month.revenue }))
-  const sales = products
-    .map(product => ({ id: product.id, label: product.title, ...productSalesTotals(product.id) }))
-    .sort((a, b) => b.units - a.units)
-  const stock = [...products].sort((a, b) => a.quantity - b.quantity)
-  const roles = userRoles.map((role, index) => ({ key: role, label: `${roleLabel(role)}s`, value: users.filter(account => account.role === role).length, color: seriesColors[index] }))
+  const catalogueState = useResource(catalogue)
+  const accountsState = useResource(accounts)
+  const orders = useResource(orderCount)
 
   return (
     <>
       <p className="eyebrow">{roleLabel(user.role)} dashboard</p>
       <h1>Welcome, {user.name}!</h1>
-      <p className="lead">Sales figures are sample data from {firstMonth} to {latestMonth}. Stock, prices, and accounts reflect the current catalogue. Prices are in AUD.</p>
-
-      <div className="stats">
-        <Stat label={`Revenue, ${latestMonth}`} value={formatPrice(latest.revenue)} delta={{ value: change(latest.revenue, previous.revenue), label: versusPrevious }} />
-        <Stat label={`Units sold, ${latestMonth}`} value={number.format(latest.units)} delta={{ value: change(latest.units, previous.units), label: versusPrevious }} />
-        <Stat label="Revenue, last 6 months" value={formatPrice(sixMonthRevenue)} detail={`${number.format(salesByMonth.reduce((total, month) => total + month.units, 0))} units sold`} />
-        <Stat label="Inventory value" value={formatPrice(inventoryValue)} detail="Units in stock × selling price" />
-        <Stat label="Units in stock" value={number.format(unitsInStock)} detail={`${needsAttention} of ${products.length} products low or out of stock`} />
-        <Stat label="User accounts" value={number.format(users.length)} detail={`${count(users.filter(account => account.role === 'customer').length, 'customer')} · ${users.filter(account => account.role !== 'customer').length} staff`} />
-      </div>
-
-      <div className="chart-grid">
-        <ChartCard wide title="Monthly revenue" subtitle={`Sample sales, ${firstMonth} to ${latestMonth}`}
-          table={{ columns: ['Month', 'Units sold', 'Revenue'], rows: salesByMonth.map(month => [monthName(month.month, 'long'), number.format(month.units), formatPrice(month.revenue)]) }}>
-          <LineChart data={revenue} name="Revenue" format={formatPrice} formatTick={value => compactPrice.format(value)} />
-        </ChartCard>
-
-        <ChartCard title="Units sold by product" subtitle="Sample sales over the last 6 months, best sellers first"
-          table={{ columns: ['Product', 'Units sold', 'Revenue'], rows: sales.map(item => [item.label, number.format(item.units), formatPrice(item.revenue)]) }}>
-          <BarList format={value => number.format(value)} series={[{ key: 'units', name: 'Units sold', color: seriesColors[0] }]}
-            items={sales.map(item => ({ id: item.id, label: item.label, values: { units: item.units } }))} />
-        </ChartCard>
-
-        <ChartCard title="Stock levels" subtitle={`Units in stock now, lowest first. Under ${lowStockLimit} units counts as low stock.`}
-          table={{ columns: ['Product', 'Units in stock', 'Status'], rows: stock.map(product => [product.title, number.format(product.quantity), statusOf(product.quantity).label]) }}>
-          <BarList format={value => number.format(value)} series={[{ key: 'quantity', name: 'Units in stock' }]}
-            items={stock.map(product => ({ id: product.id, label: product.title, values: { quantity: product.quantity }, status: statusOf(product.quantity) }))} />
-        </ChartCard>
-
-        <ChartCard title="Regular vs selling price" subtitle="Current price before and after each product's discount"
-          legend={[{ label: 'Regular price', color: seriesColors[0] }, { label: 'Selling price', color: seriesColors[1] }]}
-          table={{ columns: ['Product', 'Regular price', 'Discount', 'Selling price'], rows: products.map(product => [product.title, formatPrice(product.price), `${product.discount}%`, formatPrice(salePrice(product))]) }}>
-          <BarList format={formatPrice} series={[{ key: 'price', name: 'Regular price', color: seriesColors[0] }, { key: 'sale', name: 'Selling price', color: seriesColors[1] }]}
-            items={products.map(product => ({ id: product.id, label: product.title, values: { price: product.price, sale: salePrice(product) } }))} />
-        </ChartCard>
-
-        <ChartCard title="Accounts by role" subtitle="All customer and staff accounts"
-          table={{ columns: ['Role', 'Accounts'], rows: roles.map(role => [role.label, number.format(role.value)]) }}>
-          <StackedBar segments={roles} format={value => number.format(value)} />
-        </ChartCard>
-      </div>
+      <p className="lead">Live figures from the store database. Discounts are the ones saved in this browser. Prices are in AUD.</p>
+      <ResourceStatus state={catalogueState} resource={catalogue} label="the catalogue">
+        {catalogueState.data && <Dashboard products={catalogueState.data.products} accountsState={accountsState} orders={orders} />}
+      </ResourceStatus>
     </>
   )
 }
