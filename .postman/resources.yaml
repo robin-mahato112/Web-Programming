@@ -2,9 +2,12 @@
 workspace:
   id: 79239ed4-af17-4936-8b56-d337e2da882d
 
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
 cloudResources:
   collections:
-    ../postman/collections/inft3050: be3254ef-af8c-4a09-a748-0ca2f4e03776
+    ../postman/collections/inft3050: 89fbb8ef-4af0-4a0f-9f46-0fbff29a1589
+    ../postman/collections/inft3050 Copy: 17be1424-559f-4e87-a466-0e09d4e37d2f
 
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:

@@ -5,4 +5,4 @@ body:
   type: text
   content: '{"username":"adminAccount","password":"adminPW"}'
 settings: {}
-order: 19000
+order: 18000

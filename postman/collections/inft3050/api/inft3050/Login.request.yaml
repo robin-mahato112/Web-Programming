@@ -1,7 +1,8 @@
 $kind: http-request
-url: "{{baseUrl}}/login"
+name: 'Post Login'
+url: '{{baseUrl}}/login'
 method: POST
 body:
   type: json
   content: '{"username":"adminAccount","password":"adminPW"}'
-order: 13000
+order: 12000

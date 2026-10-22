@@ -1,0 +1,60 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/Orders"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "OrderID": "<integer>",
+        "Customer": "<integer>",
+        "StreetAddress": "<string>",
+        "PostCode": "<integer>",
+        "Suburb": "<string>",
+        "State": "<string>"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "OrderID": "<integer>",
+        "Customer": "<integer>",
+        "StreetAddress": "<string>",
+        "PostCode": "<integer>",
+        "Suburb": "<string>",
+        "State": "<string>",
+        "ProductsInOrders List": {
+          "OrderId": "<integer>",
+          "ProduktId": "<integer>",
+          "Quantity": "<integer>"
+        },
+        "TO": {
+          "CustomerID": "<integer>",
+          "PatronId": "<integer>",
+          "Email": "<string>",
+          "PhoneNumber": "<string>",
+          "StreetAddress": "<string>",
+          "PostCode": "<integer>",
+          "Suburb": "<string>",
+          "State": "<string>",
+          "CardNumber": "<string>",
+          "CardOwner": "<string>",
+          "Expiry": "<string>"
+        },
+        "Stocktake List": {
+          "ItemId": "<integer>",
+          "SourceId": "<integer>",
+          "ProductId": "<integer>",
+          "Quantity": "<integer>",
+          "Price": "<float>"
+        }
+      }
+order: 1000

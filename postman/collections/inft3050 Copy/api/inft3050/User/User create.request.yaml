@@ -1,0 +1,20 @@
+$kind: http-request
+description: Insert a new row in table by providing a key value pair object where key refers to the column alias. All the required fields should be included with payload excluding `autoincrement` and column with default value.
+url: "{{baseUrl}}/api/inft3050/User"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "UserName": "<string>",
+      "Email": "<string>",
+      "Name": "<string>",
+      "IsAdmin": "false",
+      "Salt": "<string>",
+      "HashPW": "<string>"
+    }
+examples: ./.resources/User create.resources/examples
+order: 4000
