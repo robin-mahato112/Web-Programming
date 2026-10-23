@@ -45,7 +45,7 @@ function LoginForm() {
       <p className="eyebrow">Customer account</p>
       <h1>Welcome back</h1>
       <p className="notice notice--info" role="status">Sign in with the email and password you registered with.</p>
-      <p className="auth-switch"><Link to="/admin/login">Staff sign in</Link></p>
+      <p className="auth-switch"><Link to="/admin/login">Admin sign in</Link> · <Link to="/employee/login">Employee sign in</Link></p>
 
       {error && <div className="notice notice--error" role="alert">{error}</div>}
 

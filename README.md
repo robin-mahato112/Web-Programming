@@ -11,7 +11,9 @@ A Vite/React prototype containing a home page, customer accounts, and staff dash
 
 ## Staff area (live backend)
 
-Staff sign in at `/admin/login` with a backend User account (for example `adminAccount` / `adminPW` from the course Postman collection). Admin accounts also enter the admin code (`ADMIN001` by default, set with `VITE_ADMIN_CODE`) and open `/admin`; other staff leave the code blank and open `/employee`. The admin code is checked in the browser only, so it is a prototype gate rather than real security.
+Admins sign in at `/admin/login` and employees at `/employee/login`; each page links to the other and refuses accounts of the other role. Admins use a backend User account (for example `adminAccount` / `adminPW` from the course Postman collection) plus the admin code (`ADMIN001` by default, set with `VITE_ADMIN_CODE`) and open `/admin`; employees use their username and password and open `/employee`. The admin code is checked in the browser only, so it is a prototype gate rather than real security.
+
+For frontend testing without the backend, the mock admin in `src/data/mockAdmins.js` (`admin` / `Admin12345`, code `ADMIN001`) signs in through Admin sign in. The backend does not know this account, so it can view pages but cannot save to the database.
 
 - **Dashboard** — live product, stock, price, order, and account figures with charts. Every chart has a data table.
 - **Product management** — all products with search, genre and stock filters. Price and quantity are stored per format (Stocktake row). Admins add products (with one or more formats), edit prices and stock, and delete products; deleting also removes the product's formats and order lines. Employees have a read-only view.

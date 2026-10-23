@@ -26,7 +26,7 @@ export default function Header() {
     // Staff pages already send signed-out visitors to Staff sign in, so staff sign out straight away.
     if (isStaff(user)) {
       signOut()
-      navigate('/admin/login', { replace: true })
+      navigate(`${staffHome(user)}/login`, { replace: true })
     } else if (pathname === '/') signOut()
     else {
       leavingTo.current = '/'

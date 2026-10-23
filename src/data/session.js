@@ -152,14 +152,23 @@ async function signInMockAdmin(admin, code) {
   return startSession(mockSessionUser(admin))
 }
 
-export async function signInStaff(username, password, code = '') {
+const wrongFormError = {
+  admin: 'This is an employee account. Use Employee sign in instead.',
+  employee: 'This is an admin account. Use Admin sign in instead.',
+}
+
+// expectedRole is the form used: 'admin' (with admin code) or 'employee'. Accounts of the other role are refused.
+export async function signInStaff(username, password, code, expectedRole) {
   const login = username.toLowerCase()
   const mockAdmin = mockAdmins.find(admin => (admin.username.toLowerCase() === login || admin.email.toLowerCase() === login) && admin.password === password)
-  if (mockAdmin) return signInMockAdmin(mockAdmin, code)
+  if (mockAdmin) return expectedRole === 'admin' ? signInMockAdmin(mockAdmin, code) : { error: wrongFormError.employee }
   try {
     const { data } = await api.post('/login', { username, password })
     const role = roleFromToken(data.role)
-    if (!isStaff({ role })) return { error: 'This account cannot use the staff area.' }
+    if (!isStaff({ role }) || role !== expectedRole) {
+      await api.post('/logout')
+      return { error: isStaff({ role }) ? wrongFormError[expectedRole] : 'This account cannot use the staff area.' }
+    }
     if (role === 'admin' && code.trim() !== adminCode) {
       await api.post('/logout')
       return { error: code.trim() ? 'Admin code is incorrect.' : 'This is an admin account. Enter your admin code.', field: 'adminCode' }

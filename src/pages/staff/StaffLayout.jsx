@@ -6,7 +6,7 @@ export default function StaffLayout({ requiredRole }) {
   const user = useStaffSession()
   const status = useSessionStatus()
   if (status === 'loading') return <section className="section shell dashboard-page"><p role="status">Checking your sign in…</p></section>
-  if (!user) return <Navigate to="/admin/login" replace />
+  if (!user) return <Navigate to={`/${requiredRole}/login`} replace />
   if (user.role !== requiredRole) return <Navigate to={staffHome(user)} replace />
 
   const base = `/${user.role}`

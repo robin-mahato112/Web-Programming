@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import Home from './pages/Home.jsx'
 import { Login, Registration } from './pages/AuthPages.jsx'
-import { AdminLogin } from './pages/AdminLogin.jsx'
+import { AdminLogin, EmployeeLogin } from './pages/AdminLogin.jsx'
 import AccountPage from './pages/AccountPage.jsx'
 import StaffLayout from './pages/staff/StaffLayout.jsx'
 import DashboardPage from './pages/staff/DashboardPage.jsx'
@@ -15,6 +15,7 @@ export default function App() {
     <Route path="/" element={<Home />} />
     <Route path="/login" element={<Login />} />
     <Route path="/admin/login" element={<AdminLogin />} />
+    <Route path="/employee/login" element={<EmployeeLogin />} />
     <Route path="/register" element={<Registration />} />
     <Route path="/account" element={<AccountPage />} />
     <Route path="/admin" element={<StaffLayout requiredRole="admin" />}>
