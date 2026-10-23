@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import api from '../api.js'
 import { errorMessage, field, listAll, readRow, resetResources } from './backend.js'
+import { mockAdmins } from './mockAdmins.js'
 
 // Staff (User table) and customers (Patrons) share the backend's one login cookie, so one session covers every role.
 // The cookie is HttpOnly, so the browser cannot read it. GET /me tells us whether it is still valid.
@@ -28,6 +29,29 @@ function writeVerified(userId) {
     // Without storage the admin is asked for the code again after a reload.
   }
 }
+
+// A mock admin has no backend cookie, so its session is kept in this tab instead.
+const mockKey = 'entertainment-guild-mock-admin'
+
+function readMockAdmin() {
+  try {
+    const userId = sessionStorage.getItem(mockKey)
+    return mockAdmins.find(admin => admin.userId === userId) ?? null
+  } catch {
+    return null
+  }
+}
+
+function writeMockAdmin(userId) {
+  try {
+    if (userId === null) sessionStorage.removeItem(mockKey)
+    else sessionStorage.setItem(mockKey, userId)
+  } catch {
+    // Without storage the mock admin is signed out after a reload.
+  }
+}
+
+const mockSessionUser = ({ userId, username, name, email, role }) => ({ userId, username, name, email, role, mock: true })
 
 function setState(next) {
   state = next
@@ -62,6 +86,11 @@ async function loadCustomer(id) {
 const loadUser = (id, role) => role === 'customer' ? loadCustomer(id) : loadStaffUser(id, role)
 
 async function restoreSession() {
+  const mockAdmin = readMockAdmin()
+  if (mockAdmin) {
+    setState({ status: 'ready', user: mockSessionUser(mockAdmin) })
+    return
+  }
   try {
     const { data } = await api.get('/me')
     const role = roleFromToken(data.role)
@@ -81,9 +110,11 @@ async function restoreSession() {
 restoreSession()
 
 // When the cookie expires mid-session, the next request fails with 401; treat that as being signed out.
+// A mock admin stays signed in; the request just fails with a message saying why.
 api.interceptors.response.use(undefined, error => {
   const url = error.config?.url ?? ''
-  if (error.response?.status === 401 && state.user && !/\/(login|patronLogin|me)$/.test(url)) {
+  if (error.response?.status === 401 && state.user?.mock) error.mockSession = true
+  else if (error.response?.status === 401 && state.user && !/\/(login|patronLogin|me)$/.test(url)) {
     resetResources()
     setState({ status: 'ready', user: null })
   }
@@ -111,7 +142,20 @@ function startSession(user) {
   return { user }
 }
 
+// Mock admins sign in with their username or email and need no backend.
+async function signInMockAdmin(admin, code) {
+  if (code.trim() !== admin.adminCode)
+    return { error: code.trim() ? 'Admin code is incorrect.' : 'This is an admin account. Enter your admin code.', field: 'adminCode' }
+  await api.post('/logout').catch(() => {}) // Drop any backend login so nothing is saved under another account.
+  writeVerified(null)
+  writeMockAdmin(admin.userId)
+  return startSession(mockSessionUser(admin))
+}
+
 export async function signInStaff(username, password, code = '') {
+  const login = username.toLowerCase()
+  const mockAdmin = mockAdmins.find(admin => (admin.username.toLowerCase() === login || admin.email.toLowerCase() === login) && admin.password === password)
+  if (mockAdmin) return signInMockAdmin(mockAdmin, code)
   try {
     const { data } = await api.post('/login', { username, password })
     const role = roleFromToken(data.role)
@@ -121,6 +165,7 @@ export async function signInStaff(username, password, code = '') {
       return { error: code.trim() ? 'Admin code is incorrect.' : 'This is an admin account. Enter your admin code.', field: 'adminCode' }
     }
     writeVerified(role === 'admin' ? data.id : null)
+    writeMockAdmin(null)
     return startSession(await loadStaffUser(data.id, role))
   } catch (error) {
     return { error: error.response?.status === 401 ? 'Username or password is incorrect.' : errorMessage(error) }
@@ -132,6 +177,7 @@ export async function signInCustomer(email, password) {
   try {
     const { data } = await api.post('/patronLogin', { username: email, password })
     writeVerified(null)
+    writeMockAdmin(null)
     return startSession({ userId: data.id, name: data.username || data.email, email: data.email, role: 'customer' })
   } catch (error) {
     return { error: error.response?.status === 401 ? 'Email or password is incorrect.' : errorMessage(error) }
@@ -140,6 +186,7 @@ export async function signInCustomer(email, password) {
 
 export async function signOut() {
   writeVerified(null)
+  writeMockAdmin(null)
   resetResources()
   setState({ status: 'ready', user: null })
   try {

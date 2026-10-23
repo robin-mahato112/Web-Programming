@@ -27,6 +27,7 @@ export const patchRow = (table, id, values) => api.patch(`${tablePath(table)}/${
 export const deleteRow = (table, id) => api.delete(`${tablePath(table)}/${id}`).then(response => response.data)
 
 export function errorMessage(error) {
+  if (error.mockSession) return 'The demo admin is not a backend account, so this needs a real staff sign in (for example adminAccount).'
   if (!error.response) return `Cannot reach the backend at ${apiBaseUrl}. Check that the Docker backend is running.`
   if (error.response.status === 401) return 'Your session has expired. Sign in again.'
   if (error.response.status === 403) return 'Your account is not allowed to do this.'
