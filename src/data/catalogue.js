@@ -28,6 +28,7 @@ function toProduct(row, stock, genres, subGenres) {
     id: field(row, 'ID'),
     title: field(row, 'Name'),
     author: field(row, 'Author'),
+    description: field(row, 'Description') ?? '',
     genreId,
     genre: nameById(genres)[genreId] ?? 'Unknown',
     subGenre: nameById(subGenres[genreId] ?? [])[field(row, 'SubGenre')] ?? '',
@@ -41,7 +42,7 @@ function toProduct(row, stock, genres, subGenres) {
 
 async function loadCatalogue() {
   const [productRows, stockRows, genreRows] = await Promise.all([
-    listAll('Product', { fields: 'ID,Name,Author,Genre,SubGenre,Published,LastUpdatedBy,LastUpdated' }),
+    listAll('Product', { fields: 'ID,Name,Author,Description,Genre,SubGenre,Published,LastUpdatedBy,LastUpdated' }),
     listAll('Stocktake'),
     listAll('Genre'),
   ])

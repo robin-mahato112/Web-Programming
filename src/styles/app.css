@@ -171,49 +171,10 @@ body {
   margin-top: 0.75rem;
 }
 
-.registration-roles {
-  min-width: 0;
-  margin: 1.5rem 0;
-  padding: 0;
-  border: 0;
-}
-
-.registration-roles legend {
-  margin-bottom: 0.65rem;
-  font-weight: 650;
-}
-
-.registration-roles__options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.registration-role {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.8rem;
-  border: 1px solid var(--line);
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: 650;
-}
-
-.registration-role:hover,
-.registration-role--selected {
-  background: var(--orange-soft);
-}
-
-.registration-role--selected {
-  border-color: var(--orange);
-  color: var(--orange-dark);
-}
-
-.registration-role input {
-  margin: 0;
+.auth-switch {
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .form-grid {
@@ -334,9 +295,66 @@ th {
   flex-direction: column;
 }
 
+.product-author {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Database descriptions can run to several paragraphs; cards show the first three lines. */
 .product-description {
-  margin: 0.7rem 0 1rem;
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0.7rem 0 0.6rem;
   font-size: 0.88rem;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.product-formats {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* catalogue.css styles .filter-group inputs as a full-width range slider; the Home checkbox needs normal sizing. */
+.filter-group .check-row {
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.filter-group .check-row input {
+  width: 1.1rem;
+  margin: 0;
+}
+
+.show-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.account-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+  margin-top: 1.5rem;
+}
+
+.account-layout > * {
+  margin: 0;
+}
+
+.account-layout h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+}
+
+.account-layout .summary-card strong {
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .product-price {
@@ -454,6 +472,10 @@ main pre {
 
 @media (max-width: 800px) {
   .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .account-layout {
     grid-template-columns: 1fr;
   }
 }

@@ -1,14 +1,13 @@
 import { Navigate, NavLink, Outlet } from 'react-router-dom'
-import { useStaffSession, useStaffSessionStatus } from '../../data/staffSession.js'
-import { roleLabel } from '../../data/userStore.js'
+import { roleLabel, staffHome, useSessionStatus, useStaffSession } from '../../data/session.js'
 
 // Guards every staff page and shows the section tabs. Child pages read the signed-in user from the outlet context.
 export default function StaffLayout({ requiredRole }) {
   const user = useStaffSession()
-  const status = useStaffSessionStatus()
+  const status = useSessionStatus()
   if (status === 'loading') return <section className="section shell dashboard-page"><p role="status">Checking your sign in…</p></section>
   if (!user) return <Navigate to="/admin/login" replace />
-  if (user.role !== requiredRole) return <Navigate to={user.role === 'admin' ? '/admin' : '/employee'} replace />
+  if (user.role !== requiredRole) return <Navigate to={staffHome(user)} replace />
 
   const base = `/${user.role}`
   const tabs = [

@@ -1,6 +1,13 @@
 # Entertainment Guild
 
-A Vite/React prototype containing a home page, account authentication forms, and staff dashboards. The staff area reads and writes the INFT3050 backend API; Home and the customer pages still use sample data.
+A Vite/React prototype containing a home page, customer accounts, and staff dashboards. Every page reads and writes the INFT3050 backend API; there is no sample data in the app.
+
+## Home and customer accounts (live backend)
+
+- **Home** (`/`) — the live catalogue for everyone, signed in or not: search by title or author, filter by genre, sub-genre and stock, sort by price, title or release date, and page through with Show more. Each card shows the cheapest format's price (with any discount), the formats, and stock. The hero features the most recently updated product in stock.
+- **Customer registration** (`/register`) — creates a Patrons row (the backend hashes the password), signs the customer in, and saves their phone and delivery address as a TO row. Emails already registered are rejected using `/patronLookup`. Staff accounts are not created here; admins add them in User management.
+- **Customer sign in** (`/login`) — email and password through `/patronLogin`.
+- **My account** (`/account`) — the customer's name and email (from Patrons, read only because customers cannot edit Patrons) and their delivery details, which they can update (TO).
 
 ## Staff area (live backend)
 
@@ -48,8 +55,9 @@ npm run preview
 | Route | Page |
 | --- | --- |
 | `/` | Home |
-| `/login` | Customer and employee sign-in validation |
-| `/register` | Customer registration validation |
+| `/login` | Customer sign in |
+| `/register` | Customer registration |
+| `/account` | Customer account and delivery details |
 | `/admin/login` | Staff sign in (admins and employees) |
 | `/admin` | Admin dashboard |
 | `/admin/products` | Product management |
@@ -60,16 +68,17 @@ npm run preview
 
 Register and Staff sign in are hidden from the top navigation. The customer sign-in form links to `/register` and to Staff sign in.
 
-Unknown routes redirect to Home. Staff pages redirect signed-out visitors to Staff sign in and staff with a different role to their own dashboard. The sign-in cookie lasts one hour; when it expires the next staff request signs you out.
+Unknown routes redirect to Home. Staff pages redirect signed-out visitors to Staff sign in and staff with a different role to their own dashboard. My account redirects signed-out visitors to Sign in and staff to their dashboard. Staff and customers share the backend's one sign-in cookie, so signing in as one signs out the other. The cookie lasts one hour; when it expires the next request signs you out.
 
 ## Project structure
 
-- `src/components/` — shared Button, Input, Header, Layout, ProductCard, and ProductVisual components
+- `src/components/` — shared Button, Input, DeliveryFields, Header, Layout, ProductCard, and ProductVisual components
 - `src/api.js` — axios client for the backend (base URL from `VITE_API_URL`, sends the login cookie)
-- `src/data/backend.js` — API helpers (paginated list, read, count, patch) and the shared loading store used by staff pages
-- `src/data/staffSession.js`, `catalogue.js`, `staffAccounts.js`, `discountStore.js` — staff sign in, live products and stock, accounts, and browser-only discounts
-- `src/data/mock*.js`, `productStore.js`, `userStore.js` — sample data still used by Home and the customer pages
-- `src/pages/` — Home, AuthPages, AdminLogin (staff sign in), and `staff/` (layout, dashboard, product and user management)
+- `src/data/backend.js` — API helpers (paginated list, read, count, patch) and the shared loading store
+- `src/data/session.js` — sign in and out for staff and customers, and the signed-in user
+- `src/data/catalogue.js`, `staffAccounts.js`, `customerAccount.js`, `discountStore.js` — live products and stock, staff accounts, customer registration and delivery details, and browser-only discounts
+- `src/data/productStore.js` — price, discount and validation helpers
+- `src/pages/` — Home, AuthPages (customer sign in and registration), AccountPage, AdminLogin (staff sign in), and `staff/` (layout, dashboard, product and user management)
 - `src/components/charts.jsx` — dashboard charts
 - `src/styles.css` — stylesheet entry point; import this file from `src/main.jsx`
 - `src/styles/` — supplied cream/orange theme, catalogue, cover art, commerce, and responsive styles; `app.css` adapts the existing forms and dashboards to the same theme
@@ -77,4 +86,4 @@ Unknown routes redirect to Home. Staff pages redirect signed-out visitors to Sta
 
 ## Prototype limitations
 
-Customer sign in and registration still validate against sample records and do not call the backend's `/patronLogin` or Patrons endpoints. Home shows the six sample products. Discounts exist only in the browser that set them. The backend's `GET /Source` list and `ProductsInOrders` endpoints currently fail, so format names are read one source at a time and there is no per-product sales history.
+Customers cannot change their name or email, because the backend does not let patrons edit Patrons. There is no cart or checkout yet. Home loads the whole catalogue once and filters it in the browser. Discounts exist only in the browser that set them. The backend's `GET /Source` list and `ProductsInOrders` endpoints currently fail, so format names are read one source at a time and there is no per-product sales history.

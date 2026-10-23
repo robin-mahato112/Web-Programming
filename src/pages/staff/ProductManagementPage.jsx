@@ -7,7 +7,7 @@ import { useResource } from '../../data/backend.js'
 import { catalogue, createProduct, deleteProduct, lowStockLimit, saveProduct } from '../../data/catalogue.js'
 import { useDiscounts } from '../../data/discountStore.js'
 import { formatPrice, salePrice, validateProduct } from '../../data/productStore.js'
-import { roleLabel } from '../../data/userStore.js'
+import { roleLabel } from '../../data/session.js'
 
 const pageSize = 20
 const dateFormat = new Intl.DateTimeFormat('en-AU', { dateStyle: 'medium' })

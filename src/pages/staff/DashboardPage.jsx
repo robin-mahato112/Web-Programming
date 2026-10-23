@@ -7,7 +7,7 @@ import { catalogue, lowStockLimit } from '../../data/catalogue.js'
 import { useDiscounts } from '../../data/discountStore.js'
 import { formatPrice, salePrice } from '../../data/productStore.js'
 import { accounts } from '../../data/staffAccounts.js'
-import { roleLabel } from '../../data/userStore.js'
+import { roleLabel } from '../../data/session.js'
 
 const orderCount = createResource(() => countRows('Orders'))
 

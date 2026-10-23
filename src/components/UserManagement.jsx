@@ -3,7 +3,7 @@ import Button from './Button.jsx'
 import Input from './Input.jsx'
 import { errorMessage } from '../data/backend.js'
 import { countProductsUpdatedBy, createStaffUser, deleteBlocker, deleteStaffUser, staffRoles, updateStaffUser } from '../data/staffAccounts.js'
-import { roleLabel } from '../data/userStore.js'
+import { roleLabel } from '../data/session.js'
 
 function RoleSelect({ id, value, onChange, error, disabled, hint }) {
   const helpId = `${id}-help`

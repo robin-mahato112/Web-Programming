@@ -1,8 +1,9 @@
 import { useSyncExternalStore } from 'react'
 import api from '../api.js'
-import { errorMessage, field, listAll, resetResources } from './backend.js'
+import { errorMessage, field, listAll, readRow, resetResources } from './backend.js'
 
-// The login cookie is HttpOnly, so the browser cannot read it. GET /me tells us whether it is still valid.
+// Staff (User table) and customers (Patrons) share the backend's one login cookie, so one session covers every role.
+// The cookie is HttpOnly, so the browser cannot read it. GET /me tells us whether it is still valid.
 const listeners = new Set()
 let state = { status: 'loading', user: null }
 
@@ -38,8 +39,12 @@ function subscribe(listener) {
   return () => listeners.delete(listener)
 }
 
-// Backend roles: ADMIN (User.IsAdmin) and STAFF map to the app's admin and employee areas. Patrons are customers.
-const roleFromToken = role => ({ ADMIN: 'admin', STAFF: 'employee' })[role] ?? null
+export const roleLabel = role => role.charAt(0).toUpperCase() + role.slice(1)
+export const staffHome = user => user.role === 'admin' ? '/admin' : '/employee'
+export const isStaff = user => user?.role === 'admin' || user?.role === 'employee'
+
+// Backend roles: ADMIN (User.IsAdmin) and STAFF map to the app's admin and employee areas. PATRON is a customer.
+const roleFromToken = role => ({ ADMIN: 'admin', STAFF: 'employee', PATRON: 'customer' })[role] ?? null
 
 async function loadStaffUser(id, role) {
   const [record] = await listAll('User', { where: `(UserID,eq,${id})`, fields: 'UserID,UserName,Email,Name' })
@@ -47,6 +52,14 @@ async function loadStaffUser(id, role) {
   const username = field(record, 'UserName')
   return { userId: id, username, name: field(record, 'Name') || username, email: field(record, 'Email'), role }
 }
+
+// Patrons can read only their own Patrons row.
+async function loadCustomer(id) {
+  const record = await readRow('Patrons', id, { fields: 'UserID,Name,Email' })
+  return { userId: id, name: field(record, 'Name') || field(record, 'Email'), email: field(record, 'Email'), role: 'customer' }
+}
+
+const loadUser = (id, role) => role === 'customer' ? loadCustomer(id) : loadStaffUser(id, role)
 
 async function restoreSession() {
   try {
@@ -57,52 +70,75 @@ async function restoreSession() {
       setState({ status: 'ready', user: null })
       return
     }
-    setState({ status: 'ready', user: role ? await loadStaffUser(data.id, role) : null })
-  } catch {
+    setState({ status: 'ready', user: role ? await loadUser(data.id, role) : null })
+  } catch (error) {
+    // The backend rejects every request, even public catalogue reads, while an invalid cookie is present. Clear it.
+    if (error.response?.data?.error === 'Invalid or expired token') api.post('/logout').catch(() => {})
     setState({ status: 'ready', user: null })
   }
 }
 
 restoreSession()
 
-// When the cookie expires mid-session, the next staff request fails with 401; treat that as being signed out.
+// When the cookie expires mid-session, the next request fails with 401; treat that as being signed out.
 api.interceptors.response.use(undefined, error => {
   const url = error.config?.url ?? ''
-  if (error.response?.status === 401 && state.user && !url.endsWith('/login') && !url.endsWith('/me')) {
+  if (error.response?.status === 401 && state.user && !/\/(login|patronLogin|me)$/.test(url)) {
     resetResources()
     setState({ status: 'ready', user: null })
   }
   return Promise.reject(error)
 })
 
-export function useStaffSession() {
+export function useSession() {
   return useSyncExternalStore(subscribe, () => state).user
 }
 
-export function useStaffSessionStatus() {
+export function useSessionStatus() {
   return useSyncExternalStore(subscribe, () => state).status
+}
+
+export function useStaffSession() {
+  const user = useSession()
+  return isStaff(user) ? user : null
+}
+
+export const getSessionUser = () => state.user
+
+function startSession(user) {
+  resetResources()
+  setState({ status: 'ready', user })
+  return { user }
 }
 
 export async function signInStaff(username, password, code = '') {
   try {
     const { data } = await api.post('/login', { username, password })
     const role = roleFromToken(data.role)
-    if (!role) return { error: 'This account cannot use the staff area.' }
+    if (!isStaff({ role })) return { error: 'This account cannot use the staff area.' }
     if (role === 'admin' && code.trim() !== adminCode) {
       await api.post('/logout')
       return { error: code.trim() ? 'Admin code is incorrect.' : 'This is an admin account. Enter your admin code.', field: 'adminCode' }
     }
     writeVerified(role === 'admin' ? data.id : null)
-    const user = await loadStaffUser(data.id, role)
-    resetResources()
-    setState({ status: 'ready', user })
-    return { user }
+    return startSession(await loadStaffUser(data.id, role))
   } catch (error) {
     return { error: error.response?.status === 401 ? 'Username or password is incorrect.' : errorMessage(error) }
   }
 }
 
-export async function signOutStaff() {
+// Customers sign in with their email; the backend calls it username.
+export async function signInCustomer(email, password) {
+  try {
+    const { data } = await api.post('/patronLogin', { username: email, password })
+    writeVerified(null)
+    return startSession({ userId: data.id, name: data.username || data.email, email: data.email, role: 'customer' })
+  } catch (error) {
+    return { error: error.response?.status === 401 ? 'Email or password is incorrect.' : errorMessage(error) }
+  }
+}
+
+export async function signOut() {
   writeVerified(null)
   resetResources()
   setState({ status: 'ready', user: null })

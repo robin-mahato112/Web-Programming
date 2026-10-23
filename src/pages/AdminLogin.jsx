@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
-import { signInStaff, useStaffSession } from '../data/staffSession.js'
+import { signInStaff, staffHome, useStaffSession } from '../data/session.js'
 
 const initialValues = {
   username: '',
@@ -40,7 +40,7 @@ function AuthForm() {
     setPending(false)
     if (result.field) setErrors({ [result.field]: result.error })
     else if (result.error) setError(result.error)
-    else navigate(result.user.role === 'admin' ? '/admin' : '/employee', { replace: true })
+    else navigate(staffHome(result.user), { replace: true })
   }
 
   return (
@@ -99,6 +99,6 @@ function AuthForm() {
 
 export function AdminLogin() {
   const user = useStaffSession()
-  if (user) return <Navigate to={user.role === 'admin' ? '/admin' : '/employee'} replace />
+  if (user) return <Navigate to={staffHome(user)} replace />
   return <section className="auth-page"><AuthForm /></section>
 }
