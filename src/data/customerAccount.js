@@ -1,20 +1,20 @@
 import api from '../api.js'
 import { createResource, createRow, errorMessage, field, listAll, patchRow } from './backend.js'
 import { getSessionUser, signInCustomer } from './session.js'
+import { validPassword } from './passwordRules.js'
 
 // Customers are Patrons (name, email, password). Their phone and delivery address live in the TO table,
 // which only a signed-in patron can write, and the backend only returns the patron's own TO rows.
 export const australianStates = ['ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']
 
 const emailPattern = /^\S+@\S+\.\S+$/
-const phonePattern = /^\+?[\d\s()-]{8,20}$/
+const phonePattern = /^\+?[\d\s()-]+$/
 const postcodePattern = /^\d{4}$/
-const strongPasswordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
 
 export function validateDeliveryDetails(values) {
   const errors = {}
   if (!values.phoneNumber.trim()) errors.phoneNumber = 'Enter your phone number.'
-  else if (!phonePattern.test(values.phoneNumber.trim())) errors.phoneNumber = 'Enter a valid phone number.'
+  else if (!phonePattern.test(values.phoneNumber.trim()) || !/^\d{8,15}$/.test(values.phoneNumber.replace(/\D/g, ''))) errors.phoneNumber = 'Enter a valid phone number with 8 to 15 digits.'
   if (!values.streetAddress.trim() || values.streetAddress.trim().length > 255) errors.streetAddress = 'Enter your street address.'
   if (!values.suburb.trim() || values.suburb.trim().length > 100) errors.suburb = 'Enter your suburb.'
   if (!australianStates.includes(values.state)) errors.state = 'Choose your state or territory.'
@@ -28,7 +28,7 @@ export function validateRegistration(values) {
   if (!values.email.trim()) errors.email = 'Enter your email address.'
   else if (!emailPattern.test(values.email.trim()) || values.email.trim().length > 255) errors.email = 'Enter a valid email address.'
   if (!values.password) errors.password = 'Enter your password.'
-  else if (!strongPasswordPattern.test(values.password)) errors.password = 'Use 8+ characters with letters and numbers.'
+  else if (!validPassword(values.password)) errors.password = 'Use 8+ characters with letters and numbers.'
   if (values.confirm !== values.password) errors.confirm = 'Passwords must match.'
   return { ...errors, ...validateDeliveryDetails(values) }
 }
@@ -72,7 +72,9 @@ export async function saveDeliveryDetails(values, current) {
     return { error: errorMessage(error) }
   }
   const details = toDetails(saved)
-  deliveryDetails.update(() => ({ details }))
+  const activeUser = getSessionUser()
+  if (activeUser?.userId !== user.userId || activeUser?.role !== user.role) return { error: 'Your account changed. Reload your delivery details before saving again.' }
+  deliveryDetails.replace({ details })
   return { details }
 }
 
@@ -104,5 +106,5 @@ export async function registerCustomer(values) {
   const signedIn = await signInCustomer(email, values.password)
   if (signedIn.error) return { error: `Your account was created, but signing in failed. ${signedIn.error}` }
   const saved = await saveDeliveryDetails(values, null)
-  return { user: signedIn.user, detailsError: saved.error || '' }
+  return { user: signedIn.user, detailsError: saved.error || (saved.errors ? 'Please check your delivery details.' : '') }
 }

@@ -7,6 +7,9 @@ import { mockAdmins } from './mockAdmins.js'
 // The cookie is HttpOnly, so the browser cannot read it. GET /me tells us whether it is still valid.
 const listeners = new Set()
 let state = { status: 'loading', user: null }
+let sessionVersion = 0
+let restoring = null
+const mockEnabled = import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_ADMIN === 'true'
 
 // Admins also enter an admin code. The backend has no such field, so the code is checked here and the
 // verified admin's id is remembered so a page reload does not skip the check.
@@ -34,6 +37,7 @@ function writeVerified(userId) {
 const mockKey = 'entertainment-guild-mock-admin'
 
 function readMockAdmin() {
+  if (!mockEnabled) return null
   try {
     const userId = sessionStorage.getItem(mockKey)
     return mockAdmins.find(admin => admin.userId === userId) ?? null
@@ -85,7 +89,18 @@ async function loadCustomer(id) {
 
 const loadUser = (id, role) => role === 'customer' ? loadCustomer(id) : loadStaffUser(id, role)
 
-async function restoreSession() {
+// Zehai: share restoration between routes and discard responses from an older login.
+export function restoreSession() {
+  if (restoring) return restoring
+  const pending = restoreCurrentSession()
+  restoring = pending
+  pending.finally(() => { if (restoring === pending) restoring = null })
+  return pending
+}
+
+async function restoreCurrentSession() {
+  const version = sessionVersion
+  let identityChanged = false
   const mockAdmin = readMockAdmin()
   if (mockAdmin) {
     setState({ status: 'ready', user: mockSessionUser(mockAdmin) })
@@ -93,32 +108,63 @@ async function restoreSession() {
   }
   try {
     const { data } = await api.get('/me')
+    if (version !== sessionVersion) return
     const role = roleFromToken(data.role)
+    identityChanged = data.id !== state.user?.userId || role !== state.user?.role
     if (role === 'admin' && readVerified() !== String(data.id)) {
       await api.post('/logout')
+      if (version !== sessionVersion) return
+      resetResources()
       setState({ status: 'ready', user: null })
       return
     }
-    setState({ status: 'ready', user: role ? await loadUser(data.id, role) : null })
+    const user = role ? await loadUser(data.id, role) : null
+    if (version !== sessionVersion) return
+    if (user?.userId !== state.user?.userId || user?.role !== state.user?.role) resetResources()
+    setState({ status: 'ready', user })
   } catch (error) {
-    // The backend rejects every request, even public catalogue reads, while an invalid cookie is present. Clear it.
-    if (error.response?.data?.error === 'Invalid or expired token') api.post('/logout').catch(() => {})
-    setState({ status: 'ready', user: null })
+    if (version !== sessionVersion) return
+    if (error.response?.status === 401) {
+      if (error.response?.data?.error === 'Invalid or expired token') {
+        await api.post('/logout').catch(() => {})
+        if (version !== sessionVersion) return
+      }
+      resetResources()
+      setState({ status: 'ready', user: null })
+    } else if (state.user && !identityChanged && (!error.response || error.response.status >= 500)) {
+      // Preserve mounted forms during a temporary outage, but not after an account change.
+      setState({ ...state, error: errorMessage(error) })
+    } else {
+      resetResources()
+      setState({ status: 'error', user: null, error: errorMessage(error) })
+    }
   }
 }
 
 restoreSession()
+window.addEventListener('focus', restoreSession)
+if (import.meta.hot) import.meta.hot.dispose(() => window.removeEventListener('focus', restoreSession))
 
 // When the cookie expires mid-session, the next request fails with 401; treat that as being signed out.
 // A mock admin stays signed in; the request just fails with a message saying why.
-api.interceptors.response.use(undefined, error => {
+const requestInterceptor = api.interceptors.request.use(config => {
+  config.sessionVersion = sessionVersion
+  return config
+})
+const responseInterceptor = api.interceptors.response.use(undefined, error => {
   const url = error.config?.url ?? ''
   if (error.response?.status === 401 && state.user?.mock) error.mockSession = true
-  else if (error.response?.status === 401 && state.user && !/\/(login|patronLogin|me)$/.test(url)) {
+  else if (error.response?.status === 401 && error.config?.sessionVersion === sessionVersion && state.user && !/\/(login|patronLogin|me)$/.test(url)) {
+    sessionVersion++
+    restoring = null
     resetResources()
     setState({ status: 'ready', user: null })
   }
   return Promise.reject(error)
+})
+if (import.meta.hot) import.meta.hot.dispose(() => {
+  api.interceptors.request.eject(requestInterceptor)
+  api.interceptors.response.eject(responseInterceptor)
 })
 
 export function useSession() {
@@ -129,6 +175,10 @@ export function useSessionStatus() {
   return useSyncExternalStore(subscribe, () => state).status
 }
 
+export function useSessionError() {
+  return useSyncExternalStore(subscribe, () => state).error || ''
+}
+
 export function useStaffSession() {
   const user = useSession()
   return isStaff(user) ? user : null
@@ -137,6 +187,8 @@ export function useStaffSession() {
 export const getSessionUser = () => state.user
 
 function startSession(user) {
+  sessionVersion++
+  restoring = null
   resetResources()
   setState({ status: 'ready', user })
   return { user }
@@ -160,10 +212,12 @@ const wrongFormError = {
 // expectedRole is the form used: 'admin' (with admin code) or 'employee'. Accounts of the other role are refused.
 export async function signInStaff(username, password, code, expectedRole) {
   const login = username.toLowerCase()
-  const mockAdmin = mockAdmins.find(admin => (admin.username.toLowerCase() === login || admin.email.toLowerCase() === login) && admin.password === password)
+  const mockAdmin = mockEnabled && mockAdmins.find(admin => (admin.username.toLowerCase() === login || admin.email.toLowerCase() === login) && admin.password === password)
   if (mockAdmin) return expectedRole === 'admin' ? signInMockAdmin(mockAdmin, code) : { error: wrongFormError.employee }
   try {
     const { data } = await api.post('/login', { username, password })
+    // The server replaced its one cookie; the previous customer state is no longer valid.
+    startSession(null)
     const role = roleFromToken(data.role)
     if (!isStaff({ role }) || role !== expectedRole) {
       await api.post('/logout')
@@ -185,6 +239,11 @@ export async function signInStaff(username, password, code, expectedRole) {
 export async function signInCustomer(email, password) {
   try {
     const { data } = await api.post('/patronLogin', { username: email, password })
+    if (data.role !== 'PATRON') {
+      startSession(null)
+      await api.post('/logout')
+      return { error: 'Please use a customer account.' }
+    }
     writeVerified(null)
     writeMockAdmin(null)
     return startSession({ userId: data.id, name: data.username || data.email, email: data.email, role: 'customer' })
@@ -194,13 +253,13 @@ export async function signInCustomer(email, password) {
 }
 
 export async function signOut() {
-  writeVerified(null)
-  writeMockAdmin(null)
-  resetResources()
-  setState({ status: 'ready', user: null })
   try {
     await api.post('/logout')
-  } catch {
-    // The local session is already cleared; the cookie expires on its own if the backend is unreachable.
+  } catch (error) {
+    return { error: `Could not sign out. ${errorMessage(error)} Please try again.` }
   }
+  writeVerified(null)
+  writeMockAdmin(null)
+  startSession(null)
+  return {}
 }
