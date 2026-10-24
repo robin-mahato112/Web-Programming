@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 import DeliveryFields from '../components/DeliveryFields.jsx'
+import PasswordInput from '../components/PasswordInput.jsx'
+import SessionStatus from '../components/SessionStatus.jsx'
+import { customerReturnPath, focusFirstError } from '../data/accountNavigation.js'
 import { registerCustomer } from '../data/customerAccount.js'
-import { isStaff, signInCustomer, staffHome, useSession } from '../data/session.js'
+import { isStaff, signInCustomer, staffHome, useSession, useSessionStatus } from '../data/session.js'
 
 const emailPattern = /^\S+@\S+\.\S+$/
 
@@ -13,31 +16,35 @@ const signedInHome = user => isStaff(user) ? staffHome(user) : '/account'
 
 function LoginForm() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const returnTo = customerReturnPath(location.state?.returnTo)
   const user = useSession()
   const [values, setValues] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
-  if (user && !pending) return <Navigate to={signedInHome(user)} replace />
+  if (user && !pending) return <Navigate to={isStaff(user) ? staffHome(user) : returnTo} replace />
 
   const update = event => {
     setValues({ ...values, [event.target.name]: event.target.value })
+    setErrors(current => ({ ...current, [event.target.name]: undefined }))
     setError('')
   }
   const submit = async event => {
     event.preventDefault()
+    if (pending) return
     const next = {}
     if (!values.email.trim()) next.email = 'Enter your email address.'
     else if (!emailPattern.test(values.email.trim())) next.email = 'Enter a valid email address.'
     if (!values.password) next.password = 'Enter your password.'
     setErrors(next)
-    if (Object.keys(next).length) return
+    if (Object.keys(next).length) { focusFirstError(next); return }
     setPending(true)
     const result = await signInCustomer(values.email.trim(), values.password)
     if (result.error) {
       setPending(false)
       setError(result.error)
-    } else navigate('/', { replace: true })
+    } else navigate(returnTo, { replace: true })
   }
 
   return (
@@ -49,13 +56,13 @@ function LoginForm() {
 
       {error && <div className="notice notice--error" role="alert">{error}</div>}
 
-      <div>
+      <fieldset className="account-fields" disabled={pending}>
         <Input id="email" name="email" label="Email address" type="email" autoComplete="email" value={values.email} onChange={update} error={errors.email} />
-        <Input id="password" name="password" label="Password" type="password" autoComplete="current-password" value={values.password} onChange={update} error={errors.password} />
-      </div>
+        <PasswordInput id="password" name="password" label="Password" autoComplete="current-password" value={values.password} onChange={update} error={errors.password} />
+      </fieldset>
 
       <Button type="submit" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</Button>
-      <p>New to the guild? <Link to="/register">Create an account</Link></p>
+      <p>New to the guild? <Link to="/register" state={{ returnTo }}>Create an account</Link></p>
     </form>
   )
 }
@@ -74,6 +81,7 @@ const emptyRegistration = {
 
 function RegistrationForm() {
   const navigate = useNavigate()
+  const location = useLocation()
   const user = useSession()
   const [values, setValues] = useState(emptyRegistration)
   const [errors, setErrors] = useState({})
@@ -84,18 +92,21 @@ function RegistrationForm() {
 
   const update = event => {
     setValues({ ...values, [event.target.name]: event.target.value })
+    setErrors(current => ({ ...current, [event.target.name]: undefined }))
     setError('')
   }
   const submit = async event => {
     event.preventDefault()
+    if (pending) return
     setPending(true)
     const result = await registerCustomer(values)
     if (result.user) {
-      navigate('/account', { replace: true, state: { registered: true, detailsError: result.detailsError } })
+      navigate('/account', { replace: true, state: { registered: true, detailsError: result.detailsError, returnTo: customerReturnPath(location.state?.returnTo, '/') } })
       return
     }
     setPending(false)
     setErrors(result.errors || {})
+    focusFirstError(result.errors || {})
     setError(result.error || '')
   }
 
@@ -107,19 +118,25 @@ function RegistrationForm() {
 
       {error && <div className="notice notice--error" role="alert">{error}</div>}
 
-      <div className="form-grid">
+      <fieldset className="account-fields form-grid" disabled={pending}>
         <Input id="name" name="name" label="Full name" autoComplete="name" maxLength={100} value={values.name} onChange={update} error={errors.name} />
-        <Input id="email" name="email" label="Email address" type="email" autoComplete="email" value={values.email} onChange={update} error={errors.email} />
-        <Input id="password" name="password" label="Password" type="password" autoComplete="new-password" value={values.password} onChange={update} error={errors.password} hint="Use 8+ characters with letters and numbers." />
-        <Input id="confirm" name="confirm" label="Confirm password" type="password" autoComplete="new-password" value={values.confirm} onChange={update} error={errors.confirm} />
+        <Input id="email" name="email" label="Email address" type="email" autoComplete="email" maxLength={255} value={values.email} onChange={update} error={errors.email} />
+        <PasswordInput id="password" name="password" label="Password" autoComplete="new-password" value={values.password} onChange={update} error={errors.password} showStrength />
+        <PasswordInput id="confirm" name="confirm" label="Confirm password" autoComplete="new-password" value={values.confirm} onChange={update} error={errors.confirm} />
         <DeliveryFields values={values} errors={errors} onChange={update} />
-      </div>
+      </fieldset>
 
       <Button type="submit" disabled={pending}>{pending ? 'Creating account…' : 'Create account'}</Button>
-      <p>Already a member? <Link to="/login">Sign in</Link></p>
+      <p>Already a member? <Link to="/login" state={location.state}>Sign in</Link></p>
     </form>
   )
 }
 
-export function Login() { return <section className="auth-page"><LoginForm /></section> }
-export function Registration() { return <section className="auth-page"><RegistrationForm /></section> }
+export function Login() {
+  const status = useSessionStatus()
+  return <section className="auth-page"><SessionStatus />{status !== 'loading' && <LoginForm />}</section>
+}
+export function Registration() {
+  const status = useSessionStatus()
+  return <section className="auth-page"><SessionStatus />{status !== 'loading' && <RegistrationForm />}</section>
+}

@@ -18,6 +18,7 @@ export default function App() {
     <Route path="/employee/login" element={<EmployeeLogin />} />
     <Route path="/register" element={<Registration />} />
     <Route path="/account" element={<AccountPage />} />
+    <Route path="/profile" element={<Navigate to="/account" replace />} />
     <Route path="/admin" element={<StaffLayout requiredRole="admin" />}>
       <Route index element={<DashboardPage />} />
       <Route path="products" element={<ProductManagementPage />} />

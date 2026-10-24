@@ -1,6 +1,6 @@
 # Entertainment Guild
 
-A Vite/React prototype containing a home page, customer accounts, and staff dashboards. Every page reads and writes the INFT3050 backend API; there is no sample data in the app.
+A Vite/React application containing a catalogue, customer accounts, and staff dashboards using the INFT3050 backend API. This customer-account update is based on team commit `a9798a7` on `Admin-And-Employee`, prepared on `feature/customer-accounts-final` for team review. See `docs/customer-account-candidate.md` for scope and remaining verification.
 
 ## Home and customer accounts (live backend)
 
@@ -13,7 +13,7 @@ A Vite/React prototype containing a home page, customer accounts, and staff dash
 
 Admins sign in at `/admin/login` and employees at `/employee/login`; each page links to the other and refuses accounts of the other role. Admins use a backend User account (for example `adminAccount` / `adminPW` from the course Postman collection) plus the admin code (`ADMIN001` by default, set with `VITE_ADMIN_CODE`) and open `/admin`; employees use their username and password and open `/employee`. The admin code is checked in the browser only, so it is a prototype gate rather than real security.
 
-For frontend testing without the backend, the mock admin in `src/data/mockAdmins.js` (`admin` / `Admin12345`, code `ADMIN001`) signs in through Admin sign in. The backend does not know this account, so it can view pages but cannot save to the database.
+The existing mock admin is disabled by default and in production builds. It is available only in development with `VITE_ENABLE_MOCK_ADMIN=true`. The backend does not know this account, so it cannot save to the database. Use real course accounts for integration verification.
 
 - **Dashboard** — live product, stock, price, order, and account figures with charts. Every chart has a data table.
 - **Product management** — all products with search, genre and stock filters. Price and quantity are stored per format (Stocktake row). Admins add products (with one or more formats), edit prices and stock, and delete products; deleting also removes the product's formats and order lines. Employees have a read-only view.
@@ -33,14 +33,16 @@ Requires a current Node.js LTS release, npm, and Docker Desktop.
 
    If the `auth` container shows as exited (it can start before the database is ready), run `docker compose up -d` again.
 
-2. Start the frontend. It must run on port 3000, the only origin the backend's CORS settings allow:
+2. Start the frontend. The same-origin `/backend` proxy forwards requests to the course API. Vite starts on port 3000 and selects the next free port if it is occupied; use the URL printed in the terminal:
 
    ```bash
-   npm install
+   npm ci
    npm run dev
    ```
 
-3. Optional: copy `.env.example` to `.env` to point `VITE_API_URL` at a different backend.
+3. Optional: copy `.env.example` to `.env` and set `API_PROXY_TARGET` for a different backend. Keep `VITE_API_URL=/backend` when using the proxy. Do not put database credentials in frontend environment variables.
+
+The development and preview proxies are not included in the built JavaScript. Deployment needs an HTTPS reverse proxy forwarding `/backend` to the API, or a deliberately configured API URL and CORS/cookie settings.
 
 Visit `/test-connection` to check the frontend can reach the API. Postman (collection in `postman/`) is useful for trying endpoints by hand: call **Login** first so later requests carry the cookie.
 
@@ -49,6 +51,7 @@ Visit `/test-connection` to check the frontend can reach the API. Postman (colle
 ```bash
 npm run lint
 npm run build
+npm test
 npm run preview
 ```
 
@@ -60,7 +63,9 @@ npm run preview
 | `/login` | Customer sign in |
 | `/register` | Customer registration |
 | `/account` | Customer account and delivery details |
+| `/profile` | Redirect to `/account` for older customer links |
 | `/admin/login` | Staff sign in (admins and employees) |
+| `/employee/login` | Employee sign in |
 | `/admin` | Admin dashboard |
 | `/admin/products` | Product management |
 | `/admin/users` | User management |
@@ -71,6 +76,8 @@ npm run preview
 Register and Staff sign in are hidden from the top navigation. The customer sign-in form links to `/register` and to Staff sign in.
 
 Unknown routes redirect to Home. Staff pages redirect signed-out visitors to Staff sign in and staff with a different role to their own dashboard. My account redirects signed-out visitors to Sign in and staff to their dashboard. Staff and customers share the backend's one sign-in cookie, so signing in as one signs out the other. The cookie lasts one hour; when it expires the next request signs you out.
+
+Browser tests use isolated API fixtures and do not require Docker or modify a database. They run in Microsoft Edge on desktop and mobile-sized viewports. To use a Playwright Chromium installation instead, run `npx playwright install chromium` and set `PLAYWRIGHT_CHANNEL=chromium`. API-fixture tests are not a substitute for real-backend acceptance tests.
 
 ## Project structure
 

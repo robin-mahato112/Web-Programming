@@ -82,7 +82,13 @@ export function ChartCard({ title, subtitle, legend, table, wide = false, childr
   )
 }
 
-export function LineChart({ data, name, format, formatTick = format, color = seriesColors[0], height = 260 }) {
+export function LineChart(props) {
+  // An empty catalogue has no first/last point. Keep the dashboard usable.
+  if (!props.data.length) return <p role="status">No data available yet.</p>
+  return <LinePlot {...props} />
+}
+
+function LinePlot({ data, name, format, formatTick = format, color = seriesColors[0], height = 260 }) {
   const { ref, width, tip, showAt, hide } = usePlot()
   const [active, setActive] = useState(null)
   const margin = { top: 32, right: 24, bottom: 32, left: 60 }

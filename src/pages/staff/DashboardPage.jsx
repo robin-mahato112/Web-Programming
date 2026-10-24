@@ -89,7 +89,7 @@ function Dashboard({ products, accountsState, orders }) {
       </div>
 
       <div className="chart-grid">
-        <ChartCard wide title="Catalogue updates by year" subtitle={`Products grouped by the year their record was last updated, ${firstYear} to ${lastYear}`}
+        <ChartCard wide title="Catalogue updates by year" subtitle={updatedYears.length ? `Products grouped by the year their record was last updated, ${firstYear} to ${lastYear}` : 'No dated product records yet.'}
           table={{ columns: ['Year', 'Products updated'], rows: updates.map(point => [point.label, number.format(point.value)]) }}>
           <LineChart data={updates} name="Products updated" format={value => count(value, 'product')} formatTick={value => number.format(value)} />
         </ChartCard>
