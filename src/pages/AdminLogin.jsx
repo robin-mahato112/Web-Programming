@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
-import { signInStaff, staffHome, useStaffSession } from '../data/session.js'
+import { signInStaff, staffHome, useSessionStatus, useStaffSession } from '../data/session.js'
+import SessionStatus from '../components/SessionStatus.jsx'
 
 const initialValues = {
   username: '',
@@ -114,9 +115,11 @@ function StaffSignInForm({ role }) {
 
 function StaffSignInPage({ role }) {
   const user = useStaffSession()
+  const status = useSessionStatus()
+  if (status === 'loading') return <section className="auth-page"><SessionStatus /></section>
   if (user) return <Navigate to={staffHome(user)} replace />
   // key resets the form when switching between the two pages.
-  return <section className="auth-page"><StaffSignInForm key={role} role={role} /></section>
+  return <section className="auth-page"><SessionStatus /><StaffSignInForm key={role} role={role} /></section>
 }
 
 export const AdminLogin = () => <StaffSignInPage role="admin" />

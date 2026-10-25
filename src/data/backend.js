@@ -44,6 +44,8 @@ export function resetResources() {
 // A shared, lazily loaded backend result. Components read it with useResource(); the first reader triggers the load.
 export function createResource(loader) {
   const listeners = new Set()
+  // Zehai: invalidate requests on account changes, including requests still in flight.
+  let version = 0
   let state = { status: 'idle', error: '', data: null }
   const set = next => {
     state = { ...state, ...next }
@@ -55,17 +57,26 @@ export function createResource(loader) {
   }
   const resource = {
     async load() {
+      const requestVersion = ++version
       set({ status: 'loading', error: '' })
       try {
-        set({ status: 'ready', data: await loader() })
+        const data = await loader()
+        if (requestVersion === version) set({ status: 'ready', data })
       } catch (error) {
-        set({ status: 'error', error: errorMessage(error) })
+        if (requestVersion === version) set({ status: 'error', error: errorMessage(error) })
       }
     },
     update(change) {
-      if (state.data) set({ data: change(state.data) })
+      if (!state.data) return
+      version++
+      set({ status: 'ready', error: '', data: change(state.data) })
+    },
+    replace(data) {
+      version++
+      set({ status: 'ready', error: '', data })
     },
     reset() {
+      version++
       set({ status: 'idle', error: '', data: null })
     },
     subscribe,
