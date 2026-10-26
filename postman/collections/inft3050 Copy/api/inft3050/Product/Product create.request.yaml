@@ -1,0 +1,23 @@
+$kind: http-request
+description: Insert a new row in table by providing a key value pair object where key refers to the column alias. All the required fields should be included with payload excluding `autoincrement` and column with default value.
+url: "{{baseUrl}}/api/inft3050/Product"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "ID": "<integer>",
+      "Name": "<string>",
+      "Author": "<string>",
+      "Description": "<string>",
+      "Genre": "<integer>",
+      "SubGenre": "<integer>",
+      "Published": "<string>",
+      "LastUpdatedBy": "<string>",
+      "LastUpdated": "<string>"
+    }
+examples: ./.resources/Product create.resources/examples
+order: 4000

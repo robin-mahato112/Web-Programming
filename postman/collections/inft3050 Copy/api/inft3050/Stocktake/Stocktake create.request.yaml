@@ -1,0 +1,19 @@
+$kind: http-request
+description: Insert a new row in table by providing a key value pair object where key refers to the column alias. All the required fields should be included with payload excluding `autoincrement` and column with default value.
+url: "{{baseUrl}}/api/inft3050/Stocktake"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "ItemId": "<integer>",
+      "SourceId": "<integer>",
+      "ProductId": "<integer>",
+      "Quantity": "<integer>",
+      "Price": "<float>"
+    }
+examples: ./.resources/Stocktake create.resources/examples
+order: 4000

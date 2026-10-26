@@ -1,0 +1,176 @@
+/*
+ * Product details, cart lines and the cart summary.
+ * Shared controls come from base.css; narrow layouts live in responsive.css.
+ */
+.empty-state {
+  max-width: 48rem;
+  margin: 2rem auto;
+  padding: 3rem 2rem;
+  border: 1px dashed #bfc2b5;
+  border-radius: 0.8rem;
+  text-align: center;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+.detail-price {
+  margin: 0.6rem 0;
+  color: var(--ink);
+  font-size: 2rem;
+  font-weight: 700;
+}
+.stock-strong {
+  color: #426542;
+  font-weight: 650;
+}
+.stock-strong.stock-line--out {
+  color: var(--muted);
+}
+.quantity-control {
+  display: grid;
+  grid-template-columns: 2.7rem 3rem 2.7rem;
+  align-items: center;
+  margin: 0.7rem 0 1rem;
+}
+.quantity-control button,
+.quantity-control output {
+  min-height: 2.7rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  background: #fffefa;
+}
+.quantity-control button:first-child {
+  border-radius: 0.4rem 0 0 0.4rem;
+}
+.quantity-control button:last-child {
+  border-radius: 0 0.4rem 0.4rem 0;
+}
+.quantity-control output {
+  border-inline: 0;
+}
+.quantity-control button:disabled {
+  color: #929589;
+}
+.two-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.info-panel,
+.summary-card {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--soft);
+}
+.cart-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+  gap: 2rem;
+  align-items: start;
+  margin-top: 2rem;
+}
+.cart-head {
+  display: grid;
+  grid-template-columns: 1fr 9rem 5rem;
+  gap: 1rem;
+  padding-bottom: 0.7rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.cart-item {
+  display: grid;
+  grid-template-columns: 6rem 1fr 8.4rem 4rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.2rem 0;
+  border-top: 1px solid var(--line);
+}
+.cart-item .product-visual {
+  padding: 0.7rem;
+  border-radius: 0.4rem;
+}
+.cart-item .cover-art {
+  min-height: 70px;
+}
+.cart-item .cover-title {
+  font-size: 12px;
+}
+.cart-item h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.cart-item p {
+  margin: 0.25rem 0;
+  font-size: 0.8rem;
+}
+.cart-item > strong {
+  font-size: 0.9rem;
+}
+.cart-item .text-button {
+  font-size: 0.75rem;
+}
+.summary-card {
+  margin-top: 0;
+  background: #eeeee4;
+}
+.summary-card > p {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--ink);
+}
+.summary-card hr {
+  border: 0;
+  border-top: 1px solid #cdd0bf;
+  margin: 1.2rem 0;
+}
+.summary-total {
+  font-size: 1.3rem;
+  font-weight: 750;
+}
+/* Checkout reuses storefront controls; paired fields collapse naturally on small screens. */
+.checkout-form,
+.checkout-review {
+  max-width: 760px;
+}
+.checkout-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 1.5rem 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 1rem;
+}
+.checkout input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid #777;
+  border-radius: 8px;
+  background: #fff;
+  color: #242424;
+  font: inherit;
+}
+.checkout .info-panel .button {
+  margin: 0.75rem 0.75rem 0 0;
+}
+.checkout-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.checkout-review li {
+  margin-bottom: 0.75rem;
+  overflow-wrap: anywhere;
+}
+.attempt-reference {
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,170 @@
+/*
+ * ProductVisual builds each cover from lettering, gradients and geometric shapes.
+ * Accent modifiers match catalogue records and reuse the same cover markup.
+ * The cover container supplies cqw units, keeping lettering proportional to its
+ * available width in cards and detail views while clamp limits the font size.
+ */
+.product-visual {
+  display: grid;
+  place-items: center;
+  padding: 1.6rem;
+  aspect-ratio: 1.1;
+  background: #e7e2ed;
+  overflow: hidden;
+  container-type: inline-size;
+}
+.cover-art {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  width: 86%;
+  height: 100%;
+  min-height: 130px;
+  padding: 7%;
+  background: radial-gradient(ellipse at 80% 20%, #985aca66, transparent 55%), #242540;
+  color: #f6edcc;
+  box-shadow: 4px 8px 12px #1d243225;
+  transform: rotate(-3deg);
+  transition: transform 0.2s;
+}
+.cover-edition {
+  z-index: 1;
+  font-size: clamp(4px, 3cqw, 8px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.cover-title {
+  z-index: 1;
+  margin: auto 0;
+  max-width: 90%;
+  font-family: Georgia, serif;
+  font-size: clamp(18px, 14cqw, 43px);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+  overflow-wrap: normal;
+}
+.cover-footer {
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: clamp(4px, 2.8cqw, 7px);
+  letter-spacing: 0.12em;
+}
+.cover-footer > span {
+  font-size: 1.5em;
+  font-weight: 700;
+}
+.cover-orbit {
+  position: absolute;
+  width: 110%;
+  aspect-ratio: 1;
+  left: 18%;
+  top: 20%;
+  border: 1px solid #d5b78088;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 12px #b185be20,
+    0 0 0 13px #d5b78066,
+    0 0 0 26px #b185be15,
+    0 0 0 27px #d5b78044;
+}
+.product-visual--cyan {
+  background: #d8e4dd;
+}
+.product-visual--cyan .cover-art {
+  background: linear-gradient(140deg, #193e39, #28766b);
+  color: #e5f4a0;
+}
+.product-visual--cyan .cover-title {
+  font-family: Impact, 'Arial Black', sans-serif;
+  letter-spacing: 0;
+}
+.product-visual--cyan .cover-orbit {
+  border-radius: 0;
+  transform: rotate(35deg);
+  background: repeating-linear-gradient(90deg, transparent 0 20px, #bdde9640 20px 40px);
+}
+.product-visual--rose {
+  background: #e8dcd6;
+}
+.product-visual--rose .cover-art {
+  background: radial-gradient(ellipse at 60% 60%, #a34f44, transparent 60%), #302327;
+  color: #f0c9a3;
+}
+.product-visual--rose .cover-orbit {
+  width: 55%;
+  left: 45%;
+  border: 12px solid #1c1b2088;
+  box-shadow:
+    0 0 0 15px #d8976722,
+    0 0 0 32px #1c1b2055;
+}
+.product-visual--gold {
+  background: #e9dfc4;
+}
+.product-visual--gold .cover-art {
+  background: #dca54a;
+  color: #2d3026;
+}
+.product-visual--gold .cover-orbit {
+  width: 90%;
+  top: 55%;
+  left: 35%;
+  background: repeating-radial-gradient(circle, #262923 0 2px, #444939 3px 4px);
+  border: 0;
+  box-shadow: none;
+}
+.product-visual--gold .cover-title {
+  margin: 12% 0 auto;
+  font-weight: 700;
+  font-style: italic;
+  font-size: clamp(16px, 13cqw, 38px);
+}
+.product-visual--orange {
+  background: #e5ddcb;
+}
+.product-visual--orange .cover-art {
+  background: #4c4d30;
+  color: #efdaa3;
+}
+.product-visual--orange .cover-orbit {
+  border-radius: 45% 45% 0 0;
+  width: 60%;
+  top: 20%;
+  left: 20%;
+  background: linear-gradient(150deg, transparent 40%, #bea16b55 40% 60%, transparent 60%);
+}
+.product-visual--orange .cover-title {
+  font-size: clamp(15px, 12cqw, 37px);
+  text-align: center;
+}
+.product-visual--blue {
+  background: #dce1e8;
+}
+.product-visual--blue .cover-art {
+  background: linear-gradient(160deg, #2b3167, #605592);
+  color: #e8ff9f;
+}
+.product-visual--blue .cover-title {
+  font-family: Impact, 'Arial Black', sans-serif;
+  font-style: italic;
+}
+.product-visual--blue .cover-orbit {
+  border-radius: 0;
+  transform: rotate(45deg);
+  border-color: #dcf886;
+  box-shadow:
+    0 0 0 15px #75876833,
+    0 0 0 16px #dcf88699;
+}
+.product-visual--large {
+  min-height: 30rem;
+  border-radius: 0.8rem;
+  padding: 4rem;
+}

@@ -1,94 +1,72 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
-import { existingAdmins } from '../data/mockAdmins.js'
-import { signInStaff } from '../data/staffSession.js'
+import { signInStaff, staffHome, useStaffSession } from '../data/session.js'
 
 const initialValues = {
-  email: '',
+  username: '',
   password: '',
   adminCode: '',
 }
 
-const emailPattern = /^\S+@\S+\.\S+$/
-
 function validate(values) {
   const errors = {}
-
-  if (!values.email.trim()) 
-    errors.email = 'Enter your email address.'
-  else if (!emailPattern.test(values.email)) 
-    errors.email = 'Enter a valid email address.'
-
-  if (!values.password) 
+  if (!values.username.trim())
+    errors.username = 'Enter your username.'
+  if (!values.password)
     errors.password = 'Enter your password.'
-  if (!values.adminCode.trim()) 
-    errors.adminCode = 'Enter your admin code.'
-
-  if (Object.keys(errors).length === 0) {
-    const admin = existingAdmins.find(record => record.role === 'admin' && record.email.toLowerCase() === values.email.trim().toLowerCase())
-    if (!admin || admin.password !== values.password || admin.adminCode !== values.adminCode.trim()) {
-      errors.credentials = 'Email, password, or admin code is incorrect.'
-    }
-  }
-
   return errors
 }
 
+// Admins and employees both sign in here with their backend User account. The account's role decides the dashboard.
 function AuthForm() {
   const navigate = useNavigate()
   const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})
-  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+  const [pending, setPending] = useState(false)
   const update = event => {
     setValues({ ...values, [event.target.name]: event.target.value })
-    setSubmitted(false)
+    setError('')
   }
-  const submit = event => {
+  const submit = async event => {
     event.preventDefault()
     const next = validate(values)
     setErrors(next)
-    setSubmitted(Object.keys(next).length === 0)
-    if (Object.keys(next).length === 0) {
-      const admin = existingAdmins.find(record => record.email.toLowerCase() === values.email.trim().toLowerCase())
-      signInStaff(admin)
-      navigate('/admin', { replace: true })
-    }
+    if (Object.keys(next).length) return
+    setPending(true)
+    const result = await signInStaff(values.username.trim(), values.password, values.adminCode)
+    setPending(false)
+    if (result.field) setErrors({ [result.field]: result.error })
+    else if (result.error) setError(result.error)
+    else navigate(staffHome(result.user), { replace: true })
   }
 
   return (
-    <form className="auth-card" noValidate onSubmit={submit}>
-      <p className="eyebrow">Admin accounts</p>
-      <h1>Admin sign in</h1>
+    <form className="auth-card" noValidate onSubmit={submit} aria-busy={pending}>
+      <p className="eyebrow">Staff accounts</p>
+      <h1>Staff sign in</h1>
       <p className="notice notice--info" role="status">
-        Enter your email, password, and admin code to validate your admin
-        account.
+        Sign in with your staff username and password. Admins also enter
+        their admin code; employees leave it blank.
       </p>
-      <Button
-        type="button"
-        variant="secondary"
-        onClick={() => navigate("/login")}
-      >
-        Employee Account
-      </Button>
 
-      {errors.credentials && (
+      {error && (
         <div className="notice notice--error" role="alert">
-          {errors.credentials}
+          {error}
         </div>
       )}
 
       <div>
         <Input
-          id="email"
-          name="email"
-          label="Email address"
-          type="email"
-          autoComplete="email"
-          value={values.email}
+          id="username"
+          name="username"
+          label="Username"
+          autoComplete="username"
+          value={values.username}
           onChange={update}
-          error={errors.email}
+          error={errors.username}
         />
         <Input
           id="password"
@@ -109,18 +87,18 @@ function AuthForm() {
           value={values.adminCode}
           onChange={update}
           error={errors.adminCode}
+          hint="Admins only. Employees leave this blank."
         />
       </div>
 
-      {submitted && (
-        <div className="notice" role="status">
-          Admin account identified. Login validation passed using the mock admin
-          record.
-        </div>
-      )}
-      <Button type="submit">Sign In</Button>
+      <Button type="submit" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</Button>
+      <p>Shopping with us? <Link to="/login">Customer sign in</Link></p>
     </form>
   );
 }
 
-export function AdminLogin() { return <section className="auth-page"><AuthForm /></section> }
+export function AdminLogin() {
+  const user = useStaffSession()
+  if (user) return <Navigate to={staffHome(user)} replace />
+  return <section className="auth-page"><AuthForm /></section>
+}

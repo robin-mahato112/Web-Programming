@@ -1,0 +1,13 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/GameGenre/:rowId"
+  method: DELETE
+  pathVariables:
+    rowId: ""
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

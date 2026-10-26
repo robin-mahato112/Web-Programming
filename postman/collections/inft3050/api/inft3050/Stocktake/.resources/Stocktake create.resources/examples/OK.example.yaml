@@ -1,0 +1,63 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/Stocktake"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "ItemId": "<integer>",
+        "SourceId": "<integer>",
+        "ProductId": "<integer>",
+        "Quantity": "<integer>",
+        "Price": "<float>"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "ItemId": "<integer>",
+        "SourceId": "<integer>",
+        "ProductId": "<integer>",
+        "Quantity": "<integer>",
+        "Price": "<float>",
+        "ProductsInOrders List": {
+          "OrderId": "<integer>",
+          "ProduktId": "<integer>",
+          "Quantity": "<integer>"
+        },
+        "Product": {
+          "ID": "<integer>",
+          "Name": "<string>",
+          "Author": "<string>",
+          "Description": "<string>",
+          "Genre": "<integer>",
+          "SubGenre": "<integer>",
+          "Published": "<string>",
+          "LastUpdatedBy": "<string>",
+          "LastUpdated": "<string>"
+        },
+        "Source": {
+          "Sourceid": "<integer>",
+          "SourceName": "<string>",
+          "ExternalLink": "<string>",
+          "Genre": "<integer>"
+        },
+        "Orders List": {
+          "OrderID": "<integer>",
+          "Customer": "<integer>",
+          "StreetAddress": "<string>",
+          "PostCode": "<integer>",
+          "Suburb": "<string>",
+          "State": "<string>"
+        }
+      }
+order: 1000

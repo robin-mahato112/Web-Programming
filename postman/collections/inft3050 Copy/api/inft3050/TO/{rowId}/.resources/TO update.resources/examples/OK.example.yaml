@@ -1,0 +1,34 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/TO/:rowId"
+  method: PATCH
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  pathVariables:
+    rowId: ""
+  body:
+    type: json
+    content: "{}"
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "CustomerID": "<integer>",
+        "PatronId": "<integer>",
+        "Email": "<string>",
+        "PhoneNumber": "<string>",
+        "StreetAddress": "<string>",
+        "PostCode": "<integer>",
+        "Suburb": "<string>",
+        "State": "<string>",
+        "CardNumber": "<string>",
+        "CardOwner": "<string>",
+        "Expiry": "<string>"
+      }
+order: 1000

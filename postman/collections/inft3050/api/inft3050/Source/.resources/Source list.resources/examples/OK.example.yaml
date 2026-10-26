@@ -1,0 +1,79 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/Source"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    - key: fields
+      value: <string>
+      disabled: true
+      description: Comma separated list of column names to include in the response, e.g. `fields=ID,Name,Price`. Unknown column names are ignored; if none are valid all columns are returned.
+    - key: sort
+      value: <string>
+      disabled: true
+      description: "Comma separated field names to sort rows, rows will sort in ascending order based on provided columns. To sort in descending order provide `-` prefix along with column name, like `-field`. Example : `sort=field1,-field2`"
+    - key: where
+      value: <string>
+      disabled: true
+      description: "Filter rows using one or more conditions in the form `(field,operator,value)`. Supported operators: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `like`, `nlike`, `is`, `isnot`. Use `is` / `isnot` with the value `null` to test for NULL. Combine conditions with `~and` or `~or`. Example: `where=(Name,like,Harry)~and(Price,lt,50)`. Field names must be real columns of the table; unknown columns and operators are ignored."
+    - key: limit
+      value: <number>
+      disabled: true
+      description: Pagination page size. Defaults to `25` when omitted and is capped at `1000`.
+    - key: offset
+      value: <number>
+      disabled: true
+      description: Pagination start index. Number of rows to skip before returning results, defaults to `0`.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "list": [
+          {
+            "Sourceid": "<integer>",
+            "SourceName": "<string>",
+            "ExternalLink": "<string>",
+            "Genre": {
+              "GenreID": "<integer>",
+              "Name": "<string>"
+            },
+            "Stocktake List": {
+              "ItemId": "<integer>",
+              "SourceId": "<integer>",
+              "ProductId": "<integer>",
+              "Quantity": "<integer>",
+              "Price": "<float>"
+            }
+          },
+          {
+            "Sourceid": "<integer>",
+            "SourceName": "<string>",
+            "ExternalLink": "<string>",
+            "Genre": {
+              "GenreID": "<integer>",
+              "Name": "<string>"
+            },
+            "Stocktake List": {
+              "ItemId": "<integer>",
+              "SourceId": "<integer>",
+              "ProductId": "<integer>",
+              "Quantity": "<integer>",
+              "Price": "<float>"
+            }
+          }
+        ],
+        "PageInfo": {
+          "pageSize": "<integer>",
+          "totalRows": "<integer>",
+          "isFirstPage": "<boolean>",
+          "isLastPage": "<boolean>",
+          "page": "<number>"
+        }
+      }
+order: 1000

@@ -1,0 +1,28 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/inft3050/Patrons/:rowId"
+  method: PATCH
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  pathVariables:
+    rowId: ""
+  body:
+    type: json
+    content: "{}"
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "UserID": "<integer>",
+        "Email": "<string>",
+        "Name": "<string>",
+        "Salt": "<string>",
+        "HashPW": "<string>"
+      }
+order: 1000
