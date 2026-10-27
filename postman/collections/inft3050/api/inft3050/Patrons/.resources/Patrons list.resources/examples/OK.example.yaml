@@ -40,7 +40,7 @@ response:
             "Email": "<string>",
             "Name": "<string>",
             "Salt": "<string>",
-            "HashPW": "<string>",
+            "HashPW":"{{newAccountPassword}}",
             "TO List": {
               "CustomerID": "<integer>",
               "PatronId": "<integer>",
@@ -61,7 +61,7 @@ response:
             "Email": "<string>",
             "Name": "<string>",
             "Salt": "<string>",
-            "HashPW": "<string>",
+            "HashPW":"{{newAccountPassword}}",
             "TO List": {
               "CustomerID": "<integer>",
               "PatronId": "<integer>",

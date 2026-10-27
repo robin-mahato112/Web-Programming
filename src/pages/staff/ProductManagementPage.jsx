@@ -4,18 +4,25 @@ import Button from '../../components/Button.jsx'
 import Input from '../../components/Input.jsx'
 import ResourceStatus from '../../components/ResourceStatus.jsx'
 import { useResource } from '../../data/backend.js'
-import { catalogue, createProduct, deleteProduct, lowStockLimit, saveProduct } from '../../data/catalogue.js'
+import {
+  catalogue,
+  createProduct,
+  deleteProduct,
+  lowStockLimit,
+  saveProduct,
+} from '../../data/catalogue.js'
 import { useDiscounts } from '../../data/discountStore.js'
 import { formatPrice, salePrice, validateProduct } from '../../data/productStore.js'
 import { roleLabel } from '../../data/session.js'
 
 const pageSize = 20
 const dateFormat = new Intl.DateTimeFormat('en-AU', { dateStyle: 'medium' })
-const yearOf = value => value ? new Date(value).getFullYear() : ''
-const availability = quantity => quantity === 0 ? 'Out of stock' : quantity < lowStockLimit ? 'Low stock' : 'Available'
+const yearOf = (value) => (value ? new Date(value).getFullYear() : '')
+const availability = (quantity) =>
+  quantity === 0 ? 'Out of stock' : quantity < lowStockLimit ? 'Low stock' : 'Available'
 
 function priceRange(stock, discount) {
-  const prices = stock.map(item => salePrice({ price: item.price, discount }))
+  const prices = stock.map((item) => salePrice({ price: item.price, discount }))
   if (!prices.length) return '—'
   const low = Math.min(...prices)
   const high = Math.max(...prices)
@@ -25,14 +32,22 @@ function priceRange(stock, discount) {
 function ProductEditor({ product, discount, user, onCancel, onSave }) {
   const [values, setValues] = useState({
     discount: String(discount),
-    stock: Object.fromEntries(product.stock.map(item => [item.itemId, { price: String(item.price), quantity: String(item.quantity) }])),
+    stock: Object.fromEntries(
+      product.stock.map((item) => [
+        item.itemId,
+        { price: String(item.price), quantity: String(item.quantity) },
+      ]),
+    ),
   })
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
-  const updateDiscount = event => setValues({ ...values, discount: event.target.value })
-  const updateStock = (itemId, name) => event => setValues({ ...values, stock: { ...values.stock, [itemId]: { ...values.stock[itemId], [name]: event.target.value } } })
-  const submit = async event => {
+  const updateStock = (itemId, name) => (event) =>
+    setValues({
+      ...values,
+      stock: { ...values.stock, [itemId]: { ...values.stock[itemId], [name]: event.target.value } },
+    })
+  const submit = async (event) => {
     event.preventDefault()
     setPending(true)
     const result = await saveProduct(product, values, user)
@@ -43,35 +58,78 @@ function ProductEditor({ product, discount, user, onCancel, onSave }) {
   }
 
   return (
-    <form className="product-editor" onSubmit={submit} noValidate aria-label={`Edit ${product.title}`} aria-busy={pending}>
+    <form
+      className="product-editor"
+      onSubmit={submit}
+      noValidate
+      aria-label={`Edit ${product.title}`}
+      aria-busy={pending}
+    >
       <h3>Edit {product.title}</h3>
-      <div className="product-editor__fields">
-        <Input id={`product-${product.id}-discount`} name="discount" label="Discount (%)" type="number" min="0" max="100" step="0.01" value={values.discount} onChange={updateDiscount} error={errors.discount} hint="Saved in this browser only." />
-      </div>
-      {product.stock.map(item => {
+      {product.stock.map((item) => {
         const row = values.stock[item.itemId]
-        const valid = Object.keys(validateProduct({ ...row, discount: values.discount })).length === 0
+        const valid =
+          Object.keys(validateProduct({ ...row, discount: values.discount })).length === 0
         return (
           <fieldset key={item.itemId} className="stock-fieldset">
             <legend>{item.source}</legend>
             <div className="product-editor__fields">
-              <Input id={`stock-${item.itemId}-price`} label="Price (AUD)" type="number" min="0" max="1000000" step="0.01" value={row.price} onChange={updateStock(item.itemId, 'price')} error={errors[`${item.itemId}-price`]} />
-              <Input id={`stock-${item.itemId}-quantity`} label="Quantity in stock" type="number" min="0" step="1" value={row.quantity} onChange={updateStock(item.itemId, 'quantity')} error={errors[`${item.itemId}-quantity`]} />
-              <p aria-live="polite">{valid ? `Selling price: ${formatPrice(salePrice({ price: Number(row.price), discount: Number(values.discount) }))}` : 'Enter valid values to preview the selling price.'}</p>
+              <Input
+                id={`stock-${item.itemId}-price`}
+                label="Price (AUD)"
+                type="number"
+                min="0"
+                max="1000000"
+                step="0.01"
+                value={row.price}
+                onChange={updateStock(item.itemId, 'price')}
+                error={errors[`${item.itemId}-price`]}
+              />
+              <Input
+                id={`stock-${item.itemId}-quantity`}
+                label="Quantity in stock"
+                type="number"
+                min="0"
+                step="1"
+                value={row.quantity}
+                onChange={updateStock(item.itemId, 'quantity')}
+                error={errors[`${item.itemId}-quantity`]}
+              />
+              <p aria-live="polite">
+                {valid
+                  ? `Selling price: ${formatPrice(salePrice({ price: Number(row.price), discount: Number(values.discount) }))}`
+                  : 'Enter valid values to preview the selling price.'}
+              </p>
             </div>
           </fieldset>
         )
       })}
-      {error && <p className="notice notice--error" role="alert">{error}</p>}
+      {error && (
+        <p className="notice notice--error" role="alert">
+          {error}
+        </p>
+      )}
       <div className="actions">
-        <Button type="submit" disabled={pending}>{pending ? 'Saving…' : 'Save changes'}</Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" disabled={pending}>
+          {pending ? 'Saving…' : 'Save changes'}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
       </div>
     </form>
   )
 }
 
-const emptyProduct = { title: '', author: '', description: '', genreId: '', subGenreId: '', published: '', stock: {} }
+const emptyProduct = {
+  title: '',
+  author: '',
+  description: '',
+  genreId: '',
+  subGenreId: '',
+  published: '',
+  stock: {},
+}
 
 function AddProductForm({ data, user, onCancel, onAdded }) {
   const [values, setValues] = useState(emptyProduct)
@@ -80,16 +138,28 @@ function AddProductForm({ data, user, onCancel, onAdded }) {
   const [pending, setPending] = useState(false)
   const genreId = Number(values.genreId)
   const subGenres = data.subGenres[genreId] ?? []
-  const formats = data.sources.filter(source => source.genreId === genreId)
-  const update = event => setValues({ ...values, [event.target.name]: event.target.value })
+  const formats = data.sources.filter((source) => source.genreId === genreId)
+  const update = (event) => setValues({ ...values, [event.target.name]: event.target.value })
   // A different genre has different sub-genres and formats, so clear those choices.
-  const changeGenre = event => setValues({ ...values, genreId: event.target.value, subGenreId: '', stock: {} })
-  const toggleFormat = sourceId => event => {
-    const { [sourceId]: _removed, ...rest } = values.stock
-    setValues({ ...values, stock: event.target.checked ? { ...rest, [sourceId]: { price: '', quantity: '0' } } : rest })
+  const changeGenre = (event) =>
+    setValues({ ...values, genreId: event.target.value, subGenreId: '', stock: {} })
+  const toggleFormat = (sourceId) => (event) => {
+    const rest = { ...values.stock }
+    delete rest[sourceId]
+    setValues({
+      ...values,
+      stock: event.target.checked ? { ...rest, [sourceId]: { price: '', quantity: '0' } } : rest,
+    })
   }
-  const updateStock = (sourceId, name) => event => setValues({ ...values, stock: { ...values.stock, [sourceId]: { ...values.stock[sourceId], [name]: event.target.value } } })
-  const submit = async event => {
+  const updateStock = (sourceId, name) => (event) =>
+    setValues({
+      ...values,
+      stock: {
+        ...values.stock,
+        [sourceId]: { ...values.stock[sourceId], [name]: event.target.value },
+      },
+    })
+  const submit = async (event) => {
     event.preventDefault()
     setPending(true)
     const result = await createProduct(values, user)
@@ -100,39 +170,115 @@ function AddProductForm({ data, user, onCancel, onAdded }) {
   }
 
   return (
-    <form className="product-editor add-panel" onSubmit={submit} noValidate aria-labelledby="add-product-heading" aria-busy={pending}>
+    <form
+      className="product-editor add-panel"
+      onSubmit={submit}
+      noValidate
+      aria-labelledby="add-product-heading"
+      aria-busy={pending}
+    >
       <h2 id="add-product-heading">Add product</h2>
       <div className="form-grid">
-        <Input id="new-product-title" name="title" label="Title" value={values.title} onChange={update} error={errors.title} maxLength={255} />
-        <Input id="new-product-author" name="author" label="Author, director, or studio" value={values.author} onChange={update} error={errors.author} maxLength={255} />
+        <Input
+          id="new-product-title"
+          name="title"
+          label="Title"
+          value={values.title}
+          onChange={update}
+          error={errors.title}
+          maxLength={255}
+        />
+        <Input
+          id="new-product-author"
+          name="author"
+          label="Author, director, or studio"
+          value={values.author}
+          onChange={update}
+          error={errors.author}
+          maxLength={255}
+        />
         <div className="field">
           <label htmlFor="new-product-genre">Genre</label>
-          <select id="new-product-genre" name="genreId" value={values.genreId} onChange={changeGenre} aria-invalid={Boolean(errors.genreId)} aria-describedby={errors.genreId ? 'new-product-genre-help' : undefined}>
+          <select
+            id="new-product-genre"
+            name="genreId"
+            value={values.genreId}
+            onChange={changeGenre}
+            aria-invalid={Boolean(errors.genreId)}
+            aria-describedby={errors.genreId ? 'new-product-genre-help' : undefined}
+          >
             <option value="">Choose a genre</option>
-            {data.genres.map(genre => <option key={genre.id} value={genre.id}>{genre.name}</option>)}
+            {data.genres.map((genre) => (
+              <option key={genre.id} value={genre.id}>
+                {genre.name}
+              </option>
+            ))}
           </select>
-          {errors.genreId && <small id="new-product-genre-help" className="field__error">{errors.genreId}</small>}
+          {errors.genreId && (
+            <small id="new-product-genre-help" className="field__error">
+              {errors.genreId}
+            </small>
+          )}
         </div>
         <div className="field">
           <label htmlFor="new-product-subgenre">Sub-genre</label>
-          <select id="new-product-subgenre" name="subGenreId" value={values.subGenreId} onChange={update} disabled={!subGenres.length} aria-invalid={Boolean(errors.subGenreId)} aria-describedby={errors.subGenreId ? 'new-product-subgenre-help' : undefined}>
-            <option value="">{values.genreId ? 'Choose a sub-genre' : 'Choose a genre first'}</option>
-            {subGenres.map(subGenre => <option key={subGenre.id} value={subGenre.id}>{subGenre.name}</option>)}
+          <select
+            id="new-product-subgenre"
+            name="subGenreId"
+            value={values.subGenreId}
+            onChange={update}
+            disabled={!subGenres.length}
+            aria-invalid={Boolean(errors.subGenreId)}
+            aria-describedby={errors.subGenreId ? 'new-product-subgenre-help' : undefined}
+          >
+            <option value="">
+              {values.genreId ? 'Choose a sub-genre' : 'Choose a genre first'}
+            </option>
+            {subGenres.map((subGenre) => (
+              <option key={subGenre.id} value={subGenre.id}>
+                {subGenre.name}
+              </option>
+            ))}
           </select>
-          {errors.subGenreId && <small id="new-product-subgenre-help" className="field__error">{errors.subGenreId}</small>}
+          {errors.subGenreId && (
+            <small id="new-product-subgenre-help" className="field__error">
+              {errors.subGenreId}
+            </small>
+          )}
         </div>
-        <Input id="new-product-published" name="published" label="Published or released (optional)" type="date" value={values.published} onChange={update} error={errors.published} />
+        <Input
+          id="new-product-published"
+          name="published"
+          label="Published or released (optional)"
+          type="date"
+          value={values.published}
+          onChange={update}
+          error={errors.published}
+        />
       </div>
       <div className="field">
         <label htmlFor="new-product-description">Description (optional)</label>
-        <textarea id="new-product-description" name="description" rows={3} value={values.description} onChange={update} />
+        <textarea
+          id="new-product-description"
+          name="description"
+          rows={3}
+          value={values.description}
+          onChange={update}
+        />
       </div>
 
-      <fieldset className="stock-fieldset" aria-describedby={errors.formats ? 'new-product-formats-help' : undefined}>
+      <fieldset
+        className="stock-fieldset"
+        aria-describedby={errors.formats ? 'new-product-formats-help' : undefined}
+      >
         <legend>Formats</legend>
         {!formats.length && <p>Choose a genre to see its formats.</p>}
-        {errors.formats && <p id="new-product-formats-help" className="field__error" role="alert">{errors.formats}</p>}
-        {formats.map(source => {
+        {errors.formats && (
+          <p id="new-product-formats-help" className="field__error" role="alert">
+            {errors.formats}
+          </p>
+        )}
+        {formats.map((source) => {
           const item = values.stock[source.id]
           return (
             <div key={source.id} className="format-option">
@@ -140,19 +286,48 @@ function AddProductForm({ data, user, onCancel, onAdded }) {
                 <input type="checkbox" checked={Boolean(item)} onChange={toggleFormat(source.id)} />
                 {source.name}
               </label>
-              {item && <div className="product-editor__fields">
-                <Input id={`new-format-${source.id}-price`} label={`${source.name} price (AUD)`} type="number" min="0" max="1000000" step="0.01" value={item.price} onChange={updateStock(source.id, 'price')} error={errors[`${source.id}-price`]} />
-                <Input id={`new-format-${source.id}-quantity`} label={`${source.name} quantity`} type="number" min="0" step="1" value={item.quantity} onChange={updateStock(source.id, 'quantity')} error={errors[`${source.id}-quantity`]} />
-              </div>}
+              {item && (
+                <div className="product-editor__fields">
+                  <Input
+                    id={`new-format-${source.id}-price`}
+                    label={`${source.name} price (AUD)`}
+                    type="number"
+                    min="0"
+                    max="1000000"
+                    step="0.01"
+                    value={item.price}
+                    onChange={updateStock(source.id, 'price')}
+                    error={errors[`${source.id}-price`]}
+                  />
+                  <Input
+                    id={`new-format-${source.id}-quantity`}
+                    label={`${source.name} quantity`}
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={item.quantity}
+                    onChange={updateStock(source.id, 'quantity')}
+                    error={errors[`${source.id}-quantity`]}
+                  />
+                </div>
+              )}
             </div>
           )
         })}
       </fieldset>
 
-      {error && <p className="notice notice--error" role="alert">{error}</p>}
+      {error && (
+        <p className="notice notice--error" role="alert">
+          {error}
+        </p>
+      )}
       <div className="actions">
-        <Button type="submit" disabled={pending}>{pending ? 'Adding…' : 'Add product'}</Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" disabled={pending}>
+          {pending ? 'Adding…' : 'Add product'}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
       </div>
     </form>
   )
@@ -171,11 +346,23 @@ function DeleteProduct({ product, user, onCancel, onDeleted }) {
   return (
     <div className="confirm-panel" role="group" aria-labelledby={`delete-${product.id}-heading`}>
       <h3 id={`delete-${product.id}-heading`}>Delete {product.title}?</h3>
-      <p>This permanently removes the product and its {product.stock.length === 1 ? 'format' : `${product.stock.length} formats`} from the database, including from any orders. It cannot be undone.</p>
-      {error && <p className="notice notice--error" role="alert">{error}</p>}
+      <p>
+        This permanently removes the product and its{' '}
+        {product.stock.length === 1 ? 'format' : `${product.stock.length} formats`} from the
+        database, including from any orders. It cannot be undone.
+      </p>
+      {error && (
+        <p className="notice notice--error" role="alert">
+          {error}
+        </p>
+      )}
       <div className="actions">
-        <Button type="button" variant="danger" onClick={remove} disabled={pending}>{pending ? 'Deleting…' : 'Delete product'}</Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button type="button" variant="danger" onClick={remove} disabled={pending}>
+          {pending ? 'Deleting…' : 'Delete product'}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
       </div>
     </div>
   )
@@ -185,16 +372,19 @@ function ProductRow({ product, discount, user, onDeleted }) {
   const [mode, setMode] = useState(null) // null, 'edit' or 'delete'
   const [message, setMessage] = useState('')
   const canEdit = user.role === 'admin'
-  const open = next => {
+  const open = (next) => {
     setMode(mode === next ? null : next)
     setMessage('')
   }
-  const save = ({ savedToDatabase, discountSaved }) => {
+  const save = ({ savedToDatabase }) => {
     setMode(null)
-    setMessage([
-      savedToDatabase ? 'Price and stock changes saved to the database.' : 'No price or stock changes.',
-      discountSaved ? 'Discount saved in this browser.' : 'Browser storage is unavailable, so the discount only lasts for this session.',
-    ].join(' '))
+    setMessage(
+      [
+        savedToDatabase
+          ? 'Price and stock changes saved to the database.'
+          : 'No price or stock changes.',
+      ].join(' '),
+    )
   }
 
   return (
@@ -203,32 +393,93 @@ function ProductRow({ product, discount, user, onDeleted }) {
         <th scope="row" className="product-table__info">
           <strong>{product.title}</strong>
           <small>{product.author}</small>
-          <small>{product.genre}{product.subGenre && ` · ${product.subGenre}`}{product.published && ` · ${yearOf(product.published)}`}</small>
+          <small>
+            {product.genre}
+            {product.subGenre && ` · ${product.subGenre}`}
+            {product.published && ` · ${yearOf(product.published)}`}
+          </small>
         </th>
         <td>
           <ul className="stock-list">
-            {product.stock.map(item => <li key={item.itemId}><span>{item.source}</span> {formatPrice(item.price)} · {item.quantity}</li>)}
+            {product.stock.map((item) => (
+              <li key={item.itemId}>
+                <span>{item.source}</span> {formatPrice(item.price)} · {item.quantity}
+              </li>
+            ))}
           </ul>
         </td>
-        <td>{discount}%</td>
-        <td><strong>{priceRange(product.stock, discount)}</strong></td>
-        <td>{product.quantity}</td>
-        <td><span className={product.quantity >= lowStockLimit ? 'pill' : 'pill pill--muted'}>{availability(product.quantity)}</span></td>
-        <td>{product.updatedAt && <time dateTime={product.updatedAt}>{dateFormat.format(new Date(product.updatedAt))}</time>}<small className="price-change">{product.updatedBy}</small></td>
-        {canEdit && <td>
-          <div className="row-actions">
-            <Button type="button" variant="secondary" aria-label={`Edit ${product.title}`} aria-expanded={mode === 'edit'} aria-controls={`editor-${product.id}`} onClick={() => open('edit')}>{mode === 'edit' ? 'Close' : 'Edit'}</Button>
-            <Button type="button" variant="secondary" aria-label={`Delete ${product.title}`} aria-expanded={mode === 'delete'} aria-controls={`editor-${product.id}`} onClick={() => open('delete')}>Delete</Button>
-          </div>
-        </td>}
-      </tr>
-      {canEdit && <tr hidden={!mode && !message}>
-        <td colSpan={8} id={`editor-${product.id}`}>
-          {mode === 'edit' && <ProductEditor product={product} discount={discount} user={user} onCancel={() => setMode(null)} onSave={save} />}
-          {mode === 'delete' && <DeleteProduct product={product} user={user} onCancel={() => setMode(null)} onDeleted={onDeleted} />}
-          {message && <p className="notice" role="status">{message}</p>}
+        <td>
+          <strong>{priceRange(product.stock, discount)}</strong>
         </td>
-      </tr>}
+        <td>{product.quantity}</td>
+        <td>
+          <span className={product.quantity >= lowStockLimit ? 'pill' : 'pill pill--muted'}>
+            {availability(product.quantity)}
+          </span>
+        </td>
+        <td>
+          {product.updatedAt && (
+            <time dateTime={product.updatedAt}>
+              {dateFormat.format(new Date(product.updatedAt))}
+            </time>
+          )}
+          <small className="price-change">{product.updatedBy}</small>
+        </td>
+        {canEdit && (
+          <td>
+            <div className="row-actions">
+              <Button
+                type="button"
+                variant="secondary"
+                aria-label={`Edit ${product.title}`}
+                aria-expanded={mode === 'edit'}
+                aria-controls={`editor-${product.id}`}
+                onClick={() => open('edit')}
+              >
+                {mode === 'edit' ? 'Close' : 'Edit'}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                aria-label={`Delete ${product.title}`}
+                aria-expanded={mode === 'delete'}
+                aria-controls={`editor-${product.id}`}
+                onClick={() => open('delete')}
+              >
+                Delete
+              </Button>
+            </div>
+          </td>
+        )}
+      </tr>
+      {canEdit && (
+        <tr hidden={!mode && !message}>
+          <td colSpan={8} id={`editor-${product.id}`}>
+            {mode === 'edit' && (
+              <ProductEditor
+                product={product}
+                discount={discount}
+                user={user}
+                onCancel={() => setMode(null)}
+                onSave={save}
+              />
+            )}
+            {mode === 'delete' && (
+              <DeleteProduct
+                product={product}
+                user={user}
+                onCancel={() => setMode(null)}
+                onDeleted={onDeleted}
+              />
+            )}
+            {message && (
+              <p className="notice" role="status">
+                {message}
+              </p>
+            )}
+          </td>
+        </tr>
+      )}
     </>
   )
 }
@@ -245,18 +496,23 @@ function ProductTable({ data, user }) {
   const isAdmin = user.role === 'admin'
 
   const search = query.trim().toLowerCase()
-  const matches = products.filter(product =>
-    (!search || product.title.toLowerCase().includes(search) || product.author?.toLowerCase().includes(search)) &&
-    (!genre || product.genre === genre) &&
-    (!stockFilter || (stockFilter === 'low' ? product.quantity < lowStockLimit : product.quantity === 0)))
+  const matches = products.filter(
+    (product) =>
+      (!search ||
+        product.title.toLowerCase().includes(search) ||
+        product.author?.toLowerCase().includes(search)) &&
+      (!genre || product.genre === genre) &&
+      (!stockFilter ||
+        (stockFilter === 'low' ? product.quantity < lowStockLimit : product.quantity === 0)),
+  )
   const pages = Math.max(1, Math.ceil(matches.length / pageSize))
   const current = Math.min(page, pages)
   const visible = matches.slice((current - 1) * pageSize, current * pageSize)
-  const filter = setter => event => {
+  const filter = (setter) => (event) => {
     setter(event.target.value)
     setPage(1)
   }
-  const added = product => {
+  const added = (product) => {
     setAdding(false)
     // Show the new product straight away by searching for it.
     setQuery(product.title)
@@ -268,20 +524,53 @@ function ProductTable({ data, user }) {
 
   return (
     <>
-      {isAdmin && <div className="page-actions">
-        <Button type="button" aria-expanded={adding} aria-controls="add-product" onClick={() => { setAdding(!adding); setNotice('') }}>{adding ? 'Close' : 'Add product'}</Button>
-      </div>}
+      {isAdmin && (
+        <div className="page-actions">
+          <Button
+            type="button"
+            aria-expanded={adding}
+            aria-controls="add-product"
+            onClick={() => {
+              setAdding(!adding)
+              setNotice('')
+            }}
+          >
+            {adding ? 'Close' : 'Add product'}
+          </Button>
+        </div>
+      )}
       <div id="add-product">
-        {adding && <AddProductForm data={data} user={user} onCancel={() => setAdding(false)} onAdded={added} />}
+        {adding && (
+          <AddProductForm
+            data={data}
+            user={user}
+            onCancel={() => setAdding(false)}
+            onAdded={added}
+          />
+        )}
       </div>
-      {notice && <p className="notice" role="status">{notice}</p>}
+      {notice && (
+        <p className="notice" role="status">
+          {notice}
+        </p>
+      )}
       <div className="table-filters" role="search">
-        <Input id="product-search" label="Search title or author" type="search" value={query} onChange={filter(setQuery)} />
+        <Input
+          id="product-search"
+          label="Search title or author"
+          type="search"
+          value={query}
+          onChange={filter(setQuery)}
+        />
         <div className="field">
           <label htmlFor="product-genre">Genre</label>
           <select id="product-genre" value={genre} onChange={filter(setGenre)}>
             <option value="">All genres</option>
-            {genres.map(option => <option key={option.id} value={option.name}>{option.name}</option>)}
+            {genres.map((option) => (
+              <option key={option.id} value={option.name}>
+                {option.name}
+              </option>
+            ))}
           </select>
         </div>
         <div className="field">
@@ -295,28 +584,66 @@ function ProductTable({ data, user }) {
       </div>
       <div className="table-wrap" role="region" aria-label="Product inventory" tabIndex={0}>
         <table className="product-table">
-          <caption aria-live="polite">{matches.length === products.length ? `All ${products.length} products` : `${matches.length} of ${products.length} products`}{matches.length > pageSize && `, page ${current} of ${pages}`}</caption>
-          <thead><tr>
-            <th scope="col">Product information</th>
-            <th scope="col">Formats · price · stock</th>
-            <th scope="col">Discount</th>
-            <th scope="col">Selling price</th>
-            <th scope="col">Quantity</th>
-            <th scope="col">Availability</th>
-            <th scope="col">Last updated / by</th>
-            {isAdmin && <th scope="col">Actions</th>}
-          </tr></thead>
+          <caption aria-live="polite">
+            {matches.length === products.length
+              ? `All ${products.length} products`
+              : `${matches.length} of ${products.length} products`}
+            {matches.length > pageSize && `, page ${current} of ${pages}`}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Product information</th>
+              <th scope="col">Formats · price · stock</th>
+              <th scope="col">Selling price</th>
+              <th scope="col">Quantity</th>
+              <th scope="col">Availability</th>
+              <th scope="col">Last updated / by</th>
+              {isAdmin && <th scope="col">Actions</th>}
+            </tr>
+          </thead>
           <tbody>
-            {visible.map(product => <ProductRow key={product.id} product={product} discount={discounts[product.id] ?? 0} user={user} onDeleted={deleted => setNotice(`${deleted.title} was deleted from the database.`)} />)}
-            {!visible.length && <tr><td colSpan={8}>No products match these filters.</td></tr>}
+            {visible.map((product) => (
+              <ProductRow
+                key={product.id}
+                product={product}
+                discount={discounts[product.id] ?? 0}
+                user={user}
+                onDeleted={(deleted) =>
+                  setNotice(`${deleted.title} was deleted from the database.`)
+                }
+              />
+            ))}
+            {!visible.length && (
+              <tr>
+                <td colSpan={8}>No products match these filters.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-      {pages > 1 && <nav className="pagination" aria-label="Product pages">
-        <Button type="button" variant="secondary" disabled={current === 1} onClick={() => setPage(current - 1)}>Previous</Button>
-        <span>Page {current} of {pages}</span>
-        <Button type="button" variant="secondary" disabled={current === pages} onClick={() => setPage(current + 1)}>Next</Button>
-      </nav>}
+      {pages > 1 && (
+        <nav className="pagination" aria-label="Product pages">
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={current === 1}
+            onClick={() => setPage(current - 1)}
+          >
+            Previous
+          </Button>
+          <span>
+            Page {current} of {pages}
+          </span>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={current === pages}
+            onClick={() => setPage(current + 1)}
+          >
+            Next
+          </Button>
+        </nav>
+      )}
     </>
   )
 }
@@ -330,7 +657,12 @@ export default function ProductManagementPage() {
     <>
       <p className="eyebrow">{roleLabel(user.role)} area</p>
       <h1>{isAdmin ? 'Product management' : 'Product inventory'}</h1>
-      <p className="lead">{isAdmin ? 'Add, edit, and delete products. Prices and stock are saved to the database; discounts are kept in this browser.' : 'View current prices, stock quantities, and discounts. Contact an admin to make changes.'} Prices are in AUD.</p>
+      <p className="lead">
+        {isAdmin
+          ? 'Add, edit, and delete products. Prices and stock are saved to the database.'
+          : 'View current database prices and stock quantities. Contact an admin to make changes.'}{' '}
+        Prices are in AUD.
+      </p>
       <ResourceStatus state={state} resource={catalogue} label="products">
         {state.data && <ProductTable data={state.data} user={user} />}
       </ResourceStatus>

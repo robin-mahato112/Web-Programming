@@ -12,9 +12,14 @@ export default function UserManagementPage() {
     <>
       <p className="eyebrow">Admin area</p>
       <h1>User management</h1>
-      <p className="lead">View staff and customer accounts. Edit a staff member's name or switch them between employee and admin.</p>
+      <p className="lead">
+        View staff and customer accounts. Edit a staff member's name or switch them between employee
+        and admin.
+      </p>
       <ResourceStatus state={state} resource={accounts} label="accounts">
-        {state.data && <UserManagement staff={state.data.staff} customers={state.data.customers} actor={user} />}
+        {state.data && (
+          <UserManagement staff={state.data.staff} customers={state.data.customers} actor={user} />
+        )}
       </ResourceStatus>
     </>
   )

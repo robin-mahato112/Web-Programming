@@ -5,7 +5,12 @@ import { roleLabel, staffHome, useSessionStatus, useStaffSession } from '../../d
 export default function StaffLayout({ requiredRole }) {
   const user = useStaffSession()
   const status = useSessionStatus()
-  if (status === 'loading') return <section className="section shell dashboard-page"><p role="status">Checking your sign in…</p></section>
+  if (status === 'loading')
+    return (
+      <section className="section shell dashboard-page">
+        <p role="status">Checking your sign in…</p>
+      </section>
+    )
   if (!user) return <Navigate to="/admin/login" replace />
   if (user.role !== requiredRole) return <Navigate to={staffHome(user)} replace />
 
@@ -13,15 +18,27 @@ export default function StaffLayout({ requiredRole }) {
   const tabs = [
     [base, 'Dashboard'],
     [`${base}/products`, user.role === 'admin' ? 'Product management' : 'Products'],
-    ...(user.role === 'admin' ? [[`${base}/users`, 'User management']] : []),
+    ...(user.role === 'admin'
+      ? [
+          [`${base}/users`, 'User management'],
+          ['/admin/stock', 'Stock quantities'],
+        ]
+      : []),
   ]
 
   return (
     <section className="section shell dashboard-page">
       <div className="staff-bar">
-        <p>Signed in as <strong>{user.name}</strong> <span className="pill">{roleLabel(user.role)}</span></p>
+        <p>
+          Signed in as <strong>{user.name}</strong>{' '}
+          <span className="pill">{roleLabel(user.role)}</span>
+        </p>
         <nav className="staff-tabs" aria-label={`${roleLabel(user.role)} sections`}>
-          {tabs.map(([path, label]) => <NavLink key={path} to={path} end>{label}</NavLink>)}
+          {tabs.map(([path, label]) => (
+            <NavLink key={path} to={path} end>
+              {label}
+            </NavLink>
+          ))}
         </nav>
       </div>
       <Outlet context={user} />

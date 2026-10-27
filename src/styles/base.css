@@ -67,12 +67,14 @@ button:disabled {
   left: 0.5rem;
   z-index: 99;
   transform: translateY(-150%);
+  clip-path: inset(50%);
   padding: 0.7rem 1rem;
   background: var(--ink);
   color: #fff;
 }
 .skip-link:focus {
   transform: none;
+  clip-path: none;
 }
 .site-frame {
   min-height: 100vh;
@@ -131,13 +133,13 @@ main {
   font-size: 0.88rem;
   text-decoration: none;
 }
-.site-nav a.active:not(:last-child) {
+.site-nav a.active:not(.bag-link) {
   box-shadow: 0 2px var(--orange);
 }
 .site-nav a:hover {
   color: var(--orange);
 }
-.site-nav a:last-child {
+.site-nav .bag-link {
   border: 1px solid var(--line);
   border-radius: 2rem;
   padding: 0.7rem 1.3rem;
@@ -148,6 +150,28 @@ main {
   border: 1px solid var(--line);
   border-radius: 2rem;
   background: transparent;
+}
+.auth-panel {
+  max-width: 28rem;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #fffefa;
+}
+.auth-panel > a {
+  display: inline-block;
+  margin-top: 1.5rem;
+}
+.auth-panel input,
+.stock-page input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem;
+  border: 1px solid #bfc2b5;
+  border-radius: 0.45rem;
+  background: white;
+  color: var(--ink);
 }
 .section {
   padding: 3rem 0 5rem;

@@ -7,15 +7,12 @@ import { signInStaff, staffHome, useStaffSession } from '../data/session.js'
 const initialValues = {
   username: '',
   password: '',
-  adminCode: '',
 }
 
 function validate(values) {
   const errors = {}
-  if (!values.username.trim())
-    errors.username = 'Enter your username.'
-  if (!values.password)
-    errors.password = 'Enter your password.'
+  if (!values.username.trim()) errors.username = 'Enter your username.'
+  if (!values.password) errors.password = 'Enter your password.'
   return errors
 }
 
@@ -26,17 +23,17 @@ function AuthForm() {
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
-  const update = event => {
+  const update = (event) => {
     setValues({ ...values, [event.target.name]: event.target.value })
     setError('')
   }
-  const submit = async event => {
+  const submit = async (event) => {
     event.preventDefault()
     const next = validate(values)
     setErrors(next)
     if (Object.keys(next).length) return
     setPending(true)
-    const result = await signInStaff(values.username.trim(), values.password, values.adminCode)
+    const result = await signInStaff(values.username.trim(), values.password)
     setPending(false)
     if (result.field) setErrors({ [result.field]: result.error })
     else if (result.error) setError(result.error)
@@ -48,8 +45,8 @@ function AuthForm() {
       <p className="eyebrow">Staff accounts</p>
       <h1>Staff sign in</h1>
       <p className="notice notice--info" role="status">
-        Sign in with your staff username and password. Admins also enter
-        their admin code; employees leave it blank.
+        Sign in with your staff username and password. Your account permissions determine the
+        dashboard.
       </p>
 
       {error && (
@@ -78,27 +75,24 @@ function AuthForm() {
           onChange={update}
           error={errors.password}
         />
-        <Input
-          id="adminCode"
-          name="adminCode"
-          label="Admin code"
-          type="password"
-          autoComplete="off"
-          value={values.adminCode}
-          onChange={update}
-          error={errors.adminCode}
-          hint="Admins only. Employees leave this blank."
-        />
       </div>
 
-      <Button type="submit" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</Button>
-      <p>Shopping with us? <Link to="/login">Customer sign in</Link></p>
+      <Button type="submit" disabled={pending}>
+        {pending ? 'Signing in…' : 'Sign in'}
+      </Button>
+      <p>
+        Shopping with us? <Link to="/login">Customer sign in</Link>
+      </p>
     </form>
-  );
+  )
 }
 
 export function AdminLogin() {
   const user = useStaffSession()
   if (user) return <Navigate to={staffHome(user)} replace />
-  return <section className="auth-page"><AuthForm /></section>
+  return (
+    <section className="auth-page">
+      <AuthForm />
+    </section>
+  )
 }

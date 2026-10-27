@@ -540,7 +540,6 @@
   height: 1.1rem;
 }
 
-
 @media (max-width: 800px) {
   .chart-grid {
     grid-template-columns: minmax(0, 1fr);

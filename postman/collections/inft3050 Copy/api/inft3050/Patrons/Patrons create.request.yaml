@@ -13,7 +13,7 @@ body:
       "Email": "<string>",
       "Name": "<string>",
       "Salt": "<string>",
-      "HashPW": "<string>"
+      "HashPW":"{{newAccountPassword}}"
     }
 examples: ./.resources/Patrons create.resources/examples
 order: 4000

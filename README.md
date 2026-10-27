@@ -1,89 +1,135 @@
 # Entertainment Guild
 
-A Vite/React prototype containing a home page, customer accounts, and staff dashboards. Every page reads and writes the INFT3050 backend API; there is no sample data in the app.
+Combined INFT3050 web application: customer accounts and delivery profiles, product browsing, a persistent shopping bag, simulated checkout, and staff administration. The React app uses the supplied university v1.1 cookie API and StoreDB. Products, prices and stock come from SQL Server.
 
-## Home and customer accounts (live backend)
+## Run locally
 
-- **Home** (`/`) — the live catalogue for everyone, signed in or not: search by title or author, filter by genre, sub-genre and stock, sort by price, title or release date, and page through with Show more. Each card shows the cheapest format's price (with any discount), the formats, and stock. The hero features the most recently updated product in stock.
-- **Customer registration** (`/register`) — creates a Patrons row (the backend hashes the password), signs the customer in, and saves their phone and delivery address as a TO row. Emails already registered are rejected using `/patronLookup`. Staff accounts are not created here; admins add them in User management.
-- **Customer sign in** (`/login`) — email and password through `/patronLogin`.
-- **My account** (`/account`) — the customer's name and email (from Patrons, read only because customers cannot edit Patrons) and their delivery details, which they can update (TO).
+Use Node.js 24 LTS, npm and Docker Desktop. Keep your existing university database and Docker volumes.
 
-## Staff area (live backend)
+1. Run `npm ci` in this repository.
+2. Copy `.env.example` to `.env.local`. The default API is `http://localhost:13001`.
+3. Start the university API with this project's extensions (see below).
+4. Run `npm run dev` and open `http://localhost:3000`.
 
-Staff sign in at `/admin/login` with a backend User account (for example `adminAccount` / `adminPW` from the course Postman collection). Admin accounts also enter the admin code (`ADMIN001` by default, set with `VITE_ADMIN_CODE`) and open `/admin`; other staff leave the code blank and open `/employee`. The admin code is checked in the browser only, so it is a prototype gate rather than real security.
+| Environment                  | Frontend | API on Windows | API inside Docker |
+| ---------------------------- | -------- | -------------- | ----------------- |
+| Main                         | 3000     | 13001          | 3001              |
+| Existing isolated test setup | 3002     | 13002          | 3001              |
 
-- **Dashboard** — live product, stock, price, order, and account figures with charts. Every chart has a data table.
-- **Product management** — all products with search, genre and stock filters. Price and quantity are stored per format (Stocktake row). Admins add products (with one or more formats), edit prices and stock, and delete products; deleting also removes the product's formats and order lines. Employees have a read-only view.
-- **User management** (admin only) — add, edit, and delete staff accounts in the User table, and view customer accounts from Patrons. The backend hashes new passwords. You cannot delete or change the role of your own account, and at least one admin must remain. Products list their last updater by username, so deleting a user reassigns those products to the admin doing the delete.
+`VITE_API_URL` is shared by account, staff and shopping requests. All clients send the HttpOnly login cookie. The university CORS configuration must include the frontend origin. Browser and Postman sessions are separate. Do not expose database passwords or signing keys through `VITE_*` variables.
 
-The database has no discount column, so discounts are saved per product in this browser's local storage only. The backend does not validate values, so all validation happens in the forms.
+For the existing isolated installation:
 
-## Install and run
-
-Requires a current Node.js LTS release, npm, and Docker Desktop.
-
-1. Start the backend from the course's `inft3050_2026_v1.0` folder (SQL Server on port 1433, API on port 3001):
-
-   ```bash
-   docker compose up -d
-   ```
-
-   If the `auth` container shows as exited (it can start before the database is ready), run `docker compose up -d` again.
-
-2. Start the frontend. It must run on port 3000, the only origin the backend's CORS settings allow:
-
-   ```bash
-   npm install
-   npm run dev
-   ```
-
-3. Optional: copy `.env.example` to `.env` to point `VITE_API_URL` at a different backend.
-
-Visit `/test-connection` to check the frontend can reach the API. Postman (collection in `postman/`) is useful for trying endpoints by hand: call **Login** first so later requests carry the cookie.
-
-## Checks
-
-```bash
-npm run lint
-npm run build
-npm run preview
+```powershell
+$env:VITE_API_URL='http://localhost:13002'
+$env:VITE_CATALOGUE_SOURCE='course-2026'
+npm.cmd run dev -- --port 3002
 ```
 
-## Available routes
+## Install the university API extensions
 
-| Route | Page |
-| --- | --- |
-| `/` | Home |
-| `/login` | Customer sign in |
-| `/register` | Customer registration |
-| `/account` | Customer account and delivery details |
-| `/admin/login` | Staff sign in (admins and employees) |
-| `/admin` | Admin dashboard |
-| `/admin/products` | Product management |
-| `/admin/users` | User management |
-| `/employee` | Employee dashboard |
-| `/employee/products` | Read-only product inventory |
-| `/test-connection` | Backend connection check |
+The university backend ZIP and database files are not committed. Extract the supplied v1.1 backend into an ignored `course-backend.local` directory, or point the installer at your existing extracted directory. Do not replace an existing database directory with a fresh ZIP.
 
-Register and Staff sign in are hidden from the top navigation. The customer sign-in form links to `/register` and to Staff sign in.
+```powershell
+$env:COURSE_BACKEND_DIRECTORY='C:\path\to\existing\course-backend.local'
+node scripts/install-course-checkout.js
+```
 
-Unknown routes redirect to Home. Staff pages redirect signed-out visitors to Staff sign in and staff with a different role to their own dashboard. My account redirects signed-out visitors to Sign in and staff to their dashboard. Staff and customers share the backend's one sign-in cookie, so signing in as one signs out the other. The cookie lasts one hour; when it expires the next request signs you out.
+The installer copies the extension, installs the reviewed API package/lockfile, removes sensitive debug logging, restricts generic CRUD writes, and adds a durable checkout journal. It preserves the signing key and saves original changed configuration files as ignored `.before-checkout` files. It does not run SQL or change the schema.
 
-## Project structure
+Rebuild **only the API service** using the existing Compose project name and file. Find the project name from Docker Desktop or `docker compose ls` first:
 
-- `src/components/` — shared Button, Input, DeliveryFields, Header, Layout, ProductCard, and ProductVisual components
-- `src/api.js` — axios client for the backend (base URL from `VITE_API_URL`, sends the login cookie)
-- `src/data/backend.js` — API helpers (paginated list, read, count, patch) and the shared loading store
-- `src/data/session.js` — sign in and out for staff and customers, and the signed-in user
-- `src/data/catalogue.js`, `staffAccounts.js`, `customerAccount.js`, `discountStore.js` — live products and stock, staff accounts, customer registration and delivery details, and browser-only discounts
-- `src/data/productStore.js` — price, discount and validation helpers
-- `src/pages/` — Home, AuthPages (customer sign in and registration), AccountPage, AdminLogin (staff sign in), and `staff/` (layout, dashboard, product and user management)
-- `src/components/charts.jsx` — dashboard charts
-- `src/styles.css` — stylesheet entry point; import this file from `src/main.jsx`
-- `src/styles/` — supplied cream/orange theme, catalogue, cover art, commerce, and responsive styles; `app.css` adapts the existing forms and dashboards to the same theme
-- `docs/` — original project planning documents
+```powershell
+docker compose -p YOUR_EXISTING_PROJECT -f C:\path\to\compose.yml up -d --no-deps --build auth
+```
 
-## Prototype limitations
+Keep the current SQL service, host ports, credentials and volumes. Main API mapping is `13001:3001`; the isolated API uses `13002:3001`. For a completely new database installation, follow the university setup instructions separately. Never run a migration from the legacy Windows SQL path against the university Docker database.
 
-Customers cannot change their name or email, because the backend does not let patrons edit Patrons. There is no cart or checkout yet. Home loads the whole catalogue once and filters it in the browser. Discounts exist only in the browser that set them. The backend's `GET /Source` list and `ProductsInOrders` endpoints currently fail, so format names are read one source at a time and there is no per-product sales history.
+## Customer workflow
+
+1. Browse Home or open **The collection**. The collection supports a Search button/Enter, SQL keyword search, category, price, availability and sorting. Search state stays in the URL through product details and checkout. The original Home catalogue retains its browser-side filters.
+2. Open a product, read its description and related titles, and choose a source. Each source is identified by `Stocktake.ItemId`, with its own price and stock.
+3. Add to the bag and continue shopping. Two sources of the same title remain separate. Change quantities, remove items, clear the bag or refresh; restored items are checked against current stock.
+4. Sign in, or choose **Create an account** below the sign-in form. Registration uses the university password hashing endpoint. **My account** edits the saved delivery address. Staff use the separate staff sign-in link.
+5. Checkout loads the customer profile or a newer delivery draft saved in this browser. Review/edit delivery, enter a simulator card, then review the order. Only the explicit **Pay** button submits an order.
+6. Confirmation/retry uses the original attempt identifier. Reloading a receipt does not place another order. An expired session keeps the bag and pending attempt; re-login does not automatically submit payment.
+
+No card number or CVC is stored in browser storage, the journal or order records. Use test cards only. Approved simulator number: `4242424242424242`; declined: `4000000000000002`; timeout: `4111111111111111`. Use a future expiry and three-digit test CVC. These are simulator inputs, not stored customer credentials or a real payment service.
+
+## Staff workflow
+
+Staff sign in with an existing university User account. The server role determines the dashboard; there is no browser admin code or mock-login bypass.
+
+- **Administrators:** dashboard, product creation with source listings, price/quantity editing, stock controls, and staff account management. Product/listing edits commit together. Stale prices or quantities return a conflict instead of overwriting a newer change.
+- **Employees:** dashboard and read-only product inventory. The API denies catalogue writes.
+- Product deletion is refused when its listings have order history. Use zero stock to make those listings unavailable.
+- Staff cannot delete/demote themselves or remove the last administrator. Account deletion reassigns product updater references in the same transaction.
+- Customer sessions cannot access management writes; staff sessions cannot purchase through customer checkout. All roles share one university login cookie.
+
+The database has no discount column. Browser-only discounts are not applied; catalogue, administration and checkout use the same stored prices.
+
+## API contracts
+
+| Endpoint                                    | Purpose                                                                     |
+| ------------------------------------------- | --------------------------------------------------------------------------- |
+| `GET /api/products?q=...`                   | Parameterised product search with source offers                             |
+| `/patronLogin`, `/login`, `/me`, `/logout`  | Supplied customer/staff cookie authentication                               |
+| `/api/inft3050/Patrons`, `/api/inft3050/TO` | Supplied registration and owner-scoped delivery records                     |
+| `POST /api/checkout/prepare`                | Validate customer/listing IDs/quantities and calculate current totals       |
+| `POST /api/checkout/payment-method`         | Exchange simulator card inputs for a signed masked reference                |
+| `POST /api/checkout/confirm`                | Validate reviewed prices/stock, then transactionally save order/lines/stock |
+| `GET /api/checkout/:attemptId`              | Owner-only confirmation/recovery                                            |
+| `GET/PATCH /api/admin/stock[/itemId]`       | Current listings and guarded quantity updates                               |
+| `POST /api/admin/products`                  | Create a product and its source listings together                           |
+| `PATCH/DELETE /api/admin/products/:id`      | Atomic listing edits or deletion without order-history loss                 |
+| `PATCH/DELETE /api/admin/users/:id`         | Transactional staff edits/removal                                           |
+
+Management writes require the current administrator role from SQL, an allowed Origin and `X-Management-Request: 1`. Checkout uses `X-Checkout-Request: 1`; stock quantity controls use `X-Stock-Request: 1`. Generic Product/Stocktake/order writes and generic staff edits/deletes are blocked so they cannot bypass those controls.
+
+Product edit body: `{ listings: [{ itemId, price, quantity, expected: { price, quantity } }] }`. Product create body: `{ title, author, description, genreId, subGenreId, published, listings: [{ sourceId, price, quantity }] }`. Staff edit body: `{ name, role: "admin" | "employee" }`. Checkout receives listing IDs and quantities, never a browser-authoritative total.
+
+## Checks and Postman
+
+```powershell
+npm.cmd run check
+npm.cmd run test:ui
+```
+
+`check` runs formatting, lint, Node tests and the production build. `test:ui` runs the group account tests in desktop/mobile Edge against deterministic API fixtures; it does not write to StoreDB.
+
+Verified on 27 October 2026:
+
+| Check                              | Result                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------ |
+| Formatting, lint, production build | Passed                                                                         |
+| Node automated checks              | 127 passed                                                                     |
+| Desktop/mobile account checks      | 40 passed, including checkout registration handoff                             |
+| Isolated live catalogue/cart       | Search, both sources, refresh, quantity/removal, empty stock and mobile passed |
+| Isolated live customer session     | Delivery/review and expiry recovery passed; confirmations intercepted          |
+| Isolated live administrator        | Dashboard, product/user/stock pages and customer-checkout denial passed        |
+| Isolated management writes         | Temporary product and employee create/edit/delete passed; fixtures removed     |
+
+No new purchase was run against either database during this integration. Transaction/rollback checks use deterministic database fixtures; intercepted confirmation is not evidence of a newly committed SQL order.
+
+Live scripts require private environment variables:
+
+- `tests/course.browser.js`: real catalogue/source/bag checks, read-only.
+- `tests/course-session.browser.js`: real patron session and checkout review, with every order-confirmation request intercepted before networking.
+- `tests/course-management.browser.js`: real administrator pages and customer-checkout denial, read-only.
+- `tests/course-management.integration.js`: requires API 13002 and `COURSE_MANAGEMENT_WRITES=1`; creates/removes its own product and employee fixtures, never an order.
+
+Set `REVIEW_URL`, `COURSE_API_URL`, and private `TEST_PATRON_EMAIL`/`TEST_PATRON_PASSWORD` or `TEST_ADMIN_USERNAME`/`TEST_ADMIN_PASSWORD` as appropriate. Never commit populated settings. The optional purchase test additionally requires `COURSE_CHECKOUT_WRITES=1` and only accepts isolated ports; it retains an isolated order and is not part of `check`.
+
+Import `docs/postman/University-Checkout.postman_collection.json` and the matching Main/Isolated environment. Credentials are blank placeholders. Checkout, stock and management writes are disabled by default and restricted to the isolated API by collection scripts. The original university Postman workspace remains under `postman/`; its examples have credential placeholders and port 13001.
+
+## Storage, limitations and open decisions
+
+Back up StoreDB, `checkout-state.local` and `.checkout.env` together while checkout writes are paused. Restore the matching set; a database-only backup cannot restore the receipt/retry journal. Preserve the signing key and share the durable journal if running multiple API instances.
+
+Payments are simulated. Email delivery for password recovery is not configured; the form only redeems an existing valid reset code. Email verification, authentication rate limiting and concurrent duplicate-registration protection still require backend work. The course generic API is not a production security boundary for every table.
+
+Lecturer decisions remain: shipping/tax rules, external-provider handoff versus purchase, and a formal discontinued status. Zero stock means out of stock, not permanently discontinued. No rules or charges are invented.
+
+The root dependency audit reports four high-severity affected packages: `@azure/identity`, `@azure/msal-node`, `vite` and `zod`; passing tests does not establish production security. No main StoreDB purchase, production deployment or new-computer installation is claimed by this integration.
+
+The existing planning documents and individual contribution notes describe earlier work. This README describes the combined application; earlier test counts are not evidence for the merged version.

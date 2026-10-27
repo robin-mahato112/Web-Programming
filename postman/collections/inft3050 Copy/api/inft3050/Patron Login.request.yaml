@@ -3,5 +3,5 @@ url: "{{baseUrl}}/patronLogin"
 method: POST
 body:
   type: json
-  content: '{"username":"user","password":"password"}'
+  content: '{"username":"{{patronEmail}}","password":"{{patronPassword}}"}'
 order: 13000

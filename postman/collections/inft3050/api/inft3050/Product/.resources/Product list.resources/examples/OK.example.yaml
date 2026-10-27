@@ -57,12 +57,12 @@ response:
             },
             "User": {
               "UserID": "<integer>",
-              "UserName": "<string>",
+              "UserName":"{{adminUsername}}",
               "Email": "<string>",
               "Name": "<string>",
               "IsAdmin": "<integer>",
               "Salt": "<string>",
-              "HashPW": "<string>"
+              "HashPW":"{{newAccountPassword}}"
             }
           },
           {
@@ -87,12 +87,12 @@ response:
             },
             "User": {
               "UserID": "<integer>",
-              "UserName": "<string>",
+              "UserName":"{{adminUsername}}",
               "Email": "<string>",
               "Name": "<string>",
               "IsAdmin": "<integer>",
               "Salt": "<string>",
-              "HashPW": "<string>"
+              "HashPW":"{{newAccountPassword}}"
             }
           }
         ],

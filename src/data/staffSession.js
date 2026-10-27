@@ -6,7 +6,8 @@ let currentUser = null
 
 try {
   const saved = JSON.parse(sessionStorage.getItem(sessionKey))
-  if (saved && ['admin', 'employee'].includes(saved.role) && typeof saved.name === 'string') currentUser = saved
+  if (saved && ['admin', 'employee'].includes(saved.role) && typeof saved.name === 'string')
+    currentUser = saved
 } catch {
   // Start signed out when saved session data is unavailable or invalid.
 }
@@ -27,7 +28,7 @@ export function signInStaff({ userId, name, role }) {
   } catch {
     // The in-memory session still works if browser storage is unavailable.
   }
-  listeners.forEach(listener => listener())
+  listeners.forEach((listener) => listener())
 }
 
 export function signOutStaff() {
@@ -37,5 +38,5 @@ export function signOutStaff() {
   } catch {
     // Clear the in-memory session even if browser storage is unavailable.
   }
-  listeners.forEach(listener => listener())
+  listeners.forEach((listener) => listener())
 }

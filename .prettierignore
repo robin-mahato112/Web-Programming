@@ -1,0 +1,18 @@
+node_modules/
+dist/
+coverage/
+package-lock.json
+test-results/
+playwright-report/
+
+*.local
+
+# Preserve the supplied Postman workspace and planning-document formatting.
+postman/
+.postman/
+docs/*.md
+
+src/pages/Dashboards.jsx
+src/data/mockAdmins.js
+src/data/mockEmployees.js
+src/data/mockProducts.js

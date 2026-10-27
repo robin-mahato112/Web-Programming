@@ -13,7 +13,7 @@ request:
         "Email": "<string>",
         "Name": "<string>",
         "Salt": "<string>",
-        "HashPW": "<string>"
+        "HashPW":"{{newAccountPassword}}"
       }
 response:
   statusCode: 200
@@ -28,7 +28,7 @@ response:
         "Email": "<string>",
         "Name": "<string>",
         "Salt": "<string>",
-        "HashPW": "<string>",
+        "HashPW":"{{newAccountPassword}}",
         "TO List": {
           "CustomerID": "<integer>",
           "PatronId": "<integer>",

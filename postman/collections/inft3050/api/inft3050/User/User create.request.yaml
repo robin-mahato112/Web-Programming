@@ -9,12 +9,12 @@ body:
   type: json
   content: |-
     {
-      "UserName": "<string>",
+      "UserName":"{{adminUsername}}",
       "Email": "<string>",
       "Name": "<string>",
       "IsAdmin": "false",
       "Salt": "<string>",
-      "HashPW": "<string>"
+      "HashPW":"{{newAccountPassword}}"
     }
 examples: ./.resources/User create.resources/examples
 order: 4000

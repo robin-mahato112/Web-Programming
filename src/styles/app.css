@@ -491,3 +491,9 @@ main pre {
     padding: 2rem 0.75rem;
   }
 }
+
+/* Keep keyboard-focused headings below the sticky navigation. */
+.checkout h1,
+.stock-page h2 {
+  scroll-margin-top: 8rem;
+}

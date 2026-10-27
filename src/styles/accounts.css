@@ -1,28 +1,108 @@
 /* Zehai: account controls; keep the team's typography and colours. */
-.account-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
-.account-fields.form-grid { align-items: start; }
-.account-fields .field { min-width: 0; align-content: start; }
-.password-control { position: relative; min-width: 0; }
-.field .password-control input { width: 100%; padding-right: 5rem; }
-.password-toggle {
-  position: absolute; top: 50%; right: 0.4rem; transform: translateY(-50%);
-  width: 4rem; height: 2.75rem; border: 0; border-radius: 4px;
-  background: transparent; color: var(--accent, #b74524); font: inherit; font-weight: 650;
+.account-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
 }
-.password-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
-.password-strength { font-size: 0.85rem; min-width: 0; }
-.password-strength__heading, .password-requirements li { display: flex; justify-content: space-between; gap: 0.75rem; }
-.password-strength__heading { flex-wrap: wrap; }
-.password-strength__meter { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; margin: 0.6rem 0; }
-.password-strength__meter span { height: 5px; border-radius: 2px; background: var(--line, #d7d7d0); }
-.password-strength__meter .is-active { background: #34725b; }
-.password-requirements { list-style: none; padding: 0; margin: 0; }
-.password-requirements li { margin: 0.3rem 0; color: var(--muted); }
-.password-requirements .is-met { color: #28634e; }
-.account-summary, .delivery-form { min-width: 0; padding: 1.5rem 0; border-top: 1px solid var(--line); }
-.account-summary p { overflow-wrap: anywhere; }
-.account-summary p > span { display: block; color: var(--muted); margin-bottom: 0.25rem; }
-.account-page h1 { overflow-wrap: anywhere; }
-.account-page .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem; }
-.account-fields:disabled { opacity: 0.7; }
-.auth-page > .notice { width: min(100%, 57rem); }
+.account-fields.form-grid {
+  align-items: start;
+}
+.account-fields .field {
+  min-width: 0;
+  align-content: start;
+}
+.password-control {
+  position: relative;
+  min-width: 0;
+}
+.field .password-control input {
+  width: 100%;
+  padding-right: 5rem;
+}
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.4rem;
+  transform: translateY(-50%);
+  width: 4rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent, #b74524);
+  font: inherit;
+  font-weight: 650;
+}
+.password-toggle:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+.password-strength {
+  font-size: 0.85rem;
+  min-width: 0;
+}
+.password-strength__heading,
+.password-requirements li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.password-strength__heading {
+  flex-wrap: wrap;
+}
+.password-strength__meter {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+  margin: 0.6rem 0;
+}
+.password-strength__meter span {
+  height: 5px;
+  border-radius: 2px;
+  background: var(--line, #d7d7d0);
+}
+.password-strength__meter .is-active {
+  background: #34725b;
+}
+.password-requirements {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.password-requirements li {
+  margin: 0.3rem 0;
+  color: var(--muted);
+}
+.password-requirements .is-met {
+  color: #28634e;
+}
+.account-summary,
+.delivery-form {
+  min-width: 0;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--line);
+}
+.account-summary p {
+  overflow-wrap: anywhere;
+}
+.account-summary p > span {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.account-page h1 {
+  overflow-wrap: anywhere;
+}
+.account-page .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.account-fields:disabled {
+  opacity: 0.7;
+}
+.auth-page > .notice {
+  width: min(100%, 57rem);
+}

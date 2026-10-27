@@ -9,12 +9,18 @@ export default function SessionStatus() {
   if (!error) return null
   const retry = async () => {
     setPending(true)
-    try { await restoreSession() } finally { setPending(false) }
+    try {
+      await restoreSession()
+    } finally {
+      setPending(false)
+    }
   }
-  return <div className="notice notice--error">
-    <p role="alert">{error}</p>
-    <button className="button button--secondary" type="button" disabled={pending} onClick={retry}>
-      {pending ? 'Checking account...' : 'Try again'}
-    </button>
-  </div>
+  return (
+    <div className="notice notice--error">
+      <p role="alert">{error}</p>
+      <button className="button button--secondary" type="button" disabled={pending} onClick={retry}>
+        {pending ? 'Checking account...' : 'Try again'}
+      </button>
+    </div>
+  )
 }

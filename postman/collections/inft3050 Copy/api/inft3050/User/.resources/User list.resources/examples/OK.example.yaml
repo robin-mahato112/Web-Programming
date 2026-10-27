@@ -37,12 +37,12 @@ response:
         "list": [
           {
             "UserID": "<integer>",
-            "UserName": "<string>",
+            "UserName":"{{adminUsername}}",
             "Email": "<string>",
             "Name": "<string>",
             "IsAdmin": "<integer>",
             "Salt": "<string>",
-            "HashPW": "<string>",
+            "HashPW":"{{newAccountPassword}}",
             "Product List": {
               "ID": "<integer>",
               "Name": "<string>",
@@ -57,12 +57,12 @@ response:
           },
           {
             "UserID": "<integer>",
-            "UserName": "<string>",
+            "UserName":"{{adminUsername}}",
             "Email": "<string>",
             "Name": "<string>",
             "IsAdmin": "<integer>",
             "Salt": "<string>",
-            "HashPW": "<string>",
+            "HashPW":"{{newAccountPassword}}",
             "Product List": {
               "ID": "<integer>",
               "Name": "<string>",

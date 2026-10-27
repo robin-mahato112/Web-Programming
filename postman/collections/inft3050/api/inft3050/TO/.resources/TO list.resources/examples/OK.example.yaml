@@ -61,7 +61,7 @@ response:
               "Email": "<string>",
               "Name": "<string>",
               "Salt": "<string>",
-              "HashPW": "<string>"
+              "HashPW":"{{newAccountPassword}}"
             }
           },
           {
@@ -90,7 +90,7 @@ response:
               "Email": "<string>",
               "Name": "<string>",
               "Salt": "<string>",
-              "HashPW": "<string>"
+              "HashPW":"{{newAccountPassword}}"
             }
           }
         ],

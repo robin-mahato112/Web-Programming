@@ -1,0 +1,2 @@
+# Keep text files consistent with the project's formatter on every platform.
+* text=auto eol=lf

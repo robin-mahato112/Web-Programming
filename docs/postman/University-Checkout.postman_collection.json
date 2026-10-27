@@ -1,0 +1,722 @@
+{
+  "info": {
+    "name": "Entertainment Guild - University API and Checkout",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Supplied 2026 v1.1 cookie API plus project checkout extension. Use the matching environment; credentials stay private. Confirm is blocked on main StoreDB and disabled by default on the isolated API. Browser and Postman cookies are separate. No real payment provider."
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const base = pm.environment.get('baseUrl');",
+          "const origins = { 'http://localhost:13001': 'http://localhost:3000', 'http://localhost:13002': 'http://localhost:3002' };",
+          "if (!origins[base]) { pm.execution.skipRequest(); throw new Error('Use the main 13001 or isolated 13002 local environment.'); }",
+          "pm.variables.set('frontendOrigin', origins[base]);"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Public BookGenre",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/inft3050/BookGenre",
+        "description": ""
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('University list response', () => pm.expect(pm.response.json().list).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Public product catalogue",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/inft3050/Product?limit=100&offset=0",
+        "description": "First catalogue page; the website follows all pages."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Source listing and stock",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/inft3050/Stocktake/{{itemId}}",
+        "description": "ItemId identifies the source-specific listing, not merely a product."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Existing patron login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Checkout-Request",
+            "value": "1"
+          }
+        ],
+        "url": "{{baseUrl}}/patronLogin",
+        "description": "Postman cookie jar keeps the HttpOnly session; never copy it into a collection variable.",
+        "body": {
+          "mode": "raw",
+          "raw": "{{requestBody}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const username = pm.environment.get('patronEmail'), password = pm.environment.get('patronPassword');",
+              "if (!username || !password) { pm.execution.skipRequest(); throw new Error('Enter existing patron credentials in private local environment values.'); }",
+              "pm.variables.set('requestBody', JSON.stringify({ username, password }));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "",
+              "if (pm.response.code === 200) {",
+              "  const customer = pm.response.json();",
+              "  pm.test('Customer role', () => pm.expect(customer.role).to.equal('PATRON'));",
+              "  pm.environment.set('customerName', customer.username);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Current customer session",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          }
+        ],
+        "url": "{{baseUrl}}/me",
+        "description": ""
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05b - My order lines (v1.1)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/inft3050/ProductsInOrders?limit=100&offset=0",
+        "description": "Requires patron login. Lists only lines belonging to the signed-in patron. Read-only; order creation still uses the transactional checkout extension."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Order lines', () => pm.expect(pm.response.json().list).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Prepare current checkout quote",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Checkout-Request",
+            "value": "1"
+          }
+        ],
+        "url": "{{baseUrl}}/api/checkout/prepare",
+        "description": "Reads current SQL prices/stock; does not save an order. Do not prepare a new attempt to recover an interrupted confirm.",
+        "body": {
+          "mode": "raw",
+          "raw": "{{requestBody}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const customer = { name: pm.environment.get('customerName'), email: pm.environment.get('patronEmail'), phone: '', street: '12 Test Street', suburb: 'Newcastle', postcode: '2300', state: 'NSW' };",
+              "const quantity = Number(pm.environment.get('quantity'));",
+              "if (!Number.isInteger(quantity) || quantity < 1) { pm.execution.skipRequest(); throw new Error('Use a positive whole quantity.'); }",
+              "pm.variables.set('requestBody', JSON.stringify({ items: [{ itemId: pm.environment.get('itemId'), quantity }], customer }));",
+              "pm.variables.set('quoteCustomer', JSON.stringify(customer));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "",
+              "if (pm.response.code === 200) {",
+              "  const quote = pm.response.json();",
+              "  pm.environment.set('attemptId', quote.token);",
+              "  pm.environment.set('reviewedItems', JSON.stringify(quote.reviewedItems));",
+              "  pm.environment.set('checkoutCustomer', pm.variables.get('quoteCustomer'));",
+              "  pm.environment.unset('paymentToken');",
+              "  pm.environment.unset('confirmBody');",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Select simulated credit-card outcome",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Checkout-Request",
+            "value": "1"
+          }
+        ],
+        "url": "{{baseUrl}}/api/checkout/payment-method",
+        "description": "Only simulator fixtures are supplied. No real card input. The backend signs the outcome; this request does not create an order.",
+        "body": {
+          "mode": "raw",
+          "raw": "{{requestBody}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const cards = { approved: '4242424242424242', declined: '4000000000000002', 'timed-out': '4111111111111111' };",
+              "const number = cards[pm.environment.get('paymentResult')], token = pm.environment.get('attemptId');",
+              "if (!number || !token) { pm.execution.skipRequest(); throw new Error('Prepare first; choose approved, declined or timed-out.'); }",
+              "pm.variables.set('requestBody', JSON.stringify({ token, card: { holder: pm.environment.get('customerName'), number, expiry: '12/99', cvc: '123' } }));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "",
+              "if (pm.response.code === 200) {",
+              "  const paymentToken = pm.response.json().paymentToken;",
+              "  pm.environment.set('paymentToken', paymentToken);",
+              "  pm.environment.set('confirmBody', JSON.stringify({ token: pm.environment.get('attemptId'), items: JSON.parse(pm.environment.get('reviewedItems')), customer: JSON.parse(pm.environment.get('checkoutCustomer')), paymentToken }));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Confirm purchase [ISOLATED WRITE]",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Checkout-Request",
+            "value": "1"
+          }
+        ],
+        "url": "{{baseUrl}}/api/checkout/confirm",
+        "description": "Approval persists one isolated order and deducts stock. Main 13001 is always blocked by this collection. For retry, send this identical saved body; do not prepare a new attempt.",
+        "body": {
+          "mode": "raw",
+          "raw": "{{requestBody}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const url = pm.variables.replaceIn(pm.request.url.toString());",
+              "if (url !== 'http://localhost:13002/api/checkout/confirm' || pm.environment.get('allowIsolatedPurchase') !== 'true') {",
+              "  pm.execution.skipRequest();",
+              "  throw new Error('Purchase blocked: only isolated port 13002 with allowIsolatedPurchase=true is permitted.');",
+              "}",
+              "const payload = pm.environment.get('confirmBody');",
+              "if (!payload || JSON.parse(payload).token !== pm.environment.get('attemptId')) {",
+              "  pm.execution.skipRequest();",
+              "  throw new Error('Prepare and select a card before confirming.');",
+              "}",
+              "pm.variables.set('requestBody', payload);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Checkout outcome', () => pm.expect(['approved','declined','timed-out','changed']).to.include(pm.response.json().status));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Recover saved checkout result",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/checkout/{{attemptId}}",
+        "description": "Authenticated owner read only. Use after an interrupted response or refresh."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - End Postman customer session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          }
+        ],
+        "url": "{{baseUrl}}/logout",
+        "description": ""
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - SQL keyword search",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products?q={{searchTerm}}"
+      }
+    },
+    {
+      "name": "13 - Administrator login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "14 - Administrator stock listings",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/admin/stock"
+      }
+    },
+    {
+      "name": "15 - Save isolated listing stock",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Stock-Request",
+            "value": "1"
+          }
+        ],
+        "url": "{{baseUrl}}/api/admin/stock/{{itemId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{{stockBody}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const base = pm.environment.get('baseUrl');",
+              "if (base !== 'http://localhost:13002' || pm.environment.get('allowIsolatedStockEdit') !== 'true') { pm.execution.skipRequest(); throw new Error('Stock edit blocked: use isolated 13002 and explicitly enable allowIsolatedStockEdit.'); }",
+              "const quantity = Number(pm.environment.get('newStock')), expectedQuantity = Number(pm.environment.get('expectedStock'));",
+              "if (![quantity, expectedQuantity].every(v => Number.isInteger(v) && v >= 0 && v <= 2147483647) || [pm.environment.get('newStock'), pm.environment.get('expectedStock')].some(v => v === '' || v == null)) { pm.execution.skipRequest(); throw new Error('Enter the current and intended whole stock quantities.'); }",
+              "pm.variables.set('stockBody', JSON.stringify({ quantity, expectedQuantity }));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Management - Create product",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/admin/products",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Management-Request",
+            "value": "1"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{{managementBody}}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.environment.get('baseUrl') !== 'http://localhost:13002' || pm.environment.get('allowIsolatedManagementEdit') !== 'true') { pm.execution.skipRequest(); throw new Error('Management writes require isolated 13002 and explicit opt-in.'); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Management - Edit source listings",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/admin/products/{{productId}}",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Management-Request",
+            "value": "1"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{{managementBody}}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.environment.get('baseUrl') !== 'http://localhost:13002' || pm.environment.get('allowIsolatedManagementEdit') !== 'true') { pm.execution.skipRequest(); throw new Error('Management writes require isolated 13002 and explicit opt-in.'); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Management - Delete unordered product",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/admin/products/{{productId}}",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Management-Request",
+            "value": "1"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.environment.get('baseUrl') !== 'http://localhost:13002' || pm.environment.get('allowIsolatedManagementEdit') !== 'true') { pm.execution.skipRequest(); throw new Error('Management writes require isolated 13002 and explicit opt-in.'); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Management - Edit staff account",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/admin/users/{{staffUserId}}",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Management-Request",
+            "value": "1"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{{managementBody}}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.environment.get('baseUrl') !== 'http://localhost:13002' || pm.environment.get('allowIsolatedManagementEdit') !== 'true') { pm.execution.skipRequest(); throw new Error('Management writes require isolated 13002 and explicit opt-in.'); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Management - Delete staff account",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/admin/users/{{staffUserId}}",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{frontendOrigin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Management-Request",
+            "value": "1"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.environment.get('baseUrl') !== 'http://localhost:13002' || pm.environment.get('allowIsolatedManagementEdit') !== 'true') { pm.execution.skipRequest(); throw new Error('Management writes require isolated 13002 and explicit opt-in.'); }"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

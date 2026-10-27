@@ -30,12 +30,9 @@ The pages are prototypes only. Authentication, sessions, password hashing, and d
 | Navigation link | `src/components/Header.jsx` |
 | Form/profile styling | `src/styles.css` |
 
-## Test Login
+## Historical prototype
 
-The Sprint 1 mock customer can be used to demonstrate successful login validation:
-
-- Email: `jane.l.j.citizen@somemail.com`
-- Password: `Password123`
+This document records Sprint 1 planning. Its mock login is retired; use the current README and a university-backed account.
 
 ## Validation Rules
 

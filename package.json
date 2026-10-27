@@ -7,21 +7,36 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run lint && npm test && npm run build",
+    "test:sql": "node --env-file-if-exists=.env.local --test tests/sql.integration.js",
+    "test:browser": "node --env-file=.env.local tests/course.browser.js",
+    "setup:customer": "node --env-file=.env.local scripts/setup-customer.js",
+    "test:ui": "playwright test"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "axios": "^1.20.0",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-router-dom": "latest",
-    "vite": "latest"
+    "express": "^5.2.1",
+    "mssql": "12.7.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-router-dom": "7.18.4",
+    "axios": "^1.20.0"
   },
   "devDependencies": {
-    "@eslint/js": "latest",
-    "eslint": "latest",
-    "eslint-plugin-react-hooks": "latest",
-    "eslint-plugin-react-refresh": "latest",
-    "globals": "latest"
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "^1.63.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "eslint": "10.10.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "globals": "17.12.0",
+    "prettier": "3.8.3",
+    "vite": "8.3.0"
+  },
+  "optionalDependencies": {
+    "msnodesqlv8": "5.5.0"
   }
 }

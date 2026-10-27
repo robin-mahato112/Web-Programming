@@ -23,6 +23,6 @@ response:
         "Email": "<string>",
         "Name": "<string>",
         "Salt": "<string>",
-        "HashPW": "<string>"
+        "HashPW":"{{newAccountPassword}}"
       }
 order: 1000
