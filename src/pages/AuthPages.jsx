@@ -7,6 +7,7 @@ import PasswordInput from '../components/PasswordInput.jsx'
 import SessionStatus from '../components/SessionStatus.jsx'
 import { customerReturnPath, focusFirstError } from '../data/accountNavigation.js'
 import { registerCustomer } from '../data/customerAccount.js'
+import { validCustomerEmail } from '../data/customerEmail.js'
 import {
   isStaff,
   signInCustomer,
@@ -14,8 +15,6 @@ import {
   useSession,
   useSessionStatus,
 } from '../data/session.js'
-
-const emailPattern = /^\S+@\S+\.\S+$/
 
 // Where a signed-in visitor goes instead of seeing these forms.
 const signedInHome = (user) => (isStaff(user) ? staffHome(user) : '/account')
@@ -43,7 +42,7 @@ function LoginForm() {
     if (pending) return
     const next = {}
     if (!values.email.trim()) next.email = 'Enter your email address.'
-    else if (!emailPattern.test(values.email.trim())) next.email = 'Enter a valid email address.'
+    else if (!validCustomerEmail(values.email)) next.email = 'Enter a valid email address.'
     if (!values.password) next.password = 'Enter your password.'
     setErrors(next)
     if (Object.keys(next).length) {
@@ -238,7 +237,16 @@ function RegistrationForm() {
       </Button>
       <p>
         Already a member?{' '}
-        <Link to="/login" state={location.state}>
+        <Link
+          to={
+            '/login?' +
+            new URLSearchParams({
+              returnTo: customerReturnPath(
+                new URLSearchParams(location.search).get('returnTo') || location.state?.returnTo,
+              ),
+            })
+          }
+        >
           Sign in
         </Link>
       </p>

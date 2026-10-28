@@ -1,6 +1,130 @@
 import { test, expect } from '@playwright/test'
 
+// AI-assisted regression checks for account-only changes.
+test('malformed customer emails are rejected before login or registration requests', async ({
+  page,
+}) => {
+  const model = await backend(page)
+  await page.goto('/login')
+  await page.getByLabel('Email address', { exact: true }).fill('a@@example.com')
+  await page.getByLabel('Password', { exact: true }).fill('Testing123')
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await expect(page.getByLabel('Email address', { exact: true })).toBeFocused()
+  await expect(page.getByLabel('Email address', { exact: true })).toHaveAttribute(
+    'aria-invalid',
+    'true',
+  )
+  expect(model.requests.filter((r) => r.path === '/patronLogin')).toHaveLength(0)
+  await page.goto('/register')
+  await fillRegistration(page)
+  await page.getByLabel('Email address', { exact: true }).fill('a@@example.com')
+  await page.getByRole('button', { name: 'Create account', exact: true }).click()
+  await expect(page.getByLabel('Email address', { exact: true })).toBeFocused()
+  expect(model.requests.filter((r) => r.method === 'POST')).toHaveLength(0)
+})
+
+test('normalized staff destinations fall back to the customer account after login', async ({
+  page,
+}) => {
+  await backend(page)
+  await page.goto('/login?returnTo=' + encodeURIComponent('/x/../admin'))
+  await page.getByLabel('Email address', { exact: true }).fill(customer.email)
+  await page.getByLabel('Password', { exact: true }).fill('Testing123')
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await expect(page).toHaveURL(/\/account$/)
+  await expect(page.getByRole('heading', { name: 'Hello, Test Customer' })).toBeVisible()
+})
+
+test('registration and profile reject addresses without both a number and a name', async ({
+  page,
+}) => {
+  const model = await backend(page)
+  await page.goto('/register')
+  await fillRegistration(page)
+  for (const address of ['Ring Road', '377', '---']) {
+    await page.getByLabel('Street address').fill(address)
+    await page.getByRole('button', { name: 'Create account', exact: true }).click()
+    await expect(page.getByLabel('Street address')).toHaveAttribute('aria-invalid', 'true')
+    await expect(page.getByLabel('Street address')).toBeFocused()
+  }
+  expect(model.requests.filter((r) => r.method === 'POST')).toHaveLength(0)
+  await page.getByLabel('Street address').fill('Unit 2/377 Ring Road')
+  await page.getByRole('button', { name: 'Create account', exact: true }).click()
+  await expect(page).toHaveURL(/\/account$/)
+  await page.getByLabel('Street address').fill('Ring Road')
+  await page.getByRole('button', { name: 'Save delivery details' }).click()
+  await expect(page.getByLabel('Street address')).toHaveAttribute('aria-invalid', 'true')
+  expect(model.requests.filter((r) => r.method === 'PATCH')).toHaveLength(0)
+  await page.getByRole('button', { name: 'Reset', exact: true }).click()
+  await expect(page.getByLabel('Street address')).toHaveValue('Unit 2/377 Ring Road')
+})
+
+test('register to login keeps a checkout destination supplied in the URL', async ({ page }) => {
+  await backend(page)
+  const destination = '/checkout?q=king&sort=name'
+  await page.goto('/register?returnTo=' + encodeURIComponent(destination))
+  await page.getByRole('link', { name: 'Sign in', exact: true }).last().click()
+  await expect(page).toHaveURL('/login?' + new URLSearchParams({ returnTo: destination }))
+  await page.getByLabel('Email address', { exact: true }).fill(customer.email)
+  await page.getByLabel('Password', { exact: true }).fill('Testing123')
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await expect(page).toHaveURL(destination)
+})
+
+test('profile save publishes only validated delivery fields for the signed-in checkout account', async ({
+  page,
+}) => {
+  await backend(page, { user: { ...customer } })
+  await page.goto('/account')
+  await expect(page.getByLabel('Postcode')).toHaveValue('0800')
+  await page.getByLabel('Street address').fill('20 Updated Street')
+  await page.getByRole('button', { name: 'Save delivery details' }).click()
+  await expect(page.getByText('Delivery details saved.', { exact: true })).toBeVisible()
+  const drafts = await page.evaluate(async () => {
+    const { readDelivery } = await import('/src/lib/delivery-draft.js')
+    return { own: readDelivery('201'), other: readDelivery('202') }
+  })
+  expect(drafts.own.street).toBe('20 Updated Street')
+  expect(drafts.own.postcode).toBe('0800')
+  expect(drafts.own.email).toBeUndefined()
+  expect(drafts.other).toEqual({})
+})
+
 // Deterministic API contract fixtures, not evidence of a live database connection.
+test('a save completed after sign out cannot repopulate the checkout draft', async ({ page }) => {
+  await backend(page, { user: { ...customer } })
+  await page.goto('/account')
+  await expect(page.getByLabel('Street address')).toHaveValue('10 Test Street')
+  let release
+  const wait = new Promise((resolve) => {
+    release = resolve
+  })
+  let requested = false
+  await page.route('**/backend/api/inft3050/TO/301', async (route) => {
+    requested = true
+    await wait
+    await route.fulfill({ json: { ...contact, StreetAddress: '20 Updated Street' } })
+  })
+  await page.getByLabel('Street address').fill('20 Updated Street')
+  await page.getByRole('button', { name: 'Save delivery details' }).click()
+  await expect.poll(() => requested).toBe(true)
+  await openNavigation(page)
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click()
+  await expect(page).toHaveURL(/\/login$/)
+  const response = page.waitForResponse(
+    (r) => r.url().endsWith('/TO/301') && r.request().method() === 'PATCH',
+  )
+  release()
+  await (await response).finished()
+  const result = await page.evaluate(async () => {
+    const { deliveryDetails } = await import('/src/data/customerAccount.js')
+    const { readDelivery } = await import('/src/lib/delivery-draft.js')
+    return { draft: readDelivery('201'), data: deliveryDetails.getState().data }
+  })
+  expect(result.draft).toEqual({})
+  expect(result.data).toBeNull()
+})
+
 const customer = {
   id: 201,
   email: 'customer@example.test',
@@ -299,10 +423,10 @@ test('save freezes inputs, preserves leading zero postcode, reset uses last save
   await page.getByRole('button', { name: 'Reset', exact: true }).click()
   await expect(page.getByLabel('Street address')).toHaveValue('20 Updated Street')
   model.saveFailure = true
-  await page.getByLabel('Street address').fill('Failed edit')
+  await page.getByLabel('Street address').fill('30 Failed Street')
   await page.getByRole('button', { name: 'Save delivery details' }).click()
   await expect(page.getByRole('alert')).toBeVisible()
-  await expect(page.getByLabel('Street address')).toHaveValue('Failed edit')
+  await expect(page.getByLabel('Street address')).toHaveValue('30 Failed Street')
   await page.getByRole('button', { name: 'Reset', exact: true }).click()
   await expect(page.getByLabel('Street address')).toHaveValue('20 Updated Street')
   await page.reload()

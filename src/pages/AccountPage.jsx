@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import DeliveryFields from '../components/DeliveryFields.jsx'
+import CustomerOrderHistory from '../components/CustomerOrderHistory.jsx'
 import ResourceStatus from '../components/ResourceStatus.jsx'
 import SessionStatus from '../components/SessionStatus.jsx'
 import { customerReturnPath, focusFirstError } from '../data/accountNavigation.js'
@@ -154,6 +155,7 @@ function Account({ user }) {
           )}
         </ResourceStatus>
       </div>
+      <CustomerOrderHistory key={user.userId} userId={user.userId} />
     </section>
   )
 }

@@ -3,12 +3,12 @@ import { saveDelivery } from '../lib/delivery-draft.js'
 import { createResource, createRow, errorMessage, field, listAll, patchRow } from './backend.js'
 import { getSessionUser, signInCustomer } from './session.js'
 import { validPassword } from './passwordRules.js'
+import { validCustomerEmail } from './customerEmail.js'
 
 // Customers are Patrons (name, email, password). Their phone and delivery address live in the TO table,
 // which only a signed-in patron can write, and the backend only returns the patron's own TO rows.
 export const australianStates = ['ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']
 
-const emailPattern = /^\S+@\S+\.\S+$/
 const phonePattern = /^\+?[\d\s()-]+$/
 const postcodePattern = /^\d{4}$/
 
@@ -20,8 +20,14 @@ export function validateDeliveryDetails(values) {
     !/^\d{8,15}$/.test(values.phoneNumber.replace(/\D/g, ''))
   )
     errors.phoneNumber = 'Enter a valid phone number with 8 to 15 digits.'
-  if (!values.streetAddress.trim() || values.streetAddress.trim().length > 255)
-    errors.streetAddress = 'Enter your street address.'
+  // AI-assisted: the account scenario requires both a street name and a number.
+  if (
+    values.streetAddress.trim().length > 255 ||
+    !/\p{L}/u.test(values.streetAddress) ||
+    !/[0-9]/.test(values.streetAddress) ||
+    /[\r\n\t]/.test(values.streetAddress)
+  )
+    errors.streetAddress = 'Include a street number and street name (up to 255 characters).'
   if (!values.suburb.trim() || values.suburb.trim().length > 50)
     errors.suburb = 'Enter your suburb.'
   if (!australianStates.includes(values.state)) errors.state = 'Choose your state or territory.'
@@ -33,8 +39,7 @@ export function validateRegistration(values) {
   const errors = {}
   if (!values.name.trim() || values.name.trim().length > 100) errors.name = 'Enter your full name.'
   if (!values.email.trim()) errors.email = 'Enter your email address.'
-  else if (!emailPattern.test(values.email.trim()) || values.email.trim().length > 255)
-    errors.email = 'Enter a valid email address.'
+  else if (!validCustomerEmail(values.email)) errors.email = 'Enter a valid email address.'
   if (!values.password) errors.password = 'Enter your password.'
   else if (!validPassword(values.password) || values.password.length > 128)
     errors.password = 'Use 8+ characters with letters and numbers.'
@@ -89,6 +94,10 @@ export async function saveDeliveryDetails(values, current) {
     return { error: errorMessage(error) }
   }
   const details = toDetails(saved)
+  // AI-assisted: do not publish an old save after the active account changes.
+  const activeUser = getSessionUser()
+  if (activeUser?.userId !== user.userId || activeUser?.role !== user.role)
+    return { error: 'Your account changed. Reload your delivery details before saving again.' }
   saveDelivery(
     {
       name: user.name,
@@ -101,9 +110,6 @@ export async function saveDeliveryDetails(values, current) {
     },
     String(user.userId),
   )
-  const activeUser = getSessionUser()
-  if (activeUser?.userId !== user.userId || activeUser?.role !== user.role)
-    return { error: 'Your account changed. Reload your delivery details before saving again.' }
   deliveryDetails.replace({ details })
   return { details }
 }
