@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "start": "node scripts/start-project.js",
+    "start:check": "node scripts/start-project.js --check",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
