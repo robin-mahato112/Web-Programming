@@ -11,6 +11,8 @@ Use Node.js 24 LTS, npm and Docker Desktop. Keep your existing university databa
 3. Start the university API with this project's extensions (see below).
 4. Run `npm run dev` and open `http://localhost:3000`.
 
+For day-to-day use, start your already configured backend in Docker as usual, then run `npm run dev`. The frontend command does not install extensions, rebuild containers or change the database. The extension setup below is needed for a new backend installation or when its extension code/dependencies change; an unmodified university API does not provide all of the team's added endpoints.
+
 | Environment                  | Frontend | API on Windows | API inside Docker |
 | ---------------------------- | -------- | -------------- | ----------------- |
 | Main                         | 3000     | 13001          | 3001              |
