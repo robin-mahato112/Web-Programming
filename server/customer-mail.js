@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import { validCustomerEmail } from '../src/data/customerEmail.js'
+import { basicCustomerEmail, validCustomerEmail } from '../src/data/customerEmail.js'
 
 export function customerMailOptions(env = process.env) {
   const local = env.CUSTOMER_MAIL_MODE === 'local'
@@ -53,7 +53,7 @@ export function createCustomerMailer(env = process.env, dependencies = {}) {
     return null
   }
   const send = async (email, subject, text) => {
-    if (!validCustomerEmail(email)) throw new Error('Invalid recipient')
+    if (!basicCustomerEmail(email)) throw new Error('Invalid recipient')
     const result = await transport.sendMail({ from: options.from, to: email, subject, text })
     if (!result.accepted?.length) throw new Error('Mail was not accepted')
   }

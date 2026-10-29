@@ -22,6 +22,20 @@ test('malformed customer emails are rejected before login or registration reques
   expect(model.requests.filter((r) => r.method === 'POST')).toHaveLength(0)
 })
 
+test('existing accounts with legacy email formats still reach the sign-in API', async ({
+  page,
+}) => {
+  const model = await backend(page)
+  await page.goto('/login')
+  await page.getByLabel('Email address', { exact: true }).fill('customer..legacy@example.test')
+  await page.getByLabel('Password', { exact: true }).fill('Testing123')
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await expect(page).toHaveURL(/\/account$/)
+  expect(model.requests.find((request) => request.path === '/patronLogin').body.username).toBe(
+    'customer..legacy@example.test',
+  )
+})
+
 test('normalized staff destinations fall back to the customer account after login', async ({
   page,
 }) => {

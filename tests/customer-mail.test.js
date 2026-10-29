@@ -62,6 +62,24 @@ test('bad email configuration cannot crash the shared API or expose credentials'
   }
 })
 
+test('legacy recipient addresses reach the mail transport while header injection is rejected', async () => {
+  const recipients = []
+  const mailer = createCustomerMailer(settings, {
+    createTransport: () => ({
+      sendMail: async ({ to }) => {
+        recipients.push(to)
+        return { accepted: [to] }
+      },
+    }),
+  })
+  await mailer.sendReset('customer@bücher.example', 'fixture-code')
+  assert.deepEqual(recipients, ['customer@bücher.example'])
+  await assert.rejects(
+    mailer.sendReset('customer@example.test\r\nBcc: other@example.test', 'fixture-code'),
+  )
+  assert.equal(recipients.length, 1)
+})
+
 test('reset and setup emails use the configured transport and do not claim rejected delivery', async () => {
   const messages = []
   let reject = false

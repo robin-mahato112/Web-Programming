@@ -77,10 +77,10 @@ Reset codes and request limits are held in memory, so an API restart invalidates
 
 ## Evidence and requirements
 
-- Unit/API suite: `npm test` (141 passed after Gmail configuration and failure-isolation checks).
-- Desktop/mobile route tests: `npm run test:ui` (74 passed).
+- Unit/API suite: `npm test` (146 passed on 30 October, including delayed mail failure, overlapping recovery requests and legacy-account compatibility).
+- Desktop/mobile route tests: 78 passed (74 existing checks plus four legacy-account sign-in/recovery checks; the latter were rerun after correcting a browser-normalized test address).
 - Actual SQL + SMTP integration: `tests/customer-course.integration.js`, restricted to local API 13002 and the synthetic `AccountVerification` database; name/email, reset, checkout, history isolation and staff/admin checks passed.
-- Real browser without route mocks: `tests/customer-course.browser.js`, frontend 3002/API 13002; profile save/refresh, SQL order items, SMTP capture/reset/new login and mobile layout passed. Test passwords/codes are not printed or stored in browser storage.
+- Real browser without route mocks: `tests/customer-course.browser.js`, frontend 3002/API 13002; profile save/refresh, SQL order items, SMTP capture/reset/new login and mobile layout passed again on 30 October. Test passwords/codes are not printed or stored in browser storage.
 - The fixture schema is `tests/fixtures/customer-course.sql`. Integration scripts require `CUSTOMER_ISOLATED_WRITE_TEST=yes` and the private local test setup. Do not point write tests at the team's StoreDB.
 - Real Gmail check, 29 October 2026: submitted the website recovery form for one disposable customer in the local StoreDB and received its email in Gmail. The received code completed the API reset; weak passwords, code reuse, the old password and the old session were rejected. New-password login succeeded, the customer identity and empty order history were preserved, and the shared product catalogue returned successfully. No existing customer's password or order was changed. Populated order-history checks are covered separately by the isolated SQL tests above.
 

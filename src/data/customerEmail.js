@@ -1,7 +1,12 @@
-export function validCustomerEmail(value) {
+export function basicCustomerEmail(value) {
   if (typeof value !== 'string') return false
   const email = value.trim()
-  if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false
+  return email.length <= 255 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+export function validCustomerEmail(value) {
+  if (!basicCustomerEmail(value)) return false
+  const email = value.trim()
   const [local, domain] = email.split('@')
   if (local.length > 64 || local.startsWith('.') || local.endsWith('.') || local.includes('..'))
     return false

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { validCustomerEmail } from '../src/data/customerEmail.js'
+import { basicCustomerEmail, validCustomerEmail } from '../src/data/customerEmail.js'
 import { customerReturnPath } from '../src/data/accountNavigation.js'
 
 test('customer email rejects malformed addresses while allowing normal aliases', () => {
@@ -25,6 +25,19 @@ test('customer email rejects malformed addresses while allowing normal aliases',
     'customer@sub-domain.example.com',
   ])
     assert.equal(validCustomerEmail(value), true, value)
+})
+
+test('existing-account email checks preserve legacy formats without weakening new registrations', () => {
+  for (const value of [
+    'a..b@example.test',
+    'customer@bücher.example',
+    'x'.repeat(65) + '@example.test',
+  ]) {
+    assert.equal(basicCustomerEmail(value), true)
+    assert.equal(validCustomerEmail(value), false)
+  }
+  for (const value of ['a@@example.test', 'a b@example.test', 'a@localhost', 'x'.repeat(256), null])
+    assert.equal(basicCustomerEmail(value), false)
 })
 
 test('customer navigation rejects normalized auth/staff routes and malformed paths', () => {

@@ -7,7 +7,7 @@ import PasswordInput from '../components/PasswordInput.jsx'
 import SessionStatus from '../components/SessionStatus.jsx'
 import { customerReturnPath, focusFirstError } from '../data/accountNavigation.js'
 import { registerCustomer } from '../data/customerAccount.js'
-import { validCustomerEmail } from '../data/customerEmail.js'
+import { basicCustomerEmail } from '../data/customerEmail.js'
 import {
   isStaff,
   signInCustomer,
@@ -42,7 +42,7 @@ function LoginForm() {
     if (pending) return
     const next = {}
     if (!values.email.trim()) next.email = 'Enter your email address.'
-    else if (!validCustomerEmail(values.email)) next.email = 'Enter a valid email address.'
+    else if (!basicCustomerEmail(values.email)) next.email = 'Enter a valid email address.'
     if (!values.password) next.password = 'Enter your password.'
     setErrors(next)
     if (Object.keys(next).length) {

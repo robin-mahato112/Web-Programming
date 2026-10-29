@@ -152,8 +152,14 @@ const known = await post('/requestPasswordReset', { email: changedEmail })
 const unknown = await post('/requestPasswordReset', { email: `missing-${suffix}@example.test` })
 assert.deepEqual(known.data, unknown.data)
 assert.ok(!JSON.stringify(known.data).match(/[a-f0-9]{64}/))
-const message = await (await fetch(inbox + '/api/v1/message/latest')).json()
-assert.equal(message.To[0].Address, changedEmail)
+let message
+for (let attempt = 0; attempt < 20; attempt++) {
+  const response = await fetch(inbox + '/api/v1/message/latest')
+  message = response.ok ? await response.json() : null
+  if (message?.To?.[0]?.Address === changedEmail) break
+  await setTimeout(250)
+}
+assert.equal(message?.To?.[0]?.Address, changedEmail)
 const code = message.Text.match(/\b[a-f0-9]{64}\b/)[0]
 await post('/resetPassword', { token: code, password: 'weak' }, { status: 400 })
 await post('/resetPassword', { token: code, password: nextPassword })

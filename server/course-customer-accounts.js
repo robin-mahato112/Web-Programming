@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { validCustomerEmail } from '../src/data/customerEmail.js'
+import { basicCustomerEmail } from '../src/data/customerEmail.js'
 import {
   accountError,
   customerIdentityRepository,
@@ -136,7 +136,7 @@ export function mountCourseCustomerAccounts(
   app.post(
     '/requestPasswordReset',
     handle(async (req, res) => {
-      if (!validCustomerEmail(req.body?.email)) throw accountError('Enter a valid email address.')
+      if (!basicCustomerEmail(req.body?.email)) throw accountError('Enter a valid email address.')
       if (!mailer)
         throw accountError(
           'Password recovery email is not configured. Please contact support.',
@@ -152,15 +152,17 @@ export function mountCourseCustomerAccounts(
           throw accountError('Password recovery is busy. Try again later.', 503)
         const token = randomBytes(32).toString('hex')
         const key = tokenDigest(token)
-        try {
-          await mailer.sendReset(row.Email, token)
-          for (const [old, item] of tokens) if (item.id === row.UserID) tokens.delete(old)
-          tokens.set(key, { id: row.UserID, version: fingerprint(row), expires: now() + ttl })
-        } catch {
-          tokens.delete(key)
-          // Do not expose account existence through an SMTP rejection or echo codes to the browser.
-          console.error('Customer recovery delivery failed. Check the mail service configuration.')
-        }
+        for (const [old, item] of tokens) if (item.id === row.UserID) tokens.delete(old)
+        tokens.set(key, { id: row.UserID, version: fingerprint(row), expires: now() + ttl })
+        // A slow SMTP delivery must not delay the acknowledgement only for existing accounts.
+        void Promise.resolve()
+          .then(() => mailer.sendReset(row.Email, token))
+          .catch(() => {
+            tokens.delete(key)
+            console.error(
+              'Customer recovery delivery failed. Check the mail service configuration.',
+            )
+          })
       }
       res.json(generic)
     }),

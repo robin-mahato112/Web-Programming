@@ -1,12 +1,12 @@
 import { validPassword } from './passwordRules.js'
-import { validCustomerEmail } from './customerEmail.js'
+import { basicCustomerEmail } from './customerEmail.js'
 import { courseRequest } from '../services/course-api.js'
 
 export function getRecoveryDelivery() {
   return courseRequest('/api/customer/recovery', { signal: AbortSignal.timeout(15000) })
 }
 export async function requestRecoveryEmail(email) {
-  if (!validCustomerEmail(email)) throw new Error('Enter a valid email address.')
+  if (!basicCustomerEmail(email)) throw new Error('Enter a valid email address.')
   return courseRequest('/requestPasswordReset', {
     body: { email: email.trim().toLowerCase() },
     headers: { 'X-Customer-Request': '1' },

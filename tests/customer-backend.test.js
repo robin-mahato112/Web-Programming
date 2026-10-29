@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { once } from 'node:events'
 import { createHash } from 'node:crypto'
 import { test } from 'node:test'
+import { setImmediate } from 'node:timers/promises'
 import express from 'express'
 import { mountCourseCustomerAccounts } from '../server/course-customer-accounts.js'
 import {
@@ -41,6 +42,7 @@ async function fixture(t, options = {}) {
     async sendReset(email, token) {
       if (options.rejected) throw new Error('mail rejected')
       sent.push({ email, token })
+      if (options.deliver) await options.deliver(email, token)
     },
   }
   const repository = {
@@ -115,6 +117,7 @@ async function fixture(t, options = {}) {
   const call = async (path, body, extra = {}, method = body === undefined ? 'GET' : 'POST') => {
     const res = await fetch(base + path, {
       method,
+      signal: AbortSignal.timeout(5000),
       headers: {
         Origin: 'http://localhost:3000',
         'X-Customer-Request': '1',
@@ -150,6 +153,66 @@ test('recovery sends codes only through SMTP, with the same public response for 
   assert.equal(known.headers.get('cache-control'), 'no-store')
   assert.ok(!JSON.stringify(known.body).includes(f.sent[0].token))
 })
+test('recovery acknowledges a delayed delivery and invalidates its code when sending fails', async (t) => {
+  let rejectDelivery
+  const delivery = new Promise((_resolve, reject) => {
+    rejectDelivery = reject
+  })
+  t.after(() => rejectDelivery(new Error('test cleanup')))
+  const errors = t.mock.method(console, 'error', () => {})
+  const f = await fixture(t, { deliver: () => delivery })
+  const known = await f.call('/requestPasswordReset', { email: 'one@example.test' })
+  const unknown = await f.call('/requestPasswordReset', { email: 'missing@example.test' })
+  assert.equal(known.status, 200)
+  assert.deepEqual(known.body, unknown.body)
+  assert.equal(f.sent.length, 1)
+  const token = f.sent[0].token
+  rejectDelivery(new Error('private SMTP failure'))
+  await setImmediate()
+  const reset = await f.call('/resetPassword', { token, password: 'NewPassword123' })
+  assert.equal(reset.status, 400)
+  assert.ok(matchesPassword(password, f.rows[0]))
+  assert.equal(errors.mock.callCount(), 1)
+  assert.doesNotMatch(JSON.stringify(errors.mock.calls[0].arguments), /private SMTP failure/)
+})
+
+test('an older delayed delivery failure cannot invalidate a newer recovery code', async (t) => {
+  const deliveries = []
+  const f = await fixture(t, {
+    deliver: () =>
+      new Promise((resolve, reject) => {
+        deliveries.push({ resolve, reject })
+      }),
+  })
+  t.after(() => deliveries.forEach(({ resolve }) => resolve()))
+  t.mock.method(console, 'error', () => {})
+  await f.call('/requestPasswordReset', { email: 'one@example.test' })
+  await f.call('/requestPasswordReset', { email: 'one@example.test' })
+  deliveries[0].reject(new Error('older send failed'))
+  await setImmediate()
+  assert.equal(
+    (await f.call('/resetPassword', { token: f.sent[0].token, password: 'NewPassword123' })).status,
+    400,
+  )
+  deliveries[1].resolve()
+  await setImmediate()
+  assert.equal(
+    (await f.call('/resetPassword', { token: f.sent[1].token, password: 'NewPassword123' })).status,
+    200,
+  )
+})
+
+test('recovery can locate an existing account with a legacy email format', async (t) => {
+  const f = await fixture(t)
+  f.rows[0].Email = 'customer@bücher.example'
+  assert.equal((await f.call('/requestPasswordReset', { email: f.rows[0].Email })).status, 200)
+  assert.equal(f.sent[0].email, f.rows[0].Email)
+  assert.equal(
+    (await f.call('/resetPassword', { token: f.sent[0].token, password: 'NewPassword123' })).status,
+    200,
+  )
+})
+
 test('email configuration errors never pretend delivery is enabled or expose internals', async (t) => {
   for (const options of [{ disabled: true }, { offline: true }]) {
     const f = await fixture(t, options)

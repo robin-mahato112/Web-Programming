@@ -90,6 +90,27 @@ test('duplicate email errors retain form values, clear password and cancel disca
   )
   await expect(page.getByLabel('Street address')).toHaveValue('10 Test Road')
 })
+test('recovery accepts an existing account with a legacy email format', async ({ page }) => {
+  let submitted
+  await page.route('**/backend/**', async (route) => {
+    const path = new URL(route.request().url()).pathname
+    if (path.endsWith('/api/customer/recovery'))
+      return route.fulfill({ json: { enabled: true, delivery: 'email' } })
+    if (path.endsWith('/requestPasswordReset')) {
+      submitted = route.request().postDataJSON()
+      return route.fulfill({
+        json: { ok: true, message: 'If an account matches, check your inbox.' },
+      })
+    }
+    return route.fulfill({ status: path.endsWith('/me') ? 401 : 200, json: { list: [] } })
+  })
+  await page.goto('/forgot-password')
+  await page.getByLabel('Account email').fill('customer..legacy@example.test')
+  await page.getByRole('button', { name: 'Send reset code' }).click()
+  await expect(page.getByRole('status')).toContainText('If an account matches')
+  expect(submitted).toEqual({ email: 'customer..legacy@example.test' })
+})
+
 test('email recovery validates before sending, explains local capture and reports unavailable transport', async ({
   page,
 }) => {

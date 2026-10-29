@@ -46,8 +46,14 @@ try {
   await page.getByLabel('Account email').fill(fixture.email)
   await page.getByRole('button', { name: 'Send reset code' }).click()
   await expect(page.getByRole('status')).toContainText('If an account matches')
-  const message = await (await fetch('http://localhost:18025/api/v1/message/latest')).json()
-  assert.equal(message.To[0].Address, fixture.email)
+  let message
+  await expect
+    .poll(async () => {
+      const response = await fetch('http://localhost:18025/api/v1/message/latest')
+      message = response.ok ? await response.json() : null
+      return message?.To?.[0]?.Address
+    })
+    .toBe(fixture.email)
   const code = message.Text.match(/\b[a-f0-9]{64}\b/)[0]
   const changedPassword = fixture.password + 'Ui1'
   await page.getByLabel('Reset code', { exact: true }).fill(code)

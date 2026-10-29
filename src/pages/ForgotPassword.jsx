@@ -9,7 +9,7 @@ import {
   resetCustomerPassword,
   validatePasswordRecovery,
 } from '../data/passwordRecovery.js'
-import { validCustomerEmail } from '../data/customerEmail.js'
+import { basicCustomerEmail } from '../data/customerEmail.js'
 
 const emptyFields = { token: '', password: '', confirmPassword: '' }
 
@@ -46,7 +46,7 @@ export default function ForgotPassword() {
     if (requestingRef.current) return
     setEmailNotice('')
     setEmailFailure('')
-    if (!validCustomerEmail(email)) {
+    if (!basicCustomerEmail(email)) {
       setEmailError('Enter a valid email address.')
       focusFirstError({ recoveryEmail: true })
       return
