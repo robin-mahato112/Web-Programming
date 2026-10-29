@@ -6,26 +6,10 @@ Combined INFT3050 web application: customer accounts and delivery profiles, prod
 
 Use Node.js 24 LTS, npm and Docker Desktop. Keep your existing university database and Docker volumes.
 
-For marking and team demonstrations, use the combined launcher:
-
-```sh
-npm ci
-npm start
-```
-
-On the first run, enter the folder containing the extracted university v1.1 `compose.yml`. The launcher remembers it locally. It installs both shared API extensions, preserves the existing Compose project and database, starts the database and API, checks catalogue access and the mail connection, and starts the website at **http://localhost:3000**. Later runs need only `npm start`. No manual patch installation or API rebuild command is required.
-
-**One-time prerequisites:** Docker must be running, the supplied university backend must contain the course database, and that backend's private `.customer.env` must contain working SMTP settings for real password-recovery email. This code ZIP does not contain database files or a sender's password. A teammate or marker reusing an already configured backend reuses its mail configuration; a different installation needs its own settings. See [Gmail setup](docs/customer-gmail-setup.md) only if configuring a new sender. The launcher stops with an explanation if real email is unavailable; it does not pretend that a local inbox sends Internet email.
-
-On Windows, an interactive first run with no mail settings opens the existing terminal setup prompts automatically after installing the extensions. Enter the sender's Gmail address, app password and the verification code from the test email once. Other systems can use the documented server-only SMTP settings with any suitable provider.
-
-`npm run start:check` checks the saved startup settings without changing files or containers. `npm start -- --backend-only` installs and verifies the API without starting a second frontend. For a deliberate local-mail demonstration, use `npm start -- --allow-local-mail`; emails then stay in that backend's local inbox.
-
-If port 3000 is already occupied, stop the earlier frontend terminal with Ctrl+C. Alternatively set `FRONTEND_PORT` to another port before `npm start`; the launcher adds that origin without removing existing team origins. `COURSE_BACKEND_DIRECTORY` and `COURSE_COMPOSE_PROJECT` can override the remembered location/project. The launcher never stops unrelated processes, deletes volumes, or resets the database. Ctrl+C stops the frontend; Docker services remain running.
-
-The existing **frontend-only** workflow remains available: copy `.env.example` to `.env.local`, start an already configured API, then run `npm run dev`. The manual extension instructions below are for troubleshooting and independent backend administration.
-
-Startup verification on 30 October 2026: 151 automated tests, lint, formatting and build passed. The combined command was also checked with the team's complete database: the homepage loaded products, customer sign-in and recovery pages opened, and Gmail connection/authentication passed without sending a new email or placing an order. The database container was not recreated or restarted. First-time image/dependency downloads require network access. An incomplete database is reported before opening the website.
+1. Run `npm ci` in this repository.
+2. Copy `.env.example` to `.env.local`. The default API is `http://localhost:13001`.
+3. Start the university API with this project's extensions (see below).
+4. Run `npm run dev` and open `http://localhost:3000`.
 
 | Environment                  | Frontend | API on Windows | API inside Docker |
 | ---------------------------- | -------- | -------------- | ----------------- |
