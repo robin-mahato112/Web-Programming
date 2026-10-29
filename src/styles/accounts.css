@@ -106,3 +106,38 @@
 .auth-page > .notice {
   width: min(100%, 57rem);
 }
+
+.customer-order-history {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+.customer-order-list {
+  display: grid;
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+.customer-order-card {
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.customer-order-card h3 {
+  margin-top: 0;
+}
+.customer-order-items {
+  padding-left: 1.25rem;
+}
+.customer-order-items li {
+  margin: 0.75rem 0;
+}
+.customer-order-items span {
+  display: block;
+  color: var(--muted);
+}
+.customer-order-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}

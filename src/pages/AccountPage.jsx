@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import DeliveryFields from '../components/DeliveryFields.jsx'
+import CustomerOrderHistory from '../components/CustomerOrderHistory.jsx'
+import CustomerProfileForm from '../components/CustomerProfileForm.jsx'
 import ResourceStatus from '../components/ResourceStatus.jsx'
 import SessionStatus from '../components/SessionStatus.jsx'
 import { customerReturnPath, focusFirstError } from '../data/accountNavigation.js'
@@ -124,15 +126,7 @@ function Account({ user }) {
       <div className="account-layout">
         <aside className="account-summary" aria-labelledby="profile-heading">
           <h2 id="profile-heading">Profile</h2>
-          <p>
-            <span>Name</span>
-            <strong>{user.name}</strong>
-          </p>
-          <p>
-            <span>Email</span>
-            <strong>{user.email}</strong>
-          </p>
-          <small>Your email is your sign-in name. Contact us to change your name or email.</small>
+          <CustomerProfileForm user={user} />
           <hr />
           <Link className="card-link" to="/">
             Browse the collection →
@@ -154,6 +148,7 @@ function Account({ user }) {
           )}
         </ResourceStatus>
       </div>
+      <CustomerOrderHistory key={user.userId} userId={user.userId} />
     </section>
   )
 }

@@ -47,6 +47,8 @@ export default function DeliveryFields({ values, errors, onChange }) {
         name="streetAddress"
         label="Street address"
         autoComplete="street-address"
+        maxLength={255}
+        hint="Include a street number and name, for example 377 Ring Road."
         value={values.streetAddress}
         onChange={onChange}
         error={errors.streetAddress}
@@ -56,6 +58,7 @@ export default function DeliveryFields({ values, errors, onChange }) {
         name="suburb"
         label="Suburb"
         autoComplete="address-level2"
+        maxLength={50}
         value={values.suburb}
         onChange={onChange}
         error={errors.suburb}

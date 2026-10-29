@@ -7,9 +7,21 @@ export function customerReturnPath(value, fallback = '/account') {
     /[\\\s]/.test(value)
   )
     return fallback
-  const path = value.split(/[?#]/)[0]
-  if (/^\/(login|register|admin|employee)(\/|$)/i.test(path)) return fallback
-  return value
+  // Encoded path separators are unnecessary for these routes and must not alter routing later.
+  try {
+    const url = new URL(value, 'https://account.invalid')
+    if (
+      url.origin !== 'https://account.invalid' ||
+      url.pathname.includes('%') ||
+      !/^\/(?:account|profile|products(?:\/[a-zA-Z0-9_-]+)?|cart|checkout(?:\/confirmation\/[a-zA-Z0-9_-]+)?)?\/?$/.test(
+        url.pathname,
+      )
+    )
+      return fallback
+    return url.pathname + url.search + url.hash
+  } catch {
+    return fallback
+  }
 }
 
 export function focusFirstError(errors) {

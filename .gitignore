@@ -14,6 +14,8 @@ playwright-report/
 *.bak
 *.trn
 *.before-checkout
+*.before-customer
+.customer.env
 *.log
 
 # Local archives, tool caches and private checkout state.

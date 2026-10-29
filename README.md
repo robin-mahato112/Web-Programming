@@ -33,9 +33,12 @@ The university backend ZIP and database files are not committed. Extract the sup
 ```powershell
 $env:COURSE_BACKEND_DIRECTORY='C:\path\to\existing\course-backend.local'
 node scripts/install-course-checkout.js
+node scripts/install-course-customer.js
 ```
 
 The installer copies the extension, installs the reviewed API package/lockfile, removes sensitive debug logging, restricts generic CRUD writes, and adds a durable checkout journal. It preserves the signing key and saves original changed configuration files as ignored `.before-checkout` files. It does not run SQL or change the schema.
+
+The customer installer adds own-account name/email editing and email-based password recovery. Configure its server-only `.customer.env` before rebuilding. See [customer account setup and verification](docs/customer-account-final.md) for the optional local mail inbox, SMTP configuration and API contracts. Existing customer cookies require one new sign-in after installation; staff cookies are unchanged.
 
 Rebuild **only the API service** using the existing Compose project name and file. Find the project name from Docker Desktop or `docker compose ls` first:
 
@@ -97,7 +100,9 @@ npm.cmd run test:ui
 
 `check` runs formatting, lint, Node tests and the production build. `test:ui` runs the group account tests in desktop/mobile Edge against deterministic API fixtures; it does not write to StoreDB.
 
-Verified on 27 October 2026:
+Customer integration rechecked on 30 October 2026: formatting, lint, production build and 146 Node tests passed. All 78 desktop/mobile account checks passed (74 existing checks and four legacy-account compatibility checks). Isolated SQL and live-browser tests verified profile updates, checkout after an email change, order ownership, SMTP recovery and staff/admin permissions. These write tests used `AccountVerification`, not the team's StoreDB. See [account verification details](docs/customer-account-final.md).
+
+Earlier baseline verification on 27 October 2026:
 
 | Check                              | Result                                                                         |
 | ---------------------------------- | ------------------------------------------------------------------------------ |
@@ -109,7 +114,7 @@ Verified on 27 October 2026:
 | Isolated live administrator        | Dashboard, product/user/stock pages and customer-checkout denial passed        |
 | Isolated management writes         | Temporary product and employee create/edit/delete passed; fixtures removed     |
 
-No new purchase was run against either database during this integration. Transaction/rollback checks use deterministic database fixtures; intercepted confirmation is not evidence of a newly committed SQL order.
+No new purchase was run against either database during the 27 October integration. Its transaction/rollback checks used deterministic database fixtures; intercepted confirmation is not evidence of a newly committed SQL order. The later customer checks above created orders only in the isolated test database.
 
 Live scripts require private environment variables:
 
@@ -126,7 +131,7 @@ Import `docs/postman/University-Checkout.postman_collection.json` and the matchi
 
 Back up StoreDB, `checkout-state.local` and `.checkout.env` together while checkout writes are paused. Restore the matching set; a database-only backup cannot restore the receipt/retry journal. Preserve the signing key and share the durable journal if running multiple API instances.
 
-Payments are simulated. Email delivery for password recovery is not configured; the form only redeems an existing valid reset code. Email verification, authentication rate limiting and concurrent duplicate-registration protection still require backend work. The course generic API is not a production security boundary for every table.
+Payments are simulated. Customer password recovery sends single-use, 15-minute reset codes through server-configured SMTP; real Gmail delivery has been verified locally. Each deployment must install the customer extension and configure its own private `.customer.env`; cloning the repository does not copy mail credentials. See [Gmail setup](docs/customer-gmail-setup.md). Recovery requests are rate-limited, while email verification, sign-in rate limiting and concurrent duplicate-registration protection still require backend work. The course generic API is not a production security boundary for every table.
 
 Lecturer decisions remain: shipping/tax rules, external-provider handoff versus purchase, and a formal discontinued status. Zero stock means out of stock, not permanently discontinued. No rules or charges are invented.
 
