@@ -33,9 +33,12 @@ The university backend ZIP and database files are not committed. Extract the sup
 ```powershell
 $env:COURSE_BACKEND_DIRECTORY='C:\path\to\existing\course-backend.local'
 node scripts/install-course-checkout.js
+node scripts/install-course-customer.js
 ```
 
 The installer copies the extension, installs the reviewed API package/lockfile, removes sensitive debug logging, restricts generic CRUD writes, and adds a durable checkout journal. It preserves the signing key and saves original changed configuration files as ignored `.before-checkout` files. It does not run SQL or change the schema.
+
+The customer installer adds own-account name/email editing and email-based password recovery. Configure its server-only `.customer.env` before rebuilding. See [customer account setup and verification](docs/customer-account-final.md) for the optional local mail inbox, SMTP configuration and API contracts. Existing customer cookies require one new sign-in after installation; staff cookies are unchanged.
 
 Rebuild **only the API service** using the existing Compose project name and file. Find the project name from Docker Desktop or `docker compose ls` first:
 

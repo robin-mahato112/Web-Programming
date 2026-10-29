@@ -1,10 +1,15 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Input from '../components/Input.jsx'
 import PasswordInput from '../components/PasswordInput.jsx'
 import { customerReturnPath, focusFirstError } from '../data/accountNavigation.js'
-import { validatePasswordRecovery } from '../data/passwordRecovery.js'
-import { courseResetPassword } from '../services/course-api.js'
+import {
+  getRecoveryDelivery,
+  requestRecoveryEmail,
+  resetCustomerPassword,
+  validatePasswordRecovery,
+} from '../data/passwordRecovery.js'
+import { validCustomerEmail } from '../data/customerEmail.js'
 
 const emptyFields = { token: '', password: '', confirmPassword: '' }
 
@@ -17,7 +22,49 @@ export default function ForgotPassword() {
   const [failure, setFailure] = useState('')
   const [complete, setComplete] = useState(false)
   const submitting = useRef(false)
+  const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [emailNotice, setEmailNotice] = useState('')
+  const [emailFailure, setEmailFailure] = useState('')
+  const [requesting, setRequesting] = useState(false)
+  const [delivery, setDelivery] = useState(null)
+  const requestingRef = useRef(false)
   const returnTo = customerReturnPath(params.get('returnTo'))
+  useEffect(() => {
+    let active = true
+    getRecoveryDelivery()
+      .then((value) => {
+        if (active) setDelivery(value)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
+
+  async function sendCode(event) {
+    event.preventDefault()
+    if (requestingRef.current) return
+    setEmailNotice('')
+    setEmailFailure('')
+    if (!validCustomerEmail(email)) {
+      setEmailError('Enter a valid email address.')
+      focusFirstError({ recoveryEmail: true })
+      return
+    }
+    setEmailError('')
+    requestingRef.current = true
+    setRequesting(true)
+    try {
+      const result = await requestRecoveryEmail(email)
+      setEmailNotice(result.message)
+    } catch (error) {
+      setEmailFailure(error.message)
+    } finally {
+      requestingRef.current = false
+      setRequesting(false)
+    }
+  }
 
   function update(event) {
     const { name, value } = event.target
@@ -44,7 +91,7 @@ export default function ForgotPassword() {
     setBusy(true)
     setFailure('')
     try {
-      await courseResetPassword(values)
+      await resetCustomerPassword(values)
       setValues(emptyFields)
       setComplete(true)
     } catch (error) {
@@ -65,10 +112,57 @@ export default function ForgotPassword() {
           <p role="status">Your password has been changed. Sign in with your new password.</p>
         ) : (
           <>
-            <p>Enter your reset code and choose a new password.</p>
-            <p>
-              Email delivery is not configured for this project. A valid reset code is required.
-            </p>
+            <p>Request a reset code using your account email, then enter the code below.</p>
+            {delivery?.delivery === 'local' && (
+              <p className="notice">
+                Demo mode: recovery emails are captured in the local mail inbox. They are not
+                delivered to external email accounts.
+              </p>
+            )}
+            {delivery?.enabled === false && (
+              <p className="notice">
+                Recovery email is currently unavailable. Please contact support.
+              </p>
+            )}
+            <form
+              noValidate
+              onSubmit={sendCode}
+              aria-busy={requesting}
+              aria-label="Request recovery email"
+            >
+              <Input
+                id="recoveryEmail"
+                name="email"
+                label="Account email"
+                type="email"
+                autoComplete="email"
+                maxLength={255}
+                value={email}
+                disabled={requesting}
+                error={emailError}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  setEmailError('')
+                  setEmailNotice('')
+                  setEmailFailure('')
+                }}
+              />
+              {emailNotice && (
+                <p className="notice" role="status">
+                  {emailNotice}
+                </p>
+              )}
+              {emailFailure && (
+                <p className="notice notice--error" role="alert">
+                  {emailFailure}
+                </p>
+              )}
+              <button className="button button--secondary" disabled={requesting || busy}>
+                {requesting ? 'Requesting…' : 'Send reset code'}
+              </button>
+            </form>
+            <h2>Reset your password</h2>
+            <p>Codes expire after 15 minutes. If you requested a new code, use the newest email.</p>
             <form onSubmit={resetPassword} noValidate aria-busy={busy}>
               <fieldset className="account-fields" disabled={busy}>
                 <Input
