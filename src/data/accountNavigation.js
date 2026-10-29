@@ -7,7 +7,6 @@ export function customerReturnPath(value, fallback = '/account') {
     /[\\\s]/.test(value)
   )
     return fallback
-  // AI-assisted: normalize dot segments before allowing known customer destinations.
   // Encoded path separators are unnecessary for these routes and must not alter routing later.
   try {
     const url = new URL(value, 'https://account.invalid')

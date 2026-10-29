@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 
-// AI-assisted: isolated API fixtures exercise recovery without resetting a real account.
 const token = 'a'.repeat(64)
 async function setup(page, options = {}) {
   const model = { requests: [], status: 200, ...options }

@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 
-// AI-assisted: isolated contracts exercise history without creating or changing real orders.
 async function fixture(page, options = {}) {
   const model = { userId: 201, requests: [], status: 200, empty: false, ...options }
   await page.route('**/backend/**', async (route) => {

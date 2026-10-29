@@ -3,7 +3,6 @@ import { test } from 'node:test'
 import { validCustomerEmail } from '../src/data/customerEmail.js'
 import { customerReturnPath } from '../src/data/accountNavigation.js'
 
-// AI-assisted: boundary cases for customer email and return destinations.
 test('customer email rejects malformed addresses while allowing normal aliases', () => {
   for (const value of [
     'a@@example.com',

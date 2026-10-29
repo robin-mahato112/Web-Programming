@@ -1,4 +1,3 @@
-// AI-assisted: refuse unknown upstream layouts and keep installation repeatable.
 const imports = `import { mountCourseCustomerAccounts } from './customer-extension/server/course-customer-accounts.js';
 import { fingerprint } from './customer-extension/server/customer-identity.js';
 import { createCustomerMailer } from './customer-extension/server/customer-mail.js';

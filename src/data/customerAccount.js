@@ -20,7 +20,6 @@ export function validateDeliveryDetails(values) {
     !/^\d{8,15}$/.test(values.phoneNumber.replace(/\D/g, ''))
   )
     errors.phoneNumber = 'Enter a valid phone number with 8 to 15 digits.'
-  // AI-assisted: the account scenario requires both a street name and a number.
   if (
     values.streetAddress.trim().length > 255 ||
     !/\p{L}/u.test(values.streetAddress) ||
@@ -94,7 +93,6 @@ export async function saveDeliveryDetails(values, current) {
     return { error: errorMessage(error) }
   }
   const details = toDetails(saved)
-  // AI-assisted: do not publish an old save after the active account changes.
   const activeUser = getSessionUser()
   if (activeUser?.userId !== user.userId || activeUser?.role !== user.role)
     return { error: 'Your account changed. Reload your delivery details before saving again.' }

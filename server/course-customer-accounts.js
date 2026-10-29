@@ -9,7 +9,6 @@ import {
   validAccountPassword,
 } from './customer-identity.js'
 
-// AI-assisted: account extension only; generic table, staff, catalogue and checkout contracts stay intact.
 export function mountCourseCustomerAccounts(
   app,
   {

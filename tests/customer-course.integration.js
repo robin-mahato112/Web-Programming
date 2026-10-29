@@ -3,7 +3,6 @@ import { randomUUID } from 'node:crypto'
 import { readFile, writeFile } from 'node:fs/promises'
 import { setTimeout } from 'node:timers/promises'
 
-// AI-assisted: explicit opt-in; synthetic records in the isolated AccountVerification stack only.
 if (process.env.CUSTOMER_ISOLATED_WRITE_TEST !== 'yes')
   throw new Error('Set CUSTOMER_ISOLATED_WRITE_TEST=yes for the isolated fixture stack.')
 const base = 'http://localhost:13002'

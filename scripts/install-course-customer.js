@@ -6,7 +6,6 @@ import {
   installCustomerSource,
 } from './customer-api-install.js'
 
-// AI-assisted: add customer endpoints after the team's installer; never write db/ or its configuration.
 const root = resolve(import.meta.dirname, '..')
 if (!process.env.COURSE_BACKEND_DIRECTORY)
   throw new Error('Set COURSE_BACKEND_DIRECTORY explicitly.')

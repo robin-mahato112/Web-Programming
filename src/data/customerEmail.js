@@ -1,4 +1,3 @@
-// AI-assisted: basic customer-form validation, not proof of ownership or deliverability.
 export function validCustomerEmail(value) {
   if (typeof value !== 'string') return false
   const email = value.trim()

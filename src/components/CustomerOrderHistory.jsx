@@ -6,7 +6,6 @@ import {
   orderHistoryError,
 } from '../data/customerOrders.js'
 
-// AI-assisted: account-only read UI; unmounting cancels requests and clears personal history.
 function OrderCard({ order, userId }) {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState(null)

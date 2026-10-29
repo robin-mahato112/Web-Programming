@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 
-// AI-assisted regression checks for account-only changes.
 test('malformed customer emails are rejected before login or registration requests', async ({
   page,
 }) => {

@@ -4,7 +4,6 @@ import { errorMessage } from './backend.js'
 import { validCustomerEmail } from './customerEmail.js'
 import { getSessionUser, restoreSession } from './session.js'
 
-// AI-assisted: profile writes use a dedicated own-account endpoint, never generic Patron permissions.
 export function validateCustomerProfile(values) {
   const errors = {}
   if (

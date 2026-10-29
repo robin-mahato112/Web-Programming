@@ -21,7 +21,6 @@ export function resetCustomerPassword({ token, password }) {
   })
 }
 
-// AI-assisted: validate account recovery without changing the shared API client.
 export function validatePasswordRecovery({ token, password, confirmPassword }) {
   const errors = {}
   if (typeof token !== 'string' || !/^[a-f0-9]{64}$/i.test(token.trim()))

@@ -13,7 +13,6 @@ import { validCustomerEmail } from '../data/customerEmail.js'
 
 const emptyFields = { token: '', password: '', confirmPassword: '' }
 
-// AI-assisted: reuse account controls and keep reset codes out of URLs and browser storage.
 export default function ForgotPassword() {
   const [params] = useSearchParams()
   const [values, setValues] = useState(emptyFields)

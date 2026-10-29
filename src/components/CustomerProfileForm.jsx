@@ -5,7 +5,6 @@ import PasswordInput from './PasswordInput.jsx'
 import { focusFirstError } from '../data/accountNavigation.js'
 import { saveCustomerProfile } from '../data/customerProfile.js'
 
-// AI-assisted: require the current password; keep secrets in this form's memory only.
 export default function CustomerProfileForm({ user }) {
   const initial = { name: user.name, email: user.email, currentPassword: '' }
   const [values, setValues] = useState(initial)

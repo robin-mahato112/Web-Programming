@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 
-// AI-assisted: profile regression tests keep all writes in route fixtures.
 async function fixture(page) {
   const model = { name: 'Profile Customer', email: 'profile@example.test', writes: [], fail: false }
   await page.route('**/backend/**', async (route) => {

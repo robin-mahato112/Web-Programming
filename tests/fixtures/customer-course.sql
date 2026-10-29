@@ -1,4 +1,3 @@
--- AI-assisted synthetic copy of the course table layout for isolated SQL verification only.
 CREATE TABLE dbo.Genre(genreID int PRIMARY KEY,Name nvarchar(255));
 CREATE TABLE dbo.BookGenre(ID int PRIMARY KEY,Name nvarchar(255));
 CREATE TABLE dbo.MovieGenre(ID int PRIMARY KEY,Name nvarchar(255));

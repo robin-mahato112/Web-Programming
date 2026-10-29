@@ -10,14 +10,13 @@ import {
   matchesPassword,
   profileValues,
 } from '../server/customer-identity.js'
-import { createCustomerMailer } from '../server/customer-mail.js'
+import { createCustomerMailer, customerMailOptions } from '../server/customer-mail.js'
 import {
   installCustomerCompose,
   installCustomerDockerfile,
   installCustomerSource,
 } from '../scripts/customer-api-install.js'
 
-// AI-assisted: adversarial account API tests, with an explicit fake SQL repository.
 const password = 'Original123'
 const makeRow = (id, email) => ({
   UserID: id,
@@ -159,6 +158,30 @@ test('email configuration errors never pretend delivery is enabled or expose int
     assert.equal(result.status, 503)
     assert.doesNotMatch(JSON.stringify(result.body), /SMTP private details/)
     assert.equal(f.sent.length, 0)
+    assert.equal(
+      (await f.call('/api/checkout/test', undefined, { 'X-Test-Identity': f.identity() })).status,
+      200,
+    )
+    assert.equal(
+      (await f.call('/api/admin/test', undefined, { 'X-Test-Identity': f.identity(1, 'STAFF') }))
+        .status,
+      200,
+    )
+    assert.equal(
+      (
+        await f.call(
+          '/api/customer/profile',
+          {
+            name: 'Mail Independent Customer',
+            email: 'one@example.test',
+            currentPassword: password,
+          },
+          { 'X-Test-Identity': f.identity() },
+          'PATCH',
+        )
+      ).status,
+      200,
+    )
   }
 })
 test('requests enforce origin, custom header, JSON, email validity and rate limits', async (t) => {
@@ -305,14 +328,14 @@ test('profile and mail configuration validation rejects injection and unsafe SMT
   assert.throws(() => profileValues({ name: 'X', email: 'a@@b.com', currentPassword: password }))
   assert.equal(createCustomerMailer({}), null)
   assert.throws(() =>
-    createCustomerMailer({
+    customerMailOptions({
       CUSTOMER_MAIL_MODE: 'local',
       SMTP_HOST: 'external.example',
       SMTP_FROM: 'test@example.test',
     }),
   )
   assert.throws(() =>
-    createCustomerMailer({
+    customerMailOptions({
       CUSTOMER_MAIL_MODE: 'local',
       NODE_ENV: 'production',
       SMTP_HOST: 'mailpit',

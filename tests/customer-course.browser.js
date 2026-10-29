@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import { readFile, writeFile } from 'node:fs/promises'
 import { chromium, expect } from '@playwright/test'
 
-// AI-assisted: real browser + SQL + SMTP, exclusively against the isolated test stack.
 if (process.env.CUSTOMER_ISOLATED_WRITE_TEST !== 'yes')
   throw new Error('Explicit isolated test opt-in required.')
 const fixturePath = '.cache/account-verification.local/browser-fixture.json'

@@ -107,7 +107,6 @@
   width: min(100%, 57rem);
 }
 
-/* AI-assisted: history styles are scoped to the customer account section. */
 .customer-order-history {
   margin-top: 2rem;
   padding-top: 1.5rem;

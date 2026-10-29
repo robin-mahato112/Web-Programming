@@ -2,7 +2,6 @@ import api from '../api.js'
 import { field } from './backend.js'
 import { getSessionUser } from './session.js'
 
-// AI-assisted: read-only account history using the course API's patron row-level permissions.
 // Client ownership checks are defence in depth; the server must enforce access independently.
 const id = (value) => {
   const text = String(value ?? '')

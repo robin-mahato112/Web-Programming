@@ -1,6 +1,6 @@
 # Customer account extension — setup and verification
 
-Technical implementation notes, 29 October 2026. AI-assisted additions are identified in source comments. Team main reviewed: `13f7348`. This extension builds on the university v1.1 backend and the team's current API installer; it does not replace the supplied database or the shopping/staff modules.
+Technical implementation notes, 30 October 2026. Team main reviewed: `13f7348`. This extension builds on the university v1.1 backend and the team's current API installer; it does not replace the supplied database or the shopping/staff modules.
 
 ## Completed account flow
 
@@ -44,11 +44,13 @@ The optional inbox is at `http://localhost:18026`. It is bound to loopback. SMTP
 
 The default frontend is `http://localhost:3000`, API `http://localhost:13001`. Use `npm run dev` from this repository. If already running, open the existing page instead of starting another process on the same port. All account, catalogue and staff clients must use the same `VITE_API_URL` and the API must allow that frontend origin.
 
-## External email later
+## External email with Gmail
+
+For personal Gmail, follow [the guided Gmail setup](customer-gmail-setup.md). Its local PowerShell prompt hides the app password and requires a code from the received test email before activating the configuration.
 
 Set `CUSTOMER_MAIL_MODE=smtp` and the provider's `SMTP_HOST`, `SMTP_PORT`, verified `SMTP_FROM`, `SMTP_USER` and `SMTP_PASSWORD` in the backend file only. Port 465 uses implicit TLS; other SMTP ports require STARTTLS. Recreate the auth service after configuration changes. Never put mail credentials in frontend variables or commit `.customer.env`.
 
-No team SMTP credentials were available during this work. Real external inbox delivery is therefore **not verified**. Empty configuration disables email recovery instead of claiming that an email was sent. In local mode, real SMTP delivery to Mailpit has been verified.
+Real Gmail inbox delivery was verified on 29 October 2026 on the local development backend. The website sent a recovery email to a dedicated disposable customer mailbox, and the received code successfully reset that customer's password. The SMTP settings remain private to this machine; other team installations need their own server-side configuration. Empty configuration disables email recovery instead of claiming that an email was sent. Mailpit remains an optional local demonstration mode.
 
 ## Added API contract
 
@@ -69,18 +71,19 @@ Reset codes and request limits are held in memory, so an API restart invalidates
 
 1. Register/sign in and open My account. Change name/email with the current password. Refresh and sign out/in using the changed email. An incorrect password or a duplicate email should fail without changing the account.
 2. Save delivery details and refresh. Edit without saving, then Reset: the saved values return.
-3. Sign out, open Forgot password, and request a code. Open the local inbox, copy the newest code, and change the password. The new password works; the old one and reused code fail.
+3. Sign out, open Forgot password, and request a code. Open the customer's real email inbox (or Mailpit when explicitly using local mode), copy the newest code, and change the password. The new password works; the old one and reused code fail.
 4. Use a test product and simulator payment in the isolated database. Open order history and its items. A second customer must not see the first customer's order.
 5. Check staff/admin sign-in, catalogue and bag. The new customer module does not add employee/admin permissions or alter product prices/payment logic.
 
 ## Evidence and requirements
 
-- Unit/API suite: `npm test` (137 passed during this update).
+- Unit/API suite: `npm test` (141 passed after Gmail configuration and failure-isolation checks).
 - Desktop/mobile route tests: `npm run test:ui` (74 passed).
 - Actual SQL + SMTP integration: `tests/customer-course.integration.js`, restricted to local API 13002 and the synthetic `AccountVerification` database; name/email, reset, checkout, history isolation and staff/admin checks passed.
 - Real browser without route mocks: `tests/customer-course.browser.js`, frontend 3002/API 13002; profile save/refresh, SQL order items, SMTP capture/reset/new login and mobile layout passed. Test passwords/codes are not printed or stored in browser storage.
 - The fixture schema is `tests/fixtures/customer-course.sql`. Integration scripts require `CUSTOMER_ISOLATED_WRITE_TEST=yes` and the private local test setup. Do not point write tests at the team's StoreDB.
+- Real Gmail check, 29 October 2026: submitted the website recovery form for one disposable customer in the local StoreDB and received its email in Gmail. The received code completed the API reset; weak passwords, code reuse, the old password and the old session were rejected. New-password login succeeded, the customer identity and empty order history were preserved, and the shared product catalogue returned successfully. No existing customer's password or order was changed. Populated order-history checks are covered separately by the isolated SQL tests above.
 
-Requirements checked against Canvas Assignment 3 (`/courses/36837/assignments/312209`), Assignment 3 FAQs, `BusinessScenarios_V02.pdf` (customer recovery email and account edits), and `EnterainmentGuild_SystemRequirementsDocument_V03.pdf` (supplied database and role separation). The accessible guidance did not explicitly forbid backend extensions; this is not an explicit approval from the lecturer. Local mail capture demonstrates the flow, while external delivery still requires a real mail provider.
+Requirements checked against Canvas Assignment 3 (`/courses/36837/assignments/312209`), Assignment 3 FAQs, `BusinessScenarios_V02.pdf` (customer recovery email and account edits), and `EnterainmentGuild_SystemRequirementsDocument_V03.pdf` (supplied database and role separation). The accessible guidance did not explicitly forbid backend extensions; this is not an explicit approval from the lecturer. Recovery delivery has been verified with both local mail capture and a real Gmail inbox. Each deployment still needs its own mail configuration.
 
 Scope: changed account UI/API and setup only; team catalogue, cart, checkout, management and database schema implementations are retained. The root dependency audit also reports existing Azure/MSAL transitive advisories present on main; no unrelated forced dependency upgrade was applied as part of this account change.

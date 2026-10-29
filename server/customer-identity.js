@@ -1,7 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { validCustomerEmail } from '../src/data/customerEmail.js'
 
-// AI-assisted customer-account extension. Preserve the supplied SQL schema and hash format.
 export const fingerprint = (row) =>
   createHash('sha256')
     .update(JSON.stringify([row.Email.toLowerCase(), row.Salt, row.HashPW]))
