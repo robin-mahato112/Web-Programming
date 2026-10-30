@@ -50,3 +50,41 @@ export function installCustomerCompose(source) {
     ? source
     : source.replace('- .checkout.env', '- .checkout.env\n      - .customer.env')
 }
+
+// Restore only this extension's changes; never replace the complete team API file.
+export function restoreCourseCustomerSource(source, suppliedSource) {
+  source = source.replace(/\r\n/g, '\n')
+  suppliedSource = suppliedSource.replace(/\r\n/g, '\n')
+  if (!source.includes('mountCourseCustomerAccounts(app,')) {
+    if (
+      source.includes("app.post('/requestPasswordReset'") &&
+      source.includes("app.post('/resetPassword'")
+    )
+      return source
+    throw new Error('No recognised course password recovery routes. Review the backend manually.')
+  }
+  const start = suppliedSource.indexOf(
+    '// Request a password reset - generates a token and returns it',
+  )
+  const end = suppliedSource.indexOf("app.get('/me', requireAuth", start)
+  const marker = '// Customer recovery is handled by the customer extension above.\n'
+  if (
+    start < 0 ||
+    end <= start ||
+    !source.includes(imports) ||
+    !source.includes(mount) ||
+    !source.includes(marker)
+  )
+    throw new Error('The backend layout changed. No files were restored.')
+  const routes = suppliedSource.slice(start, end)
+  if (
+    !routes.includes("app.post('/requestPasswordReset'") ||
+    !routes.includes("app.post('/resetPassword'")
+  )
+    throw new Error('The supplied backup has no complete course recovery routes.')
+  return source
+    .replace(imports, '')
+    .replace(mount, '')
+    .replace(marker, routes)
+    .replace('role, accountVersion: fingerprint(patron) };', 'role };')
+}

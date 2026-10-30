@@ -4,18 +4,30 @@ Combined INFT3050 web application: customer accounts and delivery profiles, prod
 
 ## Run locally
 
+### Customer accounts: lecturer-confirmed course mode
+
+Customer accounts now use the original supplied v1.1 API: name and email remain read-only, phone/address remain editable, and password recovery displays an explicitly simulated email with the development reset code. Redeeming the code changes the password through the supplied `/resetPassword` endpoint. No SMTP service or customer extension is required for these account pages. See [course account demo](docs/customer-course-demo.md).
+
+The checkout and staff extension instructions below concern the team's separate features and remain unchanged. Account compatibility with the original API does not mean those added team endpoints exist in the original API.
+
 Use Node.js 24 LTS, npm and Docker Desktop. Keep your existing university database and Docker volumes.
 
-1. Run `npm ci` in this repository.
-2. Copy `.env.example` to `.env.local`. The default API is `http://localhost:13001`.
-3. Start the university API with this project's extensions (see below).
-4. Run `npm run dev` and open `http://localhost:3000`.
+For the customer-account assessment using the supplied backend:
+
+1. Start the supplied university backend/database using its normal course instructions (`docker compose up -d` in the prepared backend folder). Its default API is `http://localhost:3001`, with CORS allowing `http://localhost:3000`.
+2. Run `npm ci` in this frontend repository.
+3. Run `npm run dev` and open `http://localhost:3000`.
+
+No frontend `.env.local`, SMTP setup or customer-extension installation is needed with these defaults. Keep the backend's default development mode for simulated password recovery. If port 3000 is occupied, stop your previous frontend instance and retry; choosing another origin also requires matching backend CORS configuration.
+
+For the team's already configured backend on port 13001, retain its existing `.env.local` with `VITE_API_URL=http://localhost:13001`. An explicit environment setting takes priority over the standard 3001 default. Do not replace teammates' existing settings. Team checkout/staff features with additional endpoints still need their own extension setup below; the original backend alone does not implement those endpoints.
 
 For day-to-day use, start your already configured backend in Docker as usual, then run `npm run dev`. The frontend command does not install extensions, rebuild containers or change the database. The extension setup below is needed for a new backend installation or when its extension code/dependencies change; an unmodified university API does not provide all of the team's added endpoints.
 
 | Environment                  | Frontend | API on Windows | API inside Docker |
 | ---------------------------- | -------- | -------------- | ----------------- |
-| Main                         | 3000     | 13001          | 3001              |
+| Supplied course defaults     | 3000     | 3001           | 3001              |
+| Existing team main setup     | 3000     | 13001          | 3001              |
 | Existing isolated test setup | 3002     | 13002          | 3001              |
 
 `VITE_API_URL` is shared by account, staff and shopping requests. All clients send the HttpOnly login cookie. The university CORS configuration must include the frontend origin. Browser and Postman sessions are separate. Do not expose database passwords or signing keys through `VITE_*` variables.
@@ -35,12 +47,11 @@ The university backend ZIP and database files are not committed. Extract the sup
 ```powershell
 $env:COURSE_BACKEND_DIRECTORY='C:\path\to\existing\course-backend.local'
 node scripts/install-course-checkout.js
-node scripts/install-course-customer.js
 ```
 
 The installer copies the extension, installs the reviewed API package/lockfile, removes sensitive debug logging, restricts generic CRUD writes, and adds a durable checkout journal. It preserves the signing key and saves original changed configuration files as ignored `.before-checkout` files. It does not run SQL or change the schema.
 
-The customer installer adds own-account name/email editing and email-based password recovery. Configure its server-only `.customer.env` before rebuilding. See [customer account setup and verification](docs/customer-account-final.md) for the optional local mail inbox, SMTP configuration and API contracts. Existing customer cookies require one new sign-in after installation; staff cookies are unchanged.
+Do not run `install-course-customer.js` for the course account demo. It belongs to the earlier optional name/email editing and SMTP implementation, superseded by the lecturer's clarification. Existing installations of that customer extension need the targeted restoration described in [course account demo](docs/customer-course-demo.md); the restoration preserves checkout/staff route code, database contents and private mail settings. Historical extension setup remains in [customer account setup and verification](docs/customer-account-final.md).
 
 Rebuild **only the API service** using the existing Compose project name and file. Find the project name from Docker Desktop or `docker compose ls` first:
 
@@ -102,7 +113,9 @@ npm.cmd run test:ui
 
 `check` runs formatting, lint, Node tests and the production build. `test:ui` runs the group account tests in desktop/mobile Edge against deterministic API fixtures; it does not write to StoreDB.
 
-Customer integration rechecked on 30 October 2026: formatting, lint, production build and 146 Node tests passed. All 78 desktop/mobile account checks passed (74 existing checks and four legacy-account compatibility checks). Isolated SQL and live-browser tests verified profile updates, checkout after an email change, order ownership, SMTP recovery and staff/admin permissions. These write tests used `AccountVerification`, not the team's StoreDB. See [account verification details](docs/customer-account-final.md).
+Current course-mode verification: 149 Node tests and 78 desktop/mobile checks passed. An additional isolated test ran the original `auth/server.js` extracted from the supplied v1.1 ZIP against `AccountVerification`. API and live-browser checks verified read-only identity, delivery save/reload, order/items, simulated recovery and actual password reset/new-password login. These tests did not send real email, process payments or write to StoreDB.
+
+Historical extended-account verification on 30 October 2026: formatting, lint, production build and 146 Node tests passed. All 78 desktop/mobile account checks passed (74 existing checks and four legacy-account compatibility checks). Isolated SQL and live-browser tests verified profile updates, checkout after an email change, order ownership, SMTP recovery and staff/admin permissions. These write tests used `AccountVerification`, not the team's StoreDB. See [account verification details](docs/customer-account-final.md).
 
 Earlier baseline verification on 27 October 2026:
 
@@ -133,7 +146,7 @@ Import `docs/postman/University-Checkout.postman_collection.json` and the matchi
 
 Back up StoreDB, `checkout-state.local` and `.checkout.env` together while checkout writes are paused. Restore the matching set; a database-only backup cannot restore the receipt/retry journal. Preserve the signing key and share the durable journal if running multiple API instances.
 
-Payments are simulated. Customer password recovery sends single-use, 15-minute reset codes through server-configured SMTP; real Gmail delivery has been verified locally. Each deployment must install the customer extension and configure its own private `.customer.env`; cloning the repository does not copy mail credentials. See [Gmail setup](docs/customer-gmail-setup.md). Recovery requests are rate-limited, while email verification, sign-in rate limiting and concurrent duplicate-registration protection still require backend work. The course generic API is not a production security boundary for every table.
+Payments are simulated. In the current course account flow, email delivery and mailbox verification are simulated; reset codes come from the supplied development API, expire after 15 minutes and are consumed on successful password reset. The original API does not invalidate all existing login cookies when a password changes, or provide the previous extension's recovery rate limiting. This is a course demonstration, not production account security. Historical real-Gmail setup is retained for reference only and is not required for marking. The course generic API is not a production security boundary for every table.
 
 Lecturer decisions remain: shipping/tax rules, external-provider handoff versus purchase, and a formal discontinued status. Zero stock means out of stock, not permanently discontinued. No rules or charges are invented.
 

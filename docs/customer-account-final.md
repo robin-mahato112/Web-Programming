@@ -1,5 +1,7 @@
 # Customer account extension — setup and verification
 
+> Historical optional extension. The current course account UI follows the lecturer's clarification: name/email are read-only and recovery email is simulated using the original API. Do not install this extension for the course demo. Use [customer course demo](customer-course-demo.md) instead. The results below describe the earlier implementation.
+
 Technical implementation notes, 30 October 2026. Team main reviewed: `13f7348`. This extension builds on the university v1.1 backend and the team's current API installer; it does not replace the supplied database or the shopping/staff modules.
 
 ## Completed account flow
