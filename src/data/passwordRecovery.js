@@ -2,21 +2,25 @@ import { validPassword } from './passwordRules.js'
 import { basicCustomerEmail } from './customerEmail.js'
 import { courseRequest } from '../services/course-api.js'
 
-export function getRecoveryDelivery() {
-  return courseRequest('/api/customer/recovery', { signal: AbortSignal.timeout(15000) })
-}
 export async function requestRecoveryEmail(email) {
   if (!basicCustomerEmail(email)) throw new Error('Enter a valid email address.')
-  return courseRequest('/requestPasswordReset', {
+  const result = await courseRequest('/requestPasswordReset', {
     body: { email: email.trim().toLowerCase() },
-    headers: { 'X-Customer-Request': '1' },
     signal: AbortSignal.timeout(15000),
   })
+  // Development tokens simulate delivery; the generic API message does not prove an email was sent.
+  if (result?.ok !== true)
+    throw new Error('The reset request could not be confirmed. Please retry.')
+  if (
+    Object.hasOwn(result, 'token') &&
+    (typeof result.token !== 'string' || !/^[a-f0-9]{64}$/i.test(result.token))
+  )
+    throw new Error('The reset service returned an invalid code. Please retry.')
+  return { code: typeof result.token === 'string' ? result.token.toLowerCase() : '' }
 }
 export function resetCustomerPassword({ token, password }) {
   return courseRequest('/resetPassword', {
     body: { token: token.trim().toLowerCase(), password },
-    headers: { 'X-Customer-Request': '1' },
     signal: AbortSignal.timeout(15000),
   })
 }

@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Input from '../components/Input.jsx'
 import PasswordInput from '../components/PasswordInput.jsx'
 import { customerReturnPath, focusFirstError } from '../data/accountNavigation.js'
 import {
-  getRecoveryDelivery,
   requestRecoveryEmail,
   resetCustomerPassword,
   validatePasswordRecovery,
@@ -26,26 +25,19 @@ export default function ForgotPassword() {
   const [emailNotice, setEmailNotice] = useState('')
   const [emailFailure, setEmailFailure] = useState('')
   const [requesting, setRequesting] = useState(false)
-  const [delivery, setDelivery] = useState(null)
+  const [demoCode, setDemoCode] = useState('')
   const requestingRef = useRef(false)
   const returnTo = customerReturnPath(params.get('returnTo'))
-  useEffect(() => {
-    let active = true
-    getRecoveryDelivery()
-      .then((value) => {
-        if (active) setDelivery(value)
-      })
-      .catch(() => {})
-    return () => {
-      active = false
-    }
-  }, [])
 
   async function sendCode(event) {
     event.preventDefault()
-    if (requestingRef.current) return
+    if (requestingRef.current || submitting.current) return
     setEmailNotice('')
     setEmailFailure('')
+    setDemoCode('')
+    setValues(emptyFields)
+    setErrors({})
+    setFailure('')
     if (!basicCustomerEmail(email)) {
       setEmailError('Enter a valid email address.')
       focusFirstError({ recoveryEmail: true })
@@ -56,7 +48,12 @@ export default function ForgotPassword() {
     setRequesting(true)
     try {
       const result = await requestRecoveryEmail(email)
-      setEmailNotice(result.message)
+      setDemoCode(result.code)
+      setEmailNotice(
+        result.code
+          ? 'Email sent (simulation). Use the reset code below.'
+          : 'No reset code is available. Check your email address and try again.',
+      )
     } catch (error) {
       setEmailFailure(error.message)
     } finally {
@@ -78,7 +75,7 @@ export default function ForgotPassword() {
 
   async function resetPassword(event) {
     event.preventDefault()
-    if (submitting.current) return
+    if (submitting.current || requestingRef.current) return
     const next = validatePasswordRecovery(values)
     setErrors(next)
     setFailure('')
@@ -90,8 +87,11 @@ export default function ForgotPassword() {
     setBusy(true)
     setFailure('')
     try {
-      await resetCustomerPassword(values)
+      const result = await resetCustomerPassword(values)
+      if (result?.ok !== true) throw new Error('The password change could not be confirmed.')
       setValues(emptyFields)
+      setDemoCode('')
+      setEmailNotice('')
       setComplete(true)
     } catch (error) {
       setFailure(error.message)
@@ -112,17 +112,7 @@ export default function ForgotPassword() {
         ) : (
           <>
             <p>Request a reset code using your account email, then enter the code below.</p>
-            {delivery?.delivery === 'local' && (
-              <p className="notice">
-                Demo mode: recovery emails are captured in the local mail inbox. They are not
-                delivered to external email accounts.
-              </p>
-            )}
-            {delivery?.enabled === false && (
-              <p className="notice">
-                Recovery email is currently unavailable. Please contact support.
-              </p>
-            )}
+            <p className="notice">Email delivery is simulated for this course demonstration.</p>
             <form
               noValidate
               onSubmit={sendCode}
@@ -137,13 +127,17 @@ export default function ForgotPassword() {
                 autoComplete="email"
                 maxLength={255}
                 value={email}
-                disabled={requesting}
+                disabled={requesting || busy}
                 error={emailError}
                 onChange={(event) => {
                   setEmail(event.target.value)
                   setEmailError('')
                   setEmailNotice('')
                   setEmailFailure('')
+                  setDemoCode('')
+                  setValues(emptyFields)
+                  setErrors({})
+                  setFailure('')
                 }}
               />
               {emailNotice && (
@@ -156,14 +150,34 @@ export default function ForgotPassword() {
                   {emailFailure}
                 </p>
               )}
+              {demoCode && (
+                <div className="notice" aria-label="Simulated recovery email">
+                  <p>Your reset code (valid for 15 minutes):</p>
+                  <code style={{ overflowWrap: 'anywhere' }}>{demoCode}</code>
+                  <p>
+                    <button
+                      type="button"
+                      className="button button--secondary"
+                      disabled={requesting || busy}
+                      onClick={() => {
+                        setValues((current) => ({ ...current, token: demoCode }))
+                        setErrors((current) => ({ ...current, token: undefined }))
+                        setFailure('')
+                      }}
+                    >
+                      Use this code
+                    </button>
+                  </p>
+                </div>
+              )}
               <button className="button button--secondary" disabled={requesting || busy}>
                 {requesting ? 'Requesting…' : 'Send reset code'}
               </button>
             </form>
             <h2>Reset your password</h2>
-            <p>Codes expire after 15 minutes. If you requested a new code, use the newest email.</p>
+            <p>Use a valid reset code within 15 minutes. Each code can be used once.</p>
             <form onSubmit={resetPassword} noValidate aria-busy={busy}>
-              <fieldset className="account-fields" disabled={busy}>
+              <fieldset className="account-fields" disabled={busy || requesting}>
                 <Input
                   id="token"
                   name="token"
@@ -202,7 +216,7 @@ export default function ForgotPassword() {
                   {failure}
                 </p>
               )}
-              <button className="button button--dark button--wide" disabled={busy}>
+              <button className="button button--dark button--wide" disabled={busy || requesting}>
                 {busy ? 'Changing password...' : 'Change password'}
               </button>
             </form>

@@ -1,5 +1,7 @@
 # Gmail delivery for customer password recovery
 
+> Historical optional setup, not required by the current course account flow. The lecturer permits simulated recovery email. See [customer course demo](customer-course-demo.md); existing private Gmail settings can remain unused on your machine.
+
 Developer setup notes. The personal Gmail mailbox is the sender; customers can receive recovery messages at other providers. Do not submit or share the app password with the code, screenshots or report.
 
 1. Sign in to the intended personal Google account and enable [2-Step Verification](https://myaccount.google.com/signinoptions/two-step-verification).
