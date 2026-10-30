@@ -129,7 +129,7 @@ export default function UserManagement({ staff, customers, actor }) {
     </div>
     {message && <p className="notice" role="status">{message}</p>}
     <div id="user-editor">
-      {panel?.mode === 'add' && <AddUserForm actor={actor} onCancel={() => close()} onAdded={user => close(`${user.name} (${user.username}) was added. They can sign in at Staff sign in${user.role === 'admin' ? ' with the admin code' : ''}.`)} />}
+      {panel?.mode === 'add' && <AddUserForm actor={actor} onCancel={() => close()} onAdded={user => close(`${user.name} (${user.username}) was added. They can sign in at Staff sign in.`)} />}
     </div>
     <div className="table-wrap" role="region" aria-label="Staff accounts" tabIndex={0}>
       <table className="user-table">

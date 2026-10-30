@@ -4,7 +4,7 @@ import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 import DeliveryFields from '../components/DeliveryFields.jsx'
 import { registerCustomer } from '../data/customerAccount.js'
-import { isStaff, signInCustomer, staffHome, useSession } from '../data/session.js'
+import { isStaff, signInCustomer, signInStaff, staffHome, useSession } from '../data/session.js'
 
 const emailPattern = /^\S+@\S+\.\S+$/
 
@@ -27,30 +27,33 @@ function LoginForm() {
   const submit = async event => {
     event.preventDefault()
     const next = {}
-    if (!values.email.trim()) next.email = 'Enter your email address.'
-    else if (!emailPattern.test(values.email.trim())) next.email = 'Enter a valid email address.'
+    const login = values.email.trim()
+    // Customers sign in with their email; staff can use their username (no @) here too.
+    const asStaff = login && !login.includes('@')
+    if (!login) next.email = 'Enter your email address or staff username.'
+    else if (!asStaff && !emailPattern.test(login)) next.email = 'Enter a valid email address.'
     if (!values.password) next.password = 'Enter your password.'
     setErrors(next)
     if (Object.keys(next).length) return
     setPending(true)
-    const result = await signInCustomer(values.email.trim(), values.password)
+    const result = asStaff ? await signInStaff(login, values.password) : await signInCustomer(login, values.password)
     if (result.error) {
       setPending(false)
       setError(result.error)
-    } else navigate('/', { replace: true })
+    } else navigate(asStaff ? staffHome(result.user) : '/', { replace: true })
   }
 
   return (
     <form className="auth-card" noValidate onSubmit={submit} aria-busy={pending}>
       <p className="eyebrow">Customer account</p>
       <h1>Welcome back</h1>
-      <p className="notice notice--info" role="status">Sign in with the email and password you registered with.</p>
+      <p className="notice notice--info" role="status">Sign in with the email and password you registered with. Staff can sign in with their username.</p>
       <p className="auth-switch"><Link to="/admin/login">Staff sign in</Link></p>
 
       {error && <div className="notice notice--error" role="alert">{error}</div>}
 
       <div>
-        <Input id="email" name="email" label="Email address" type="email" autoComplete="email" value={values.email} onChange={update} error={errors.email} />
+        <Input id="email" name="email" label="Email or staff username" autoComplete="username" value={values.email} onChange={update} error={errors.email} />
         <Input id="password" name="password" label="Password" type="password" autoComplete="current-password" value={values.password} onChange={update} error={errors.password} />
       </div>
 

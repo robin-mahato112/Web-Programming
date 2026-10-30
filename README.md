@@ -6,12 +6,20 @@ A Vite/React prototype containing a home page, customer accounts, and staff dash
 
 - **Home** (`/`) — the live catalogue for everyone, signed in or not: search by title or author, filter by genre, sub-genre and stock, sort by price, title or release date, and page through with Show more. Each card shows the cheapest format's price (with any discount), the formats, and stock. The hero features the most recently updated product in stock.
 - **Customer registration** (`/register`) — creates a Patrons row (the backend hashes the password), signs the customer in, and saves their phone and delivery address as a TO row. Emails already registered are rejected using `/patronLookup`. Staff accounts are not created here; admins add them in User management.
-- **Customer sign in** (`/login`) — email and password through `/patronLogin`.
+- **Customer sign in** (`/login`) — email and password through `/patronLogin`. Entering a staff username (anything without `@`), such as `employee`, signs in through the staff login instead and opens that account's dashboard.
 - **My account** (`/account`) — the customer's name and email (from Patrons, read only because customers cannot edit Patrons) and their delivery details, which they can update (TO).
 
 ## Staff area (live backend)
 
-Staff sign in at `/admin/login` with a backend User account (for example `adminAccount` / `adminPW` from the course Postman collection). Admin accounts also enter the admin code (`ADMIN001` by default, set with `VITE_ADMIN_CODE`) and open `/admin`; other staff leave the code blank and open `/employee`. The admin code is checked in the browser only, so it is a prototype gate rather than real security.
+Staff sign in at `/admin/login` with a backend User account. Test accounts in the local StoreDB:
+
+| Role | Username | Password |
+|---|---|---|
+| Admin | `adminAccount` | `adminPW` (from the course Postman collection) |
+| Admin | `admin` | `Admin12345` |
+| Employee | `employee` | `Employee12345` |
+
+`admin` and `employee` were added through the API (`POST /api/inft3050/User`), so each team member's Docker database needs them created once; add them under User management while signed in as `adminAccount`. The account's backend role decides the dashboard: admins (`IsAdmin`) open `/admin` and other staff open `/employee`.
 
 - **Dashboard** — live product, stock, price, order, and account figures with charts. Every chart has a data table.
 - **Product management** — all products with search, genre and stock filters. Price and quantity are stored per format (Stocktake row). Admins add products (with one or more formats), edit prices and stock, and delete products; deleting also removes the product's formats and order lines. Employees have a read-only view.

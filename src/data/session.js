@@ -7,28 +7,6 @@ import { errorMessage, field, listAll, readRow, resetResources } from './backend
 const listeners = new Set()
 let state = { status: 'loading', user: null }
 
-// Admins also enter an admin code. The backend has no such field, so the code is checked here and the
-// verified admin's id is remembered so a page reload does not skip the check.
-const adminCode = import.meta.env.VITE_ADMIN_CODE || 'ADMIN001'
-const verifiedKey = 'entertainment-guild-admin-verified'
-
-function readVerified() {
-  try {
-    return localStorage.getItem(verifiedKey)
-  } catch {
-    return null
-  }
-}
-
-function writeVerified(userId) {
-  try {
-    if (userId === null) localStorage.removeItem(verifiedKey)
-    else localStorage.setItem(verifiedKey, String(userId))
-  } catch {
-    // Without storage the admin is asked for the code again after a reload.
-  }
-}
-
 function setState(next) {
   state = next
   listeners.forEach(listener => listener())
@@ -65,11 +43,6 @@ async function restoreSession() {
   try {
     const { data } = await api.get('/me')
     const role = roleFromToken(data.role)
-    if (role === 'admin' && readVerified() !== String(data.id)) {
-      await api.post('/logout')
-      setState({ status: 'ready', user: null })
-      return
-    }
     setState({ status: 'ready', user: role ? await loadUser(data.id, role) : null })
   } catch (error) {
     // The backend rejects every request, even public catalogue reads, while an invalid cookie is present. Clear it.
@@ -111,16 +84,12 @@ function startSession(user) {
   return { user }
 }
 
-export async function signInStaff(username, password, code = '') {
+// The account's backend role (User.IsAdmin) decides whether it opens the admin or employee area.
+export async function signInStaff(username, password) {
   try {
     const { data } = await api.post('/login', { username, password })
     const role = roleFromToken(data.role)
     if (!isStaff({ role })) return { error: 'This account cannot use the staff area.' }
-    if (role === 'admin' && code.trim() !== adminCode) {
-      await api.post('/logout')
-      return { error: code.trim() ? 'Admin code is incorrect.' : 'This is an admin account. Enter your admin code.', field: 'adminCode' }
-    }
-    writeVerified(role === 'admin' ? data.id : null)
     return startSession(await loadStaffUser(data.id, role))
   } catch (error) {
     return { error: error.response?.status === 401 ? 'Username or password is incorrect.' : errorMessage(error) }
@@ -131,7 +100,6 @@ export async function signInStaff(username, password, code = '') {
 export async function signInCustomer(email, password) {
   try {
     const { data } = await api.post('/patronLogin', { username: email, password })
-    writeVerified(null)
     return startSession({ userId: data.id, name: data.username || data.email, email: data.email, role: 'customer' })
   } catch (error) {
     return { error: error.response?.status === 401 ? 'Email or password is incorrect.' : errorMessage(error) }
@@ -139,7 +107,6 @@ export async function signInCustomer(email, password) {
 }
 
 export async function signOut() {
-  writeVerified(null)
   resetResources()
   setState({ status: 'ready', user: null })
   try {

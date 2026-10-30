@@ -7,7 +7,6 @@ import { signInStaff, staffHome, useStaffSession } from '../data/session.js'
 const initialValues = {
   username: '',
   password: '',
-  adminCode: '',
 }
 
 function validate(values) {
@@ -36,7 +35,7 @@ function AuthForm() {
     setErrors(next)
     if (Object.keys(next).length) return
     setPending(true)
-    const result = await signInStaff(values.username.trim(), values.password, values.adminCode)
+    const result = await signInStaff(values.username.trim(), values.password)
     setPending(false)
     if (result.field) setErrors({ [result.field]: result.error })
     else if (result.error) setError(result.error)
@@ -48,8 +47,8 @@ function AuthForm() {
       <p className="eyebrow">Staff accounts</p>
       <h1>Staff sign in</h1>
       <p className="notice notice--info" role="status">
-        Sign in with your staff username and password. Admins also enter
-        their admin code; employees leave it blank.
+        Sign in with your staff username and password. Your account's role
+        decides whether you open the admin or employee dashboard.
       </p>
 
       {error && (
@@ -77,17 +76,6 @@ function AuthForm() {
           value={values.password}
           onChange={update}
           error={errors.password}
-        />
-        <Input
-          id="adminCode"
-          name="adminCode"
-          label="Admin code"
-          type="password"
-          autoComplete="off"
-          value={values.adminCode}
-          onChange={update}
-          error={errors.adminCode}
-          hint="Admins only. Employees leave this blank."
         />
       </div>
 
