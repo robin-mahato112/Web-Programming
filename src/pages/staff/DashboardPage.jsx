@@ -4,8 +4,7 @@ import { seriesColors } from '../../components/chartColors.js'
 import ResourceStatus from '../../components/ResourceStatus.jsx'
 import { countRows, createResource, useResource } from '../../data/backend.js'
 import { catalogue, lowStockLimit } from '../../data/catalogue.js'
-import { useDiscounts } from '../../data/discountStore.js'
-import { formatPrice, salePrice } from '../../data/productStore.js'
+import { formatPrice } from '../../data/productStore.js'
 import { accounts } from '../../data/staffAccounts.js'
 import { roleLabel } from '../../data/session.js'
 
@@ -52,10 +51,9 @@ function AccountsCard({ state }) {
 }
 
 function Dashboard({ products, accountsState, orders }) {
-  const discounts = useDiscounts()
-  const stockLines = products.flatMap(product => product.stock.map(item => ({ ...item, sellingPrice: salePrice({ price: item.price, discount: discounts[product.id] ?? 0 }) })))
+  const stockLines = products.flatMap(product => product.stock)
   const unitsInStock = sum(products, product => product.quantity)
-  const inventoryValue = sum(stockLines, item => item.quantity * item.sellingPrice)
+  const inventoryValue = sum(stockLines, item => item.quantity * item.price)
   const lowStock = products.filter(product => product.quantity > 0 && product.quantity < lowStockLimit).length
   const outOfStock = products.filter(product => product.quantity === 0).length
   const genreCounts = Object.entries(Object.groupBy(products, product => product.genre)).map(([genre, items]) => `${number.format(items.length)} ${genre.toLowerCase()}`)
@@ -72,7 +70,7 @@ function Dashboard({ products, accountsState, orders }) {
     .map(([source, items]) => ({ id: source, label: source, lines: items.length, units: sum(items, item => item.quantity) }))
     .sort((a, b) => b.units - a.units)
   const lowest = [...products].sort((a, b) => a.quantity - b.quantity || a.title.localeCompare(b.title)).slice(0, 10)
-  const bands = priceBands.map(band => ({ id: bandLabel(band), label: bandLabel(band), lines: stockLines.filter(item => item.sellingPrice >= band[0] && item.sellingPrice < band[1]).length }))
+  const bands = priceBands.map(band => ({ id: bandLabel(band), label: bandLabel(band), lines: stockLines.filter(item => item.price >= band[0] && item.price < band[1]).length }))
 
   const staff = accountsState.data?.staff ?? []
   const customers = accountsState.data?.customers ?? []
@@ -82,8 +80,8 @@ function Dashboard({ products, accountsState, orders }) {
       <div className="stats">
         <Stat label="Products" value={number.format(products.length)} detail={genreCounts.join(' · ')} />
         <Stat label="Units in stock" value={number.format(unitsInStock)} detail={`${count(lowStock, 'product')} low · ${number.format(outOfStock)} out of stock`} />
-        <Stat label="Inventory value" value={formatPrice(inventoryValue)} detail="Units in stock × selling price" />
-        <Stat label="Average selling price" value={formatPrice(stockLines.length ? sum(stockLines, item => item.sellingPrice) / stockLines.length : 0)} detail={`Across ${count(stockLines.length, 'product format')}`} />
+        <Stat label="Inventory value" value={formatPrice(inventoryValue)} detail="Units in stock × price" />
+        <Stat label="Average price" value={formatPrice(stockLines.length ? sum(stockLines, item => item.price) / stockLines.length : 0)} detail={`Across ${count(stockLines.length, 'product format')}`} />
         <Stat label="Orders" value={orders.status === 'ready' ? number.format(orders.data) : '—'} detail={orders.status === 'error' ? orders.error : 'Placed through the shop'} />
         <Stat label="Accounts" value={accountsState.status === 'ready' ? number.format(staff.length + customers.length) : '—'} detail={accountsState.status === 'ready' ? `${count(customers.length, 'customer')} · ${number.format(staff.length)} staff` : 'Loading…'} />
       </div>
@@ -106,8 +104,8 @@ function Dashboard({ products, accountsState, orders }) {
             items={lowest.map(product => ({ id: product.id, label: product.title, values: { quantity: product.quantity }, status: statusOf(product.quantity) }))} />
         </ChartCard>
 
-        <ChartCard title="Selling price bands" subtitle="Product formats by current selling price, after discounts"
-          table={{ columns: ['Selling price', 'Product formats'], rows: bands.map(band => [band.label, number.format(band.lines)]) }}>
+        <ChartCard title="Price bands" subtitle="Product formats by current price"
+          table={{ columns: ['Price', 'Product formats'], rows: bands.map(band => [band.label, number.format(band.lines)]) }}>
           <BarList format={value => number.format(value)} series={[{ key: 'lines', name: 'Product formats', color: seriesColors[0] }]}
             items={bands.map(band => ({ id: band.id, label: band.label, values: { lines: band.lines } }))} />
         </ChartCard>
@@ -128,7 +126,7 @@ export default function DashboardPage() {
     <>
       <p className="eyebrow">{roleLabel(user.role)} dashboard</p>
       <h1>Welcome, {user.name}!</h1>
-      <p className="lead">Live figures from the store database. Discounts are the ones saved in this browser. Prices are in AUD.</p>
+      <p className="lead">Live figures from the store database. Prices are in AUD.</p>
       <ResourceStatus state={catalogueState} resource={catalogue} label="the catalogue">
         {catalogueState.data && <Dashboard products={catalogueState.data.products} accountsState={accountsState} orders={orders} />}
       </ResourceStatus>

@@ -4,7 +4,7 @@ A Vite/React prototype containing a home page, customer accounts, and staff dash
 
 ## Home and customer accounts (live backend)
 
-- **Home** (`/`) — the live catalogue for everyone, signed in or not: search by title or author, filter by genre, sub-genre and stock, sort by price, title or release date, and page through with Show more. Each card shows the cheapest format's price (with any discount), the formats, and stock. The hero features the most recently updated product in stock.
+- **Home** (`/`) — the live catalogue for everyone, signed in or not: search by title or author, filter by genre, sub-genre and stock, sort by price, title or release date, and page through with Show more. Each card shows the cheapest format's price, the formats, and stock. The hero features the most recently updated product in stock.
 - **Customer registration** (`/register`) — creates a Patrons row (the backend hashes the password), signs the customer in, and saves their phone and delivery address as a TO row. Emails already registered are rejected using `/patronLookup`. Staff accounts are not created here; admins add them in User management.
 - **Customer sign in** (`/login`) — email and password through `/patronLogin`. Entering a staff username (anything without `@`), such as `employee`, signs in through the staff login instead and opens that account's dashboard.
 - **My account** (`/account`) — the customer's name and email (from Patrons, read only because customers cannot edit Patrons) and their delivery details, which they can update (TO).
@@ -22,10 +22,10 @@ Staff sign in at `/admin/login` with a backend User account. Test accounts in th
 `admin` and `employee` were added through the API (`POST /api/inft3050/User`), so each team member's Docker database needs them created once; add them under User management while signed in as `adminAccount`. The account's backend role decides the dashboard: admins (`IsAdmin`) open `/admin` and other staff open `/employee`.
 
 - **Dashboard** — live product, stock, price, order, and account figures with charts. Every chart has a data table.
-- **Product management** — all products with search, genre and stock filters. Price and quantity are stored per format (Stocktake row). Admins add products (with one or more formats), edit prices and stock, and delete products; deleting also removes the product's formats and order lines. Employees have a read-only view.
+- **Product management** — all products with search, genre and stock filters. Price and quantity are stored per format (Stocktake row). Admins add products (with one or more formats), edit a product's title, author, prices and stock, and delete products; deleting also removes the product's formats and order lines. Employees have a read-only view.
 - **User management** (admin only) — add, edit, and delete staff accounts in the User table, and view customer accounts from Patrons. The backend hashes new passwords. You cannot delete or change the role of your own account, and at least one admin must remain. Products list their last updater by username, so deleting a user reassigns those products to the admin doing the delete.
 
-The database has no discount column, so discounts are saved per product in this browser's local storage only. The backend does not validate values, so all validation happens in the forms.
+The backend does not validate values, so all validation happens in the forms.
 
 ## Install and run
 
@@ -84,8 +84,8 @@ Unknown routes redirect to Home. Staff pages redirect signed-out visitors to Sta
 - `src/api.js` — axios client for the backend (base URL from `VITE_API_URL`, sends the login cookie)
 - `src/data/backend.js` — API helpers (paginated list, read, count, patch) and the shared loading store
 - `src/data/session.js` — sign in and out for staff and customers, and the signed-in user
-- `src/data/catalogue.js`, `staffAccounts.js`, `customerAccount.js`, `discountStore.js` — live products and stock, staff accounts, customer registration and delivery details, and browser-only discounts
-- `src/data/productStore.js` — price, discount and validation helpers
+- `src/data/catalogue.js`, `staffAccounts.js`, `customerAccount.js` — live products and stock, staff accounts, and customer registration and delivery details
+- `src/data/productStore.js` — price and validation helpers
 - `src/pages/` — Home, AuthPages (customer sign in and registration), AccountPage, AdminLogin (staff sign in), and `staff/` (layout, dashboard, product and user management)
 - `src/components/charts.jsx` — dashboard charts
 - `src/styles.css` — stylesheet entry point; import this file from `src/main.jsx`
@@ -94,4 +94,4 @@ Unknown routes redirect to Home. Staff pages redirect signed-out visitors to Sta
 
 ## Prototype limitations
 
-Customers cannot change their name or email, because the backend does not let patrons edit Patrons. There is no cart or checkout yet. Home loads the whole catalogue once and filters it in the browser. Discounts exist only in the browser that set them. The backend's `GET /Source` list and `ProductsInOrders` endpoints currently fail, so format names are read one source at a time and there is no per-product sales history.
+Customers cannot change their name or email, because the backend does not let patrons edit Patrons. There is no cart or checkout yet. Home loads the whole catalogue once and filters it in the browser. The backend's `GET /Source` list and `ProductsInOrders` endpoints currently fail, so format names are read one source at a time and there is no per-product sales history.

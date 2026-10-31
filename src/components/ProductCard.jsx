@@ -1,9 +1,9 @@
 import { lowStockLimit } from '../data/catalogue.js'
-import { formatPrice, genreAccent, lowestPrice, salePrice } from '../data/productStore.js'
+import { formatPrice, genreAccent, lowestPrice } from '../data/productStore.js'
 import ProductVisual from './ProductVisual.jsx'
 
 // A live catalogue product. Each format (Stocktake row) has its own price and stock; the card shows the cheapest.
-export default function ProductCard({ product, discount = 0 }) {
+export default function ProductCard({ product }) {
   const price = lowestPrice(product)
   const from = new Set(product.stock.map(item => item.price)).size > 1 ? 'From ' : ''
   const available = product.quantity > 0
@@ -21,10 +21,7 @@ export default function ProductCard({ product, discount = 0 }) {
         {product.stock.length > 0 && <p className="product-formats">{product.stock.map(item => item.source).join(' · ')}</p>}
         <p className={available ? 'stock-line' : 'stock-line stock-line--out'}><span aria-hidden="true">●</span>{available ? 'In stock' : 'Out of stock'}</p>
         <div className="product-price">
-          {price === null ? <strong>Not available</strong> : <>
-            <strong>{from}{formatPrice(salePrice({ price, discount }))}</strong>
-            {discount > 0 && <><del aria-label="Original price">{formatPrice(price)}</del><span className="pill">{discount}% off</span></>}
-          </>}
+          <strong>{price === null ? 'Not available' : `${from}${formatPrice(price)}`}</strong>
         </div>
       </div>
     </article>

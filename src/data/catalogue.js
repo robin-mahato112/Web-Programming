@@ -1,5 +1,4 @@
 import { createResource, createRow, deleteRow, errorMessage, field, listAll, patchRow, readRow } from './backend.js'
-import { setDiscount } from './discountStore.js'
 import { validateProduct } from './productStore.js'
 
 export const lowStockLimit = 10
@@ -76,51 +75,57 @@ async function loadCatalogue() {
 
 export const catalogue = createResource(loadCatalogue)
 
-function stockErrors(stock, discount = '0') {
+function stockErrors(stock) {
   const errors = {}
   for (const [key, values] of Object.entries(stock)) {
-    const rowErrors = validateProduct({ ...values, discount })
+    const rowErrors = validateProduct(values)
     if (rowErrors.price) errors[`${key}-price`] = rowErrors.price
     if (rowErrors.quantity) errors[`${key}-quantity`] = rowErrors.quantity
-    if (rowErrors.discount) errors.discount = rowErrors.discount
   }
   return errors
 }
 
-// values: { discount, stock: { [itemId]: { price, quantity } } } as strings from the form.
+// Title and author rules shared by Add product and Edit.
+function detailErrors(values) {
+  const errors = {}
+  if (!values.title.trim() || values.title.trim().length > 255) errors.title = 'Enter a title of 1 to 255 characters.'
+  if (!values.author.trim() || values.author.trim().length > 255) errors.author = 'Enter an author, director, or studio of 1 to 255 characters.'
+  return errors
+}
+
+// values: { title, author, stock: { [itemId]: { price, quantity } } } as strings from the form.
 export async function saveProduct(product, values, user) {
   if (user?.role !== 'admin') return { error: 'Only admins can update products.' }
-  const errors = stockErrors(values.stock, values.discount)
+  const errors = { ...detailErrors(values), ...stockErrors(values.stock) }
   if (Object.keys(errors).length) return { errors }
 
+  const title = values.title.trim()
+  const author = values.author.trim()
+  const detailsChanged = title !== product.title || author !== (product.author ?? '')
   const changed = product.stock
     .map(item => ({ ...item, price: Number(values.stock[item.itemId].price), quantity: Number(values.stock[item.itemId].quantity) }))
     .filter(item => {
       const original = product.stock.find(row => row.itemId === item.itemId)
       return item.price !== original.price || item.quantity !== original.quantity
     })
+  if (!detailsChanged && !changed.length) return { saved: false }
 
-  if (changed.length) {
-    const updatedAt = new Date().toISOString()
-    try {
-      await Promise.all(changed.map(item => patchRow('Stocktake', item.itemId, { Price: item.price, Quantity: item.quantity })))
-      await patchRow('Product', product.id, { LastUpdatedBy: user.username, LastUpdated: updatedAt })
-    } catch (error) {
-      catalogue.load() // Some rows may have saved; reload so the table shows what the database holds.
-      return { error: errorMessage(error) }
-    }
-    const stock = product.stock.map(item => changed.find(row => row.itemId === item.itemId) ?? item)
-    const updated = { ...product, stock, quantity: totalQuantity(stock), updatedBy: user.username, updatedAt }
-    catalogue.update(data => ({ ...data, products: data.products.map(item => item.id === product.id ? updated : item) }))
+  const updatedAt = new Date().toISOString()
+  try {
+    await Promise.all(changed.map(item => patchRow('Stocktake', item.itemId, { Price: item.price, Quantity: item.quantity })))
+    await patchRow('Product', product.id, { ...(detailsChanged && { Name: title, Author: author }), LastUpdatedBy: user.username, LastUpdated: updatedAt })
+  } catch (error) {
+    catalogue.load() // Some rows may have saved; reload so the table shows what the database holds.
+    return { error: errorMessage(error) }
   }
-  const discountSaved = setDiscount(product.id, Number(values.discount))
-  return { savedToDatabase: changed.length > 0, discountSaved }
+  const stock = product.stock.map(item => changed.find(row => row.itemId === item.itemId) ?? item)
+  const updated = { ...product, title, author, stock, quantity: totalQuantity(stock), updatedBy: user.username, updatedAt }
+  catalogue.update(data => ({ ...data, products: data.products.map(item => item.id === product.id ? updated : item) }))
+  return { saved: true }
 }
 
 export function validateNewProduct(values) {
-  const errors = {}
-  if (!values.title.trim() || values.title.trim().length > 255) errors.title = 'Enter a title of 1 to 255 characters.'
-  if (!values.author.trim() || values.author.trim().length > 255) errors.author = 'Enter an author, director, or studio of 1 to 255 characters.'
+  const errors = detailErrors(values)
   if (!values.genreId) errors.genreId = 'Choose a genre.'
   if (!values.subGenreId) errors.subGenreId = 'Choose a sub-genre.'
   if (values.published && (!/^\d{4}-\d{2}-\d{2}$/.test(values.published) || Number.isNaN(Date.parse(values.published)))) errors.published = 'Enter a valid date.'
@@ -175,7 +180,6 @@ export async function deleteProduct(product, user) {
   } catch (error) {
     return { error: errorMessage(error) }
   }
-  setDiscount(product.id, 0)
   catalogue.update(data => ({ ...data, products: data.products.filter(item => item.id !== product.id) }))
   return {}
 }

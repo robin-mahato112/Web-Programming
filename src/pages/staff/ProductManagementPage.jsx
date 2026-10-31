@@ -5,8 +5,7 @@ import Input from '../../components/Input.jsx'
 import ResourceStatus from '../../components/ResourceStatus.jsx'
 import { useResource } from '../../data/backend.js'
 import { catalogue, createProduct, deleteProduct, lowStockLimit, saveProduct } from '../../data/catalogue.js'
-import { useDiscounts } from '../../data/discountStore.js'
-import { formatPrice, salePrice, validateProduct } from '../../data/productStore.js'
+import { formatPrice } from '../../data/productStore.js'
 import { roleLabel } from '../../data/session.js'
 
 const pageSize = 20
@@ -14,23 +13,24 @@ const dateFormat = new Intl.DateTimeFormat('en-AU', { dateStyle: 'medium' })
 const yearOf = value => value ? new Date(value).getFullYear() : ''
 const availability = quantity => quantity === 0 ? 'Out of stock' : quantity < lowStockLimit ? 'Low stock' : 'Available'
 
-function priceRange(stock, discount) {
-  const prices = stock.map(item => salePrice({ price: item.price, discount }))
+function priceRange(stock) {
+  const prices = stock.map(item => item.price)
   if (!prices.length) return '—'
   const low = Math.min(...prices)
   const high = Math.max(...prices)
   return low === high ? formatPrice(low) : `${formatPrice(low)} – ${formatPrice(high)}`
 }
 
-function ProductEditor({ product, discount, user, onCancel, onSave }) {
+function ProductEditor({ product, user, onCancel, onSave }) {
   const [values, setValues] = useState({
-    discount: String(discount),
+    title: product.title,
+    author: product.author ?? '',
     stock: Object.fromEntries(product.stock.map(item => [item.itemId, { price: String(item.price), quantity: String(item.quantity) }])),
   })
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
-  const updateDiscount = event => setValues({ ...values, discount: event.target.value })
+  const update = event => setValues({ ...values, [event.target.name]: event.target.value })
   const updateStock = (itemId, name) => event => setValues({ ...values, stock: { ...values.stock, [itemId]: { ...values.stock[itemId], [name]: event.target.value } } })
   const submit = async event => {
     event.preventDefault()
@@ -46,18 +46,17 @@ function ProductEditor({ product, discount, user, onCancel, onSave }) {
     <form className="product-editor" onSubmit={submit} noValidate aria-label={`Edit ${product.title}`} aria-busy={pending}>
       <h3>Edit {product.title}</h3>
       <div className="product-editor__fields">
-        <Input id={`product-${product.id}-discount`} name="discount" label="Discount (%)" type="number" min="0" max="100" step="0.01" value={values.discount} onChange={updateDiscount} error={errors.discount} hint="Saved in this browser only." />
+        <Input id={`product-${product.id}-title`} name="title" label="Title" value={values.title} onChange={update} error={errors.title} maxLength={255} />
+        <Input id={`product-${product.id}-author`} name="author" label="Author, director, or studio" value={values.author} onChange={update} error={errors.author} maxLength={255} />
       </div>
       {product.stock.map(item => {
         const row = values.stock[item.itemId]
-        const valid = Object.keys(validateProduct({ ...row, discount: values.discount })).length === 0
         return (
           <fieldset key={item.itemId} className="stock-fieldset">
             <legend>{item.source}</legend>
             <div className="product-editor__fields">
               <Input id={`stock-${item.itemId}-price`} label="Price (AUD)" type="number" min="0" max="1000000" step="0.01" value={row.price} onChange={updateStock(item.itemId, 'price')} error={errors[`${item.itemId}-price`]} />
               <Input id={`stock-${item.itemId}-quantity`} label="Quantity in stock" type="number" min="0" step="1" value={row.quantity} onChange={updateStock(item.itemId, 'quantity')} error={errors[`${item.itemId}-quantity`]} />
-              <p aria-live="polite">{valid ? `Selling price: ${formatPrice(salePrice({ price: Number(row.price), discount: Number(values.discount) }))}` : 'Enter valid values to preview the selling price.'}</p>
             </div>
           </fieldset>
         )
@@ -181,7 +180,7 @@ function DeleteProduct({ product, user, onCancel, onDeleted }) {
   )
 }
 
-function ProductRow({ product, discount, user, onDeleted }) {
+function ProductRow({ product, user, onDeleted }) {
   const [mode, setMode] = useState(null) // null, 'edit' or 'delete'
   const [message, setMessage] = useState('')
   const canEdit = user.role === 'admin'
@@ -189,12 +188,9 @@ function ProductRow({ product, discount, user, onDeleted }) {
     setMode(mode === next ? null : next)
     setMessage('')
   }
-  const save = ({ savedToDatabase, discountSaved }) => {
+  const save = ({ saved }) => {
     setMode(null)
-    setMessage([
-      savedToDatabase ? 'Price and stock changes saved to the database.' : 'No price or stock changes.',
-      discountSaved ? 'Discount saved in this browser.' : 'Browser storage is unavailable, so the discount only lasts for this session.',
-    ].join(' '))
+    setMessage(saved ? 'Changes saved to the database.' : 'Nothing was changed.')
   }
 
   return (
@@ -210,8 +206,7 @@ function ProductRow({ product, discount, user, onDeleted }) {
             {product.stock.map(item => <li key={item.itemId}><span>{item.source}</span> {formatPrice(item.price)} · {item.quantity}</li>)}
           </ul>
         </td>
-        <td>{discount}%</td>
-        <td><strong>{priceRange(product.stock, discount)}</strong></td>
+        <td><strong>{priceRange(product.stock)}</strong></td>
         <td>{product.quantity}</td>
         <td><span className={product.quantity >= lowStockLimit ? 'pill' : 'pill pill--muted'}>{availability(product.quantity)}</span></td>
         <td>{product.updatedAt && <time dateTime={product.updatedAt}>{dateFormat.format(new Date(product.updatedAt))}</time>}<small className="price-change">{product.updatedBy}</small></td>
@@ -223,8 +218,8 @@ function ProductRow({ product, discount, user, onDeleted }) {
         </td>}
       </tr>
       {canEdit && <tr hidden={!mode && !message}>
-        <td colSpan={8} id={`editor-${product.id}`}>
-          {mode === 'edit' && <ProductEditor product={product} discount={discount} user={user} onCancel={() => setMode(null)} onSave={save} />}
+        <td colSpan={7} id={`editor-${product.id}`}>
+          {mode === 'edit' && <ProductEditor product={product} user={user} onCancel={() => setMode(null)} onSave={save} />}
           {mode === 'delete' && <DeleteProduct product={product} user={user} onCancel={() => setMode(null)} onDeleted={onDeleted} />}
           {message && <p className="notice" role="status">{message}</p>}
         </td>
@@ -235,7 +230,6 @@ function ProductRow({ product, discount, user, onDeleted }) {
 
 function ProductTable({ data, user }) {
   const { products, genres } = data
-  const discounts = useDiscounts()
   const [query, setQuery] = useState('')
   const [genre, setGenre] = useState('')
   const [stockFilter, setStockFilter] = useState('')
@@ -299,16 +293,15 @@ function ProductTable({ data, user }) {
           <thead><tr>
             <th scope="col">Product information</th>
             <th scope="col">Formats · price · stock</th>
-            <th scope="col">Discount</th>
-            <th scope="col">Selling price</th>
+            <th scope="col">Price</th>
             <th scope="col">Quantity</th>
             <th scope="col">Availability</th>
             <th scope="col">Last updated / by</th>
             {isAdmin && <th scope="col">Actions</th>}
           </tr></thead>
           <tbody>
-            {visible.map(product => <ProductRow key={product.id} product={product} discount={discounts[product.id] ?? 0} user={user} onDeleted={deleted => setNotice(`${deleted.title} was deleted from the database.`)} />)}
-            {!visible.length && <tr><td colSpan={8}>No products match these filters.</td></tr>}
+            {visible.map(product => <ProductRow key={product.id} product={product} user={user} onDeleted={deleted => setNotice(`${deleted.title} was deleted from the database.`)} />)}
+            {!visible.length && <tr><td colSpan={7}>No products match these filters.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -330,7 +323,7 @@ export default function ProductManagementPage() {
     <>
       <p className="eyebrow">{roleLabel(user.role)} area</p>
       <h1>{isAdmin ? 'Product management' : 'Product inventory'}</h1>
-      <p className="lead">{isAdmin ? 'Add, edit, and delete products. Prices and stock are saved to the database; discounts are kept in this browser.' : 'View current prices, stock quantities, and discounts. Contact an admin to make changes.'} Prices are in AUD.</p>
+      <p className="lead">{isAdmin ? 'Add, edit, and delete products. All changes are saved to the database.' : 'View current prices and stock quantities. Contact an admin to make changes.'} Prices are in AUD.</p>
       <ResourceStatus state={state} resource={catalogue} label="products">
         {state.data && <ProductTable data={state.data} user={user} />}
       </ResourceStatus>

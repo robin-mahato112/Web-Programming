@@ -6,8 +6,7 @@ import ProductVisual from '../components/ProductVisual.jsx'
 import ResourceStatus from '../components/ResourceStatus.jsx'
 import { useResource } from '../data/backend.js'
 import { catalogue } from '../data/catalogue.js'
-import { useDiscounts } from '../data/discountStore.js'
-import { formatPrice, genreAccent, lowestPrice, salePrice } from '../data/productStore.js'
+import { formatPrice, genreAccent, lowestPrice } from '../data/productStore.js'
 import { isStaff, roleLabel, staffHome, useSession } from '../data/session.js'
 
 const pageSize = 24
@@ -48,7 +47,7 @@ function HeroCopy({ user }) {
 }
 
 // The most recently updated product that is in stock.
-function FeaturedProduct({ products, discounts }) {
+function FeaturedProduct({ products }) {
   const featured = products.filter(product => product.quantity > 0).sort(sorts.recommended.compare)[0]
   if (!featured) return <div className="feature-cover"><ProductVisual product={{ title: 'Your Story', category: 'Welcome', accent: 'violet' }} /></div>
   const price = lowestPrice(featured)
@@ -58,12 +57,12 @@ function FeaturedProduct({ products, discounts }) {
     </div>
     <div className="feature-caption">
       <div><span>{featured.author || featured.genre}</span><strong>{featured.title}</strong></div>
-      {price !== null && <span className="feature-price">{formatPrice(salePrice({ price, discount: discounts[featured.id] ?? 0 }))}</span>}
+      {price !== null && <span className="feature-price">{formatPrice(price)}</span>}
     </div>
   </>
 }
 
-function Collection({ data, discounts }) {
+function Collection({ data }) {
   const { products, genres, subGenres } = data
   const [query, setQuery] = useState('')
   const [genreId, setGenreId] = useState(null)
@@ -143,7 +142,7 @@ function Collection({ data, discounts }) {
         </div>
         {results.length === 0
           ? <div className="empty-state"><h3>No products match</h3><p>Try a different search or category.</p><Button type="button" variant="secondary" onClick={clear}>Clear filters</Button></div>
-          : <div className="product-grid">{results.slice(0, visible).map(product => <ProductCard key={product.id} product={product} discount={discounts[product.id] ?? 0} />)}</div>}
+          : <div className="product-grid">{results.slice(0, visible).map(product => <ProductCard key={product.id} product={product} />)}</div>}
         {visible < results.length && <div className="show-more"><Button type="button" variant="secondary" onClick={() => setVisible(visible + pageSize)}>Show more</Button></div>}
       </div>
     </div>
@@ -153,7 +152,6 @@ function Collection({ data, discounts }) {
 export default function Home() {
   const user = useSession()
   const state = useResource(catalogue)
-  const discounts = useDiscounts()
 
   return (
     <>
@@ -163,7 +161,7 @@ export default function Home() {
           <div className="hero-card hero-feature" role="group" aria-label="Featured product">
             <div className="feature-label">NEW IN<span aria-hidden="true">✦</span></div>
             {state.data
-              ? <FeaturedProduct products={state.data.products} discounts={discounts} />
+              ? <FeaturedProduct products={state.data.products} />
               : <div className="feature-cover"><ProductVisual product={{ title: 'Your Story', category: 'Welcome', accent: 'violet' }} /></div>}
           </div>
         </div>
@@ -177,7 +175,7 @@ export default function Home() {
           <p className="collection-count">All prices in AUD</p>
         </div>
         <ResourceStatus state={state} resource={catalogue} label="the catalogue">
-          {state.data && <Collection data={state.data} discounts={discounts} />}
+          {state.data && <Collection data={state.data} />}
         </ResourceStatus>
       </section>
     </>
