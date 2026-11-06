@@ -19,7 +19,7 @@ function RoleSelect({ id, value, onChange, error, disabled, hint }) {
 }
 
 function UserEditor({ account, actor, onCancel, onSave }) {
-  const [values, setValues] = useState({ name: account.name, role: account.role })
+  const [values, setValues] = useState({ name: account.name, role: account.role, password: '', confirm: '' })
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
@@ -31,7 +31,7 @@ function UserEditor({ account, actor, onCancel, onSave }) {
     setPending(false)
     setErrors(result.errors || {})
     setError(result.error || '')
-    if (!result.error && !result.errors) onSave()
+    if (!result.error && !result.errors) onSave(result)
   }
   const prefix = `user-${account.userId}`
   const isSelf = account.userId === actor.userId
@@ -41,6 +41,8 @@ function UserEditor({ account, actor, onCancel, onSave }) {
     <div className="form-grid">
       <Input id={`${prefix}-name`} name="name" label="Full name" value={values.name} onChange={update} error={errors.name} maxLength={100} />
       <RoleSelect id={`${prefix}-role`} value={values.role} onChange={update} error={errors.role} disabled={isSelf} hint={isSelf ? 'You cannot change your own role.' : undefined} />
+      <Input id={`${prefix}-password`} name="password" label="New password (optional)" type="password" autoComplete="new-password" value={values.password} onChange={update} error={errors.password} hint="Leave blank to keep the current password. Use 8+ characters with letters and numbers." />
+      <Input id={`${prefix}-confirm`} name="confirm" label="Confirm new password" type="password" autoComplete="new-password" value={values.confirm} onChange={update} error={errors.confirm} />
     </div>
     {error && <p className="notice notice--error" role="alert">{error}</p>}
     <div className="actions"><Button type="submit" disabled={pending}>{pending ? 'Saving…' : 'Save changes'}</Button><Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button></div>
@@ -151,7 +153,7 @@ export default function UserManagement({ staff, customers, actor }) {
       </table>
     </div>
     <div id="user-panel">
-      {panel?.mode === 'edit' && selected && <UserEditor key={selected.userId} account={selected} actor={actor} onCancel={() => close()} onSave={() => close('User updated in the database. A role change applies the next time that user signs in.')} />}
+      {panel?.mode === 'edit' && selected && <UserEditor key={selected.userId} account={selected} actor={actor} onCancel={() => close()} onSave={({ passwordChanged }) => close(`User updated in the database.${passwordChanged ? ' The new password works from their next sign-in.' : ''} A role change applies the next time that user signs in.`)} />}
       {panel?.mode === 'delete' && selected && <DeleteUser key={selected.userId} account={selected} actor={actor} onCancel={() => close()} onDeleted={account => close(`${account.name} (${account.username}) was deleted.`)} />}
     </div>
 

@@ -15,11 +15,11 @@
     "react": "latest",
     "react-dom": "latest",
     "react-router-dom": "latest",
-    "vite": "latest"
+    "vite": "^8.3.6"
   },
   "devDependencies": {
-    "@eslint/js": "latest",
-    "eslint": "latest",
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "latest",
     "eslint-plugin-react-refresh": "latest",
     "globals": "latest"

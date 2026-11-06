@@ -23,7 +23,7 @@ Staff sign in at `/admin/login` with a backend User account. Test accounts in th
 
 - **Dashboard** — live product, stock, price, order, and account figures with charts. Every chart has a data table.
 - **Product management** — all products with search, genre and stock filters. Price and quantity are stored per format (Stocktake row). Admins add products (with one or more formats), edit a product's title, author, prices and stock, and delete products; deleting also removes the product's formats and order lines. Employees have a read-only view.
-- **User management** (admin only) — add, edit, and delete staff accounts in the User table, and view customer accounts from Patrons. The backend hashes new passwords. You cannot delete or change the role of your own account, and at least one admin must remain. Products list their last updater by username, so deleting a user reassigns those products to the admin doing the delete.
+- **User management** (admin only) — add, edit, and delete staff accounts in the User table (editing can also set a new password, including your own), and view customer accounts from Patrons. The backend hashes new passwords. You cannot delete or change the role of your own account, and at least one admin must remain. Products list their last updater by username, so deleting a user reassigns those products to the admin doing the delete.
 
 The backend does not validate values, so all validation happens in the forms.
 

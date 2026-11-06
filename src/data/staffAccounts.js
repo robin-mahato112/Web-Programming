@@ -22,30 +22,46 @@ async function loadAccounts() {
 export const accounts = createResource(loadAccounts)
 export const staffRoles = ['employee', 'admin']
 
+const usernamePattern = /^[A-Za-z0-9._-]{3,50}$/
+const emailPattern = /^\S+@\S+\.\S+$/
+const strongPasswordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
+
+const toHex = bytes => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
+
+// The backend hashes HashPW when a user is created but stores it as sent on an update,
+// so a changed password is hashed here the same way the backend does: SHA-256 of salt + password, both hex.
+async function hashPassword(password) {
+  const salt = toHex(crypto.getRandomValues(new Uint8Array(16)))
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + password))
+  return { Salt: salt, HashPW: toHex(new Uint8Array(digest)) }
+}
+
+// values.password is optional: leave it blank to keep the current password.
 export async function updateStaffUser(account, values, actor) {
   if (actor?.role !== 'admin') return { error: 'Only admins can manage users.' }
   const staff = accounts.getState().data?.staff ?? []
   const errors = {}
   const name = values.name?.trim() || ''
+  const password = values.password ?? ''
   if (!name || name.length > 100) errors.name = 'Enter a name between 1 and 100 characters.'
   if (!staffRoles.includes(values.role)) errors.role = 'Choose a valid role.'
   // Roles are read from the login cookie, so a change to your own role would not apply until you sign in again.
   else if (account.userId === actor.userId && values.role !== account.role) errors.role = 'You cannot change your own role.'
   else if (account.role === 'admin' && values.role !== 'admin' && staff.filter(user => user.role === 'admin').length === 1) errors.role = 'At least one admin account is required.'
+  if (password || values.confirm) {
+    if (!strongPasswordPattern.test(password)) errors.password = 'Use 8+ characters with letters and numbers.'
+    if (values.confirm !== password) errors.confirm = 'Passwords must match.'
+  }
   if (Object.keys(errors).length) return { errors }
 
   try {
-    await patchRow('User', account.userId, { Name: name, IsAdmin: values.role === 'admin' })
+    await patchRow('User', account.userId, { Name: name, IsAdmin: values.role === 'admin', ...(password && await hashPassword(password)) })
   } catch (error) {
     return { error: errorMessage(error) }
   }
   accounts.update(data => ({ ...data, staff: data.staff.map(user => user.userId === account.userId ? { ...user, name, role: values.role } : user) }))
-  return {}
+  return { passwordChanged: Boolean(password) }
 }
-
-const usernamePattern = /^[A-Za-z0-9._-]{3,50}$/
-const emailPattern = /^\S+@\S+\.\S+$/
-const strongPasswordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
 
 export function validateNewStaffUser(values, staff) {
   const errors = {}
